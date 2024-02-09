@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Form</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  .form-row > div {
+    padding-right: 5px; /* Adjusts space between columns */
+  }
+  .form-group {
+    margin-bottom: 10px; /* Reduces space between form groups */
+  }
+  .form-label {
+    margin-bottom: 5px; /* Brings labels closer to inputs */
+  }
+  .btn-square {
+    width: 36px; /* Square shape */
+    height: 36px;
+    padding: 0;
+    margin-left: 5px; /* Space between input and button */
+    vertical-align: top; /* Aligns button with input */
+  }
+  .input-group-text {
+    height: calc(1.5em + .75rem + 2px); /* Adjusts height to match inputs */
+  }
+  .custom-form {
+    max-width: 600px; /* Makes form less wide */
+    margin: auto;
+  }
+  .btn-uniprot { background-color: Navy; color: white; margin-right: 10px; }
+  .btn-taxonomy { background-color: DarkOliveGreen; color: white; margin-right: 10px; }
+  .btn-pubmed { background-color: DarkSlateGray; color: white; }
+  
+  .required-asterisk {color: red;}
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+</style>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container custom-form">
+  <h2 class="mt-2">Upload Diffusion Data</h2>
+  <p><span class="required-asterisk">*</span> required fields.</p>
+  <form>
+    <!-- Diffusion Coefficient, Error, Unit -->
+    <div class="form-row align-items-center mb-2">
+      <div class="col">
+        <label for="diffusionCoefficient" class="form-label">Diffusion Coefficient <span class="required-asterisk">*</span></label>
+        <input type="number" class="form-control" id="diffusionCoefficient" placeholder="Coefficient" value="">
+      </div>
+      <div class="col">
+        <label for="error" class="form-label">Error</label>
+        <input type="number" class="form-control" id="error" placeholder="Error" value="">
+      </div>
+      <div class="col">
+        <label for="unit" class="form-label">Unit<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="unit">
+          <option value="" selected>Choose...</option>
+          <option value="um2/s">um²/s</option>
+          <option value="1e7 cm2/s">10^7 cm²/s</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Manual Processing -->
+    <div class="form-group mb-2">
+        <label for="manualProcessing" class="form-label">Manual estimation</label>
+        <select class="form-control" id="manualProcessing">
+        <option value="" selected>Choose...</option>
+        <option value="Automatic">Visual approximation (from plots)</option>
+        <option value="Semi-automatic">Data inference (integration, calculations, etc.)</option>
+        <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherManualProcessingContainer">
+        <label for="otherManualProcessing" class="form-label">Specify Manual Processing</label>
+        <input type="text" class="form-control" id="otherManualProcessing" placeholder="Please specify" value="">
+    </div>
+    
+    <!-- Method -->
+    <div class="form-group mb-2">
+        <label for="method" class="form-label">Method<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="method">
+        <option value="" selected>Choose...</option>
+        <option value="DLS">Dynamic Light Scattering (DLS) - Photon Correlation Spectroscopy (PCS)</option>
+        <option value="FCS">Fluorescence Correlation Spectroscopy (FCS)</option>
+        <option value="PFG-NMR">Pulse Field Gradient NMR (PFG-NMR)</option>
+        <option value="Unknown">Not informed</option>
+        <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherMethodContainer">
+        <label for="otherMethod" class="form-label">Specify Method</label>
+        <input type="text" class="form-control" id="otherMethod" placeholder="Please specify" value="">
+    </div>
+  
+    <!-- Protein Name, Species, Accession Number -->
+    <div class="form-row align-items-center mb-2">
+      <div class="col">
+        <label for="proteinName" class="form-label">Protein Name<span class="required-asterisk">*</span></label>
+        <input type="text" class="form-control" id="proteinName" placeholder="Protein Name" value="">
+      </div>
+      <div class="col">
+        <label for="species" class="form-label">Species (Taxon ID)<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="species" placeholder="Species" value="">
+          <div class="input-group-append">
+            <button type="button" id="speciesLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <label for="accessionNumber" class="form-label">Accession Number<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="accessionNumber" placeholder="Accession Number" value="">
+          <div class="input-group-append">
+            <button type="button" id="accessionLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PubMed ID, Reference Type -->
+    <div class="form-row align-items-center mb-2">
+      <div class="col">
+        <label for="pubmedId" class="form-label">PubMed ID<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="pubmedId" placeholder="PubMed ID" value="">
+          <div class="input-group-append">
+            <button type="button" id="pubmedLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <label for="referenceType" class="form-label">Reference Type</label>
+        <select class="form-control" id="referenceType">
+          <option value="" selected>Choose...</option>
+          <option value="primary">Main reference (experiment)</option>
+          <option value="secondary">Secondary reference (tables, lists or citations)</option>
+        </select>
+      </div> 
+    </div>
+    <div class="form-group mb-2">
+      <label for="comment" class="form-label">Additional comments</label>
+      <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
+    </div>
+    <div class="form-group text-center">
+        <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
+    </div> 
+  </form>
+
+  <div class="useful-links mt-4 text-center">
+    <h3>Useful Links</h3>
+    <div class="d-flex justify-content-center">
+      <a href="https://www.uniprot.org/" class="btn" style="background-color: Navy; color: white; margin-right: 10px;" target="_blank">Uniprot</a>
+      <a href="https://www.uniprot.org/taxonomy/" class="btn" style="background-color: DarkSlateGray; color: white; margin-right: 10px;" target="_blank">Uniprot Taxonomy</a>
+      <a href="https://pubmed.ncbi.nlm.nih.gov/" class="btn" style="background-color: rgb(72, 72, 72); color: white;" target="_blank">PubMed</a>      
+    </div>
+  </div>
+
+  <div aria-live="polite" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; min-height: 200px;">
+    <!-- Position it at the top right corner -->
+    <div style="position: absolute; top: 0; right: 0;">
+      <div id="submissionToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" style="background-color: khaki;">
+          <strong class="mr-auto">Submission Status</strong>
+          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="toast-body" style="background-color: palegoldenrod; width: 400px;">
+          <!-- The message will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>  
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+      let userName = prompt("Please enter your name:", "");
+
+      // Function to show or hide 'Other' input fields based on dropdown selection
+      function handleOtherInputFields() {
+          $('#manualProcessing').change(function() {
+              if ($(this).val() === 'Other') {
+                  $('#otherManualProcessingContainer').removeClass('d-none');
+              } else {
+                  $('#otherManualProcessingContainer').addClass('d-none');
+              }
+          });
+          $('#method').change(function() {
+              if ($(this).val() === 'Other') {
+                  $('#otherMethodContainer').removeClass('d-none');
+              } else {
+                  $('#otherMethodContainer').addClass('d-none');
+              }
+          });
+          // Initialize dynamic link buttons
+          initDynamicLinks();
+      }
+  
+      // Initialize event listeners for dynamic link buttons
+      function initDynamicLinks() {
+          $('#accessionNumber').on('input', function() {
+              const val = $(this).val();
+              const btn = $('#accessionLink');
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('https://www.uniprot.org/uniprotkb/${val}/entry', '_blank')`);
+              }
+          });
+  
+          $('#species').on('input', function() {
+              const val = $(this).val();
+              const btn = $('#speciesLink');
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('https://www.uniprot.org/taxonomy/${val}', '_blank')`);
+              }
+          });
+  
+          $('#pubmedId').on('input', function() {
+              const val = $(this).val();
+              const btn = $('#pubmedLink');
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('https://pubmed.ncbi.nlm.nih.gov/${val}/', '_blank')`);
+              }
+          });
+      }
+  
+      // Toast configuration
+      $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
+  
+      function submitForm() {
+
+          const formData = {
+            diffusionCoefficient: document.getElementById('diffusionCoefficient').value || null,
+            diffusionError: document.getElementById('error').value || null,
+            duffusionUnit: document.getElementById('unit').value || null,
+            manualProcessing: document.getElementById('manualProcessing').value || null,
+            otherManualProcessing: document.getElementById('otherManualProcessing').value || null,
+            method: document.getElementById('method').value || null,
+            otherMethod: document.getElementById('otherMethod').value || null,
+            proteinName: document.getElementById('proteinName').value || null,
+            species: document.getElementById('species').value || null,
+            accessionNumber: document.getElementById('accessionNumber').value || null,
+            pubmedId: document.getElementById('pubmedId').value || null,
+            referenceType: document.getElementById('referenceType').value || null,
+            comment: document.getElementById('comment').value || null,
+            timestamp: new Date().toISOString(),
+            userName: userName || 'Anonymous'
+          };
+
+          // Check if mandatory fields are filled
+          const mandatoryFields = ['diffusionCoefficient', 'duffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'pubmedId'];
+
+          for (let field of mandatoryFields) {
+              if (!formData[field]) {
+                //change toast to red color
+                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
+                $('#submissionToast').find('.toast-body').css('background-color', 'lightpink');
+                $('.toast-body').text(`Missing field: ${field}`);
+                $('#submissionToast').toast('show');
+                return;
+              }
+          }
+  
+          // Send data to server
+          fetch('/update-data', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(formData),
+          })
+          .then(response => {
+              console.log(response.body);
+              // Show toast message in green
+              $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
+              $('#submissionToast').find('.toast-body').css('background-color', 'lightcyan');
+              $('.toast-body').text(`Submitted ${$('#proteinName').val()}`);
+              $('#submissionToast').toast('show');
+              // Clear form fields
+              clearFormFields();
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
+      }
+  
+      function clearFormFields() {
+          $('form').find('input[type=text], input[type=number], select').val('');
+      }
+  
+      $('#submitForm').on('click', function(e) {
+          e.preventDefault();
+          submitForm();
+      });
+  
+      handleOtherInputFields(); // Initialize the function to handle 'Other' input fields
+  });
+</script>
+  
+  
+</body>
+</html>
