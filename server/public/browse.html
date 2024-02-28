@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Database</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            display: flex;
+        }
+
+        .navbar-item {
+            padding: 5px 10px;
+            margin-right: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            color: black;
+        }
+
+        .navbar-item:hover, .navbar-selected {
+            background-color: #f0f0f0;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+
+        .navbar-selected {
+            background-color: #e9e9e9;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            background-color: lightgray;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .results-container {
+            margin-top: 20px;
+        }
+
+        .table td, .table th {
+            font-size: 0.6rem; 
+        }
+
+        .small-cell {
+            max-width: 60px;
+        }
+
+        .medium-cell {
+            max-width: 100px;
+        }
+
+        .pdb-code-cell {
+            overflow: auto; 
+            white-space: nowrap;
+            max-width: 100px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <nav class="navbar">
+        <a class="navbar-item" href="/">New evidence</a>
+        <a class="navbar-item navbar-selected" href="/browse.html">Browse</a>
+    </nav>
+</div>
+
+<div class="container custom-form">
+    <h2 class="mt-2">Browse Database</h2>
+
+    <!-- Search Field -->
+    <div class="form-inline">
+        <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-75" placeholder="Search by Protein Name or Accession Number">
+        <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2">Search</button>
+    </div>
+  
+    <!-- Results Table -->
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>ID</th>   
+          <th>Protein Name</th>
+          <th class="small-cell">Species</th>
+          <th class="small-cell">Accession Number</th>
+          <th class="small-cell">Diffusion Coefficient (um2/s)</th>
+          <th class="small-cell">Diffusion Error (um2/s)</th>
+          <th>Method</th>
+          <th class="medium-cell">PMID/ DOI/ ISBN</th>
+          <th>Mass (kDa)</th>
+          <th class="medium-cell">Comment</th>
+          <th>PDB codes</th>
+        </tr>
+      </thead>
+      <tbody id="searchResults"></tbody>
+    </table>
+  </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('searchBtn').addEventListener('click', async function() {
+        const query = document.getElementById('searchInput').value;
+        fetch(`/search?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(async data => {
+            const results = data.payload;
+            const resultsBody = document.getElementById('searchResults');
+            resultsBody.innerHTML = ''; // Clear previous results
+
+            for (const row of results) {
+                transformDataRow(row).then(transformedRow => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${transformedRow.copyIcon}</td>
+                        <td>${transformedRow.proteinName}</td>
+                        <td class="small-cell">${transformedRow.speciesLink}</td>
+                        <td class="small-cell">${transformedRow.accessionNumberLink}</td>
+                        <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
+                        <td class="small-cell">${transformedRow.diffusionError}</td>
+                        <td>${transformedRow.methodDisplay}</td>
+                        <td class="medium-cell">${transformedRow.reference}</td>
+                        <td>${transformedRow.mass}</td>
+                        <td class="medium-cell">${transformedRow.comment}</td>
+                        <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
+                    `;
+                    resultsBody.appendChild(tr);
+                });
+            }   
+            
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+
+
+// DTO function to encapsulate all transformation logic
+async function transformDataRow(row) {
+    // Method processing
+    const methodValue = row.method === 'Other' ? row.otherMethod : row.method;
+    const manualProcessingValue = row.manualProcessing === 'Other' ?
+        row.otherManualProcessing :
+        row.manualProcessing === 'visual' ?
+            '(📈)' :
+            row.manualProcessing === 'calculations' ?
+                '(🧮)' :
+                '';
+
+    // Fetch additional info asynchronously
+    const { pdbCodes, mass } = await fetchUniprotInfo(row.accessionNumber);
+    const publicationYear = await fetchPublicationYear(row.pubmedId);
+
+    // Construct the reference string
+    const referenceString = row.referenceType === 'primary' ? '🔸' : '';
+
+    // Format diffusion coefficient and error
+    const diffusionCoefficientFormatted = row.diffusionUnit === "1e-7 cm2/s" ? 
+        (row.diffusionCoefficient * 10).toFixed(1) : 
+        (row.diffusionCoefficient).toFixed(1);
+    const diffusionErrorFormatted = row.diffusionError ? 
+        (row.diffusionUnit === "1e-7 cm2/s" ? 
+            (row.diffusionError * 10).toFixed(1) : 
+            (row.diffusionError).toFixed(1)) : 
+        "";
+
+    // Format mass
+    const massFormatted = (mass / 1000).toFixed(2) || "";
+
+    // Generate PDB codes HTML
+    const pdbCodesHTML = pdbCodes.map(pdbCode => `<a href="https://www.rcsb.org/structure/${pdbCode}/">${pdbCode}</a>`).join(', ');
+
+    // Return the new object with formatted/display properties
+    return {
+        copyIcon: `<i class="fas fa-copy copy-icon" onclick="copyToClipboard('${row._id}', this)"></i>`,
+        proteinName: row.proteinName || "",
+        speciesLink: `<a href="https://www.uniprot.org/taxonomy/${row.species}">${row.species || ""}</a>`,
+        accessionNumberLink: `<a href="https://www.uniprot.org/uniprotkb/${row.accessionNumber}/entry">${row.accessionNumber || ""}</a>`,
+        diffusionCoefficient: diffusionCoefficientFormatted,
+        diffusionError: diffusionErrorFormatted,
+        methodDisplay: `${methodValue} ${manualProcessingValue}`,
+        reference: `${referenceString} <a href="https://pubmed.ncbi.nlm.nih.gov/${row.pubmedId}/">${row.pubmedId || ""}</a> (${publicationYear})`,
+        mass: massFormatted,
+        comment: row.comment || "",
+        pdbCodesHTML: pdbCodesHTML
+    };
+}
+
+async function fetchUniprotInfo(accessionNumber) {
+    const url = `https://rest.uniprot.org/uniprotkb/${accessionNumber}.json?fields=xref_pdb,length,mass`;
+    if (accessionNumber.includes(',')) {
+        return {pdbCodes:[], mass:"N/A", length:"N/A"};
+    }
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const pdbCodes = data.uniProtKBCrossReferences
+            .filter(xref => xref.database === "PDB")
+            .map(xref => xref.id);
+        const mass = data.sequence.molWeight;
+        const length = data.sequence.length;
+        return {pdbCodes:pdbCodes,
+                mass:mass,
+                length:length};
+    } catch (error) {
+        console.error('Error fetching PDB Codes:', error);
+        return {pdbCodes:[], mass:"N/A", length:"N/A"};
+    }
+}
+
+function copyToClipboard(text, iconElement) {
+    navigator.clipboard.writeText(text).then(function() {
+        iconElement.className = 'fas fa-check';
+        iconElement.style.color = 'green';
+
+        setTimeout(function() {
+            iconElement.className = 'fas fa-copy';
+            iconElement.style.color = ''; 
+        }, 2000); 
+    }).catch(function(err) {
+        console.error('Could not copy text:', err);
+    });
+}
+
+async function fetchPublicationYear(pmid) {
+  try {
+    const response = await fetch(`/publication-year?pmid=${pmid}`);
+    const data = await response.json(); // Assuming the backend sends JSON with a 'year' property
+    return data.year || "N/A";
+  } catch (error) {
+    console.error('Error fetching publication year from backend:', error);
+    return "N/A";
+  }
+}
+</script>
+</body>
+</html>

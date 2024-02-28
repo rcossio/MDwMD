@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Form</title>
+<title>Add New Evidence</title>
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 <style>
   .form-row > div {
@@ -44,68 +44,80 @@
     -moz-appearance: textfield;
   }
 
+  .navbar {
+      display: flex;
+  }
+
+  .navbar-item {
+    padding: 5px 10px;
+    margin-right: 10px; /* Space between items */
+    cursor: pointer;
+    text-decoration: none; /* Removes underline from links */
+    color: black; /* Default text color */
+    background-color: transparent; /* Transparent background by default */
+  }
+
+  .navbar-item:hover {
+      background-color: #f0f0f0; /* Light background on hover */
+      text-decoration: none; /* Removes underline from links */
+      color: black; /* Default text color */
+      font-weight: bold; /* Bold text on hover */
+  }
+
+  .navbar-selected {
+      background-color: #e9e9e9; /* Slightly darker background for selected item */
+      box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2); /* Subtle shadow for selected item */
+  }
+
+  .signed-as-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: lightgray;
+      padding: 10px;
+      margin-bottom: 10px;
+  }
+
 </style>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
 <body>
+<div class="signed-as-header">
+  <nav class="navbar">
+      <a class="navbar-item navbar-selected" href="#">New evidence</a>
+      <a class="navbar-item" href="/browse.html">Browse</a>
+  </nav>
+  <div class="ml-auto">Signed as <strong id="usernameDisplay">Anonymous</strong></div>
+</div>
+
 <div class="container custom-form">
-  <h2 class="mt-2">Upload Diffusion Data</h2>
+  <h2 class="mt-2">Add New Evidence</h2>
   <p><span class="required-asterisk">*</span> required fields.</p>
   <form>
-    <!-- Diffusion Coefficient, Error, Unit -->
+
+    <!-- PubMed ID, Reference Type -->
     <div class="form-row align-items-center mb-2">
       <div class="col">
-        <label for="diffusionCoefficient" class="form-label">Diffusion Coefficient <span class="required-asterisk">*</span></label>
-        <input type="number" class="form-control" id="diffusionCoefficient" placeholder="Coefficient" value="">
+        <label for="pubmedId" class="form-label">PubMed ID (alt. DOI or ISBN)<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="pubmedId" placeholder="PubMed ID" value="">
+          <div class="input-group-append">
+            <button type="button" id="pubmedLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
       </div>
       <div class="col">
-        <label for="error" class="form-label">Error</label>
-        <input type="number" class="form-control" id="error" placeholder="Error" value="">
-      </div>
-      <div class="col">
-        <label for="unit" class="form-label">Unit<span class="required-asterisk">*</span></label>
-        <select class="form-control" id="unit">
+        <label for="referenceType" class="form-label">Reference Type</label>
+        <select class="form-control" id="referenceType">
           <option value="" selected>Choose...</option>
-          <option value="um2/s">um²/s</option>
-          <option value="1e7 cm2/s">10^7 cm²/s</option>
+          <option value="primary">Main reference (experiment)</option>
+          <option value="secondary">Secondary reference (tables, lists or citations)</option>
         </select>
-      </div>
+      </div> 
     </div>
 
-    <!-- Manual Processing -->
-    <div class="form-group mb-2">
-        <label for="manualProcessing" class="form-label">Manual estimation</label>
-        <select class="form-control" id="manualProcessing">
-        <option value="" selected>Choose...</option>
-        <option value="Automatic">Visual approximation (from plots)</option>
-        <option value="Semi-automatic">Data inference (integration, calculations, etc.)</option>
-        <option value="Other">Other</option>
-        </select>
-    </div>
-    <div class="form-group mb-2 d-none" id="otherManualProcessingContainer">
-        <label for="otherManualProcessing" class="form-label">Specify Manual Processing</label>
-        <input type="text" class="form-control" id="otherManualProcessing" placeholder="Please specify" value="">
-    </div>
-    
-    <!-- Method -->
-    <div class="form-group mb-2">
-        <label for="method" class="form-label">Method<span class="required-asterisk">*</span></label>
-        <select class="form-control" id="method">
-        <option value="" selected>Choose...</option>
-        <option value="DLS">Dynamic Light Scattering (DLS) - Photon Correlation Spectroscopy (PCS)</option>
-        <option value="FCS">Fluorescence Correlation Spectroscopy (FCS)</option>
-        <option value="PFG-NMR">Pulse Field Gradient NMR (PFG-NMR)</option>
-        <option value="Unknown">Not informed</option>
-        <option value="Other">Other</option>
-        </select>
-    </div>
-    <div class="form-group mb-2 d-none" id="otherMethodContainer">
-        <label for="otherMethod" class="form-label">Specify Method</label>
-        <input type="text" class="form-control" id="otherMethod" placeholder="Please specify" value="">
-    </div>
-  
     <!-- Protein Name, Species, Accession Number -->
     <div class="form-row align-items-center mb-2">
       <div class="col">
@@ -132,26 +144,63 @@
       </div>
     </div>
 
-    <!-- PubMed ID, Reference Type -->
+    <!-- Diffusion Coefficient, Error, Unit -->
     <div class="form-row align-items-center mb-2">
       <div class="col">
-        <label for="pubmedId" class="form-label">PubMed ID<span class="required-asterisk">*</span></label>
-        <div class="input-group">
-          <input type="text" class="form-control" id="pubmedId" placeholder="PubMed ID" value="">
-          <div class="input-group-append">
-            <button type="button" id="pubmedLink" class="btn btn-primary btn-square d-none">→</button>
-          </div>
-        </div>
+        <label for="diffusionCoefficient" class="form-label">Diffusion Coefficient <span class="required-asterisk">*</span></label>
+        <input type="number" class="form-control" id="diffusionCoefficient" placeholder="Coefficient" value="">
       </div>
       <div class="col">
-        <label for="referenceType" class="form-label">Reference Type</label>
-        <select class="form-control" id="referenceType">
+        <label for="error" class="form-label">Error</label>
+        <input type="number" class="form-control" id="error" placeholder="Error" value="">
+      </div>
+      <div class="col">
+        <label for="unit" class="form-label">Unit<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="unit">
           <option value="" selected>Choose...</option>
-          <option value="primary">Main reference (experiment)</option>
-          <option value="secondary">Secondary reference (tables, lists or citations)</option>
+          <option value="um2/s">um²/s</option>
+          <option value="1e-7 cm2/s">10^(-7) cm²/s</option>
         </select>
-      </div> 
+      </div>
     </div>
+
+    <!-- Manual Processing -->
+    <div class="form-group mb-2">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="manualEstimationCheckbox">
+          <label class="custom-control-label" for="manualEstimationCheckbox">Manual estimation</label>
+        </div>
+        <!-- <label for="manualProcessing" class="form-label">Manual estimation</label> -->
+        <select class="form-control d-none" id="manualProcessing">
+        <option value="" selected>Choose...</option>
+        <option value="visual">Visual approximation (from plots)</option>
+        <option value="calculations">Data inference (integration, calculations, etc.)</option>
+        <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherManualProcessingContainer">
+        <label for="otherManualProcessing" class="form-label">Specify Manual Processing</label>
+        <input type="text" class="form-control" id="otherManualProcessing" placeholder="Please specify" value="">
+    </div>
+    
+    <!-- Method -->
+    <div class="form-group mb-2">
+        <label for="method" class="form-label">Method<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="method">
+        <option value="" selected>Choose...</option>
+        <option value="DLS">Dynamic Light Scattering (DLS) - Photon Correlation Spectroscopy (PCS)</option>
+        <option value="FCS">Fluorescence Correlation Spectroscopy (FCS)</option>
+        <option value="PFG-NMR">Pulse Field Gradient NMR (PFG-NMR)</option>
+        <option value="Unknown">Not informed</option>
+        <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherMethodContainer">
+        <label for="otherMethod" class="form-label">Specify Method</label>
+        <input type="text" class="form-control" id="otherMethod" placeholder="Please specify" value="">
+    </div>
+
+    <!-- Extra data -->
     <div class="form-group mb-2">
       <label for="comment" class="form-label">Additional comments</label>
       <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
@@ -193,6 +242,9 @@
   document.addEventListener('DOMContentLoaded', function() {
 
       let userName = prompt("Please enter your name:", "");
+
+      // Set the content of the #usernameDisplay element
+      document.querySelector('#usernameDisplay').textContent = userName ? userName : 'Anonymous';
 
       // Function to show or hide 'Other' input fields based on dropdown selection
       function handleOtherInputFields() {
@@ -252,7 +304,7 @@
           const formData = {
             diffusionCoefficient: document.getElementById('diffusionCoefficient').value || null,
             diffusionError: document.getElementById('error').value || null,
-            duffusionUnit: document.getElementById('unit').value || null,
+            diffusionUnit: document.getElementById('unit').value || null,
             manualProcessing: document.getElementById('manualProcessing').value || null,
             otherManualProcessing: document.getElementById('otherManualProcessing').value || null,
             method: document.getElementById('method').value || null,
@@ -268,7 +320,7 @@
           };
 
           // Check if mandatory fields are filled
-          const mandatoryFields = ['diffusionCoefficient', 'duffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'pubmedId'];
+          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'pubmedId'];
 
           for (let field of mandatoryFields) {
               if (!formData[field]) {
@@ -279,6 +331,11 @@
                 $('#submissionToast').toast('show');
                 return;
               }
+          }
+
+          // Change "-" to null in accession number (e.g. large complex with too many proteins)
+          if (formData.accessionNumber === '-') {
+              formData.accessionNumber = null;
           }
   
           // Send data to server
@@ -314,6 +371,19 @@
       });
   
       handleOtherInputFields(); // Initialize the function to handle 'Other' input fields
+
+      function toggleManualProcessingVisibility() {
+        $('#manualEstimationCheckbox').change(function() {
+            if ($(this).is(':checked')) {
+                $('#manualProcessing').removeClass('d-none');
+            } else {
+                $('#manualProcessing').addClass('d-none');
+            }
+        });
+      }
+
+      toggleManualProcessingVisibility();
+
   });
 </script>
   

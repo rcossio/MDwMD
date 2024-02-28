@@ -1,36 +1,19 @@
 [
   {
-    "diffusionCoefficient": "50",
-    "diffusionError": "0.2",
-    "duffusionUnit": "1e7 cm2/s",
-    "manualProcessing": null,
-    "otherManualProcessing": null,
-    "method": "DLS",
-    "otherMethod": null,
-    "proteinName": "Urease",
-    "species": "3702",
-    "accessionNumber": "Q9SR52",
-    "pubmedId": "235352",
-    "referenceType": "Type 1",
-    "comment": null,
-    "timestamp": "2024-02-09T13:27:54.085Z",
-    "userName": "rodrigo"
-  },
-  {
-    "diffusionCoefficient": "12.3",
-    "diffusionError": "0.15",
+    "diffusionCoefficient": "34",
+    "diffusionError": "34",
     "duffusionUnit": "um2/s",
-    "manualProcessing": null,
+    "manualProcessing": "Automatic",
     "otherManualProcessing": null,
     "method": "DLS",
     "otherMethod": null,
-    "proteinName": "Urease",
-    "species": "3702",
-    "accessionNumber": "Q9SR52",
-    "pubmedId": "21345",
+    "proteinName": "34",
+    "species": "34",
+    "accessionNumber": "34",
+    "pubmedId": "34",
     "referenceType": "primary",
     "comment": null,
-    "timestamp": "2024-02-09T13:35:42.315Z",
-    "userName": "Anonymous"
+    "timestamp": "2024-02-21T12:59:04.832Z",
+    "userName": "rodrigo"
   }
 ]
