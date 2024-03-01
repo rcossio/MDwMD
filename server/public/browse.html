@@ -55,11 +55,28 @@
             max-width: 100px;
         }
 
+        .large-cell {
+            max-width: 130px;
+        }
+
         .pdb-code-cell {
             overflow: auto; 
             white-space: nowrap;
             max-width: 100px;
         }
+
+        #species-filter {
+           display: none;
+        }
+
+        #query-table{
+            display: none;
+        }
+
+        .download-form {
+            display: none
+        }
+
     </style>
 </head>
 <body>
@@ -75,12 +92,19 @@
 
     <!-- Search Field -->
     <div class="form-inline">
-        <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-75" placeholder="Search by Protein Name or Accession Number">
+        <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-50" placeholder="Search by Protein Name or Accession Number">
+        <input type="text" id="speciesInput" class="form-control mb-3 mr-2" placeholder="Filter by species ID">
         <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2">Search</button>
     </div>
   
+    <!-- Filter banner -->
+    <div id="species-filter" class="mt-3">
+        <strong>Filter by species:</strong>
+        <div id="speciesList"></div>
+    </div>
+
     <!-- Results Table -->
-    <table class="table mt-3">
+    <table id="query-table" class="table mt-3">
       <thead>
         <tr>
           <th>ID</th>   
@@ -89,16 +113,33 @@
           <th class="small-cell">Accession Number</th>
           <th class="small-cell">Diffusion Coefficient (um2/s)</th>
           <th class="small-cell">Diffusion Error (um2/s)</th>
-          <th>Method</th>
-          <th class="medium-cell">PMID/ DOI/ ISBN</th>
-          <th>Mass (kDa)</th>
-          <th class="medium-cell">Comment</th>
+          <th class="medium-cell">Method</th>
+          <th class="medium-cell">PMID/ DOI</th>
+          <th class="small-cell">Mass (kDa)</th>
+          <th class="large-cell">Comment</th>
           <th>PDB codes</th>
         </tr>
       </thead>
       <tbody id="searchResults"></tbody>
     </table>
-  </div>
+
+    <div class="download-form mt-3">
+        <form id="downloadForm">
+            <div class="form-group">
+                <label for="columnSelect">Select Column to Download:</label>
+                <select class="form-control" id="columnSelect">
+                    <option value="1">Protein Name</option>
+                    <option value="2">Species</option>
+                    <option value="3">Accession Number</option>
+                    <option value="6">Method</option>
+                    <option value="7">PMID/ DOI</option>
+                    <option value="10">PDB codes</option>
+                </select>
+            </div>
+            <button type="button" id="downloadBtn" class="btn btn-success">Download List</button>
+        </form>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -107,37 +148,90 @@
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('searchBtn').addEventListener('click', async function() {
         const query = document.getElementById('searchInput').value;
-        fetch(`/search?query=${encodeURIComponent(query)}`)
+        const species = document.getElementById('speciesInput').value;
+
+        fetch(`/search?query=${encodeURIComponent(query)}&species=${species}`)
         .then(response => response.json())
         .then(async data => {
-            const results = data.payload;
+            const results = data.payload.result;
+            const species = data.payload.species; // Extract species list from payload
             const resultsBody = document.getElementById('searchResults');
-            resultsBody.innerHTML = ''; // Clear previous results
+            const speciesList = document.getElementById('speciesList');
+            
+            // Sort results by accessionNumber
+            results.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
 
+            document.getElementById('species-filter').style.display = 'block';
+            document.getElementById('query-table').style.display = 'table';
+
+            resultsBody.innerHTML = ''; // Clear previous results
+            speciesList.innerHTML = ''; // Clear previous species list
+
+            // Populate species filter
+            species.forEach(speciesName => {
+                const speciesButton = document.createElement('button');
+                speciesButton.textContent = speciesName;
+                speciesButton.className = 'btn btn-sm btn-outline-secondary mr-2 mb-2';
+                speciesButton.onclick = () => filterResultsBySpecies(speciesName, results);
+                speciesList.appendChild(speciesButton);
+            });
+
+            // Display results
             for (const row of results) {
                 transformDataRow(row).then(transformedRow => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${transformedRow.copyIcon}</td>
-                        <td>${transformedRow.proteinName}</td>
+                        <td class="small-cell">${transformedRow.proteinName}</td>
                         <td class="small-cell">${transformedRow.speciesLink}</td>
                         <td class="small-cell">${transformedRow.accessionNumberLink}</td>
                         <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
                         <td class="small-cell">${transformedRow.diffusionError}</td>
-                        <td>${transformedRow.methodDisplay}</td>
+                        <td class="medium-cell">${transformedRow.methodDisplay}</td>
                         <td class="medium-cell">${transformedRow.reference}</td>
                         <td>${transformedRow.mass}</td>
-                        <td class="medium-cell">${transformedRow.comment}</td>
+                        <td class="large-cell">${transformedRow.comment}</td>
                         <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
                     `;
                     resultsBody.appendChild(tr);
                 });
-            }   
-            
+            }
+            document.querySelector('.download-form').style.display = 'block';
         })
         .catch(error => console.error('Error:', error));
     });
 });
+
+function filterResultsBySpecies(speciesName, results) {
+    const filteredResults = results.filter(result => parseInt(result.species) === speciesName);
+        
+    // Sort filtered results by accessionNumber
+    filteredResults.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
+
+    const resultsBody = document.getElementById('searchResults');
+    resultsBody.innerHTML = ''; // Clear current results
+    
+    // Display filtered results
+    for (const row of filteredResults) {
+        transformDataRow(row).then(transformedRow => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${transformedRow.copyIcon}</td>
+                <td class="small-cell">${transformedRow.proteinName}</td>
+                <td class="small-cell">${transformedRow.speciesLink}</td>
+                <td class="small-cell">${transformedRow.accessionNumberLink}</td>
+                <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
+                <td class="small-cell">${transformedRow.diffusionError}</td>
+                <td class="medium-cell">${transformedRow.methodDisplay}</td>
+                <td class="medium-cell">${transformedRow.reference}</td>
+                <td>${transformedRow.mass}</td>
+                <td class="medium-cell">${transformedRow.comment}</td>
+                <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
+            `;
+            resultsBody.appendChild(tr);
+        });
+    }   
+}
 
 
 // DTO function to encapsulate all transformation logic
@@ -154,10 +248,13 @@ async function transformDataRow(row) {
 
     // Fetch additional info asynchronously
     const { pdbCodes, mass } = await fetchUniprotInfo(row.accessionNumber);
-    const publicationYear = await fetchPublicationYear(row.pubmedId);
+    const publicationYear = await fetchPublicationYear(row.referenceId,row.referenceIdType);
 
     // Construct the reference string
     const referenceString = row.referenceType === 'primary' ? '🔸' : '';
+    const referenceURL = row.referenceIdType === 'pmid' ? 
+        `https://pubmed.ncbi.nlm.nih.gov/${row.referenceId}/` : 
+        `https://doi.org/${row.referenceId}`;
 
     // Format diffusion coefficient and error
     const diffusionCoefficientFormatted = row.diffusionUnit === "1e-7 cm2/s" ? 
@@ -168,9 +265,6 @@ async function transformDataRow(row) {
             (row.diffusionError * 10).toFixed(1) : 
             (row.diffusionError).toFixed(1)) : 
         "";
-
-    // Format mass
-    const massFormatted = (mass / 1000).toFixed(2) || "";
 
     // Generate PDB codes HTML
     const pdbCodesHTML = pdbCodes.map(pdbCode => `<a href="https://www.rcsb.org/structure/${pdbCode}/">${pdbCode}</a>`).join(', ');
@@ -184,35 +278,61 @@ async function transformDataRow(row) {
         diffusionCoefficient: diffusionCoefficientFormatted,
         diffusionError: diffusionErrorFormatted,
         methodDisplay: `${methodValue} ${manualProcessingValue}`,
-        reference: `${referenceString} <a href="https://pubmed.ncbi.nlm.nih.gov/${row.pubmedId}/">${row.pubmedId || ""}</a> (${publicationYear})`,
-        mass: massFormatted,
+        reference: `${referenceString} <a href="${referenceURL}">${row.referenceId || ""}</a> (${publicationYear})`,
+        mass: mass,
         comment: row.comment || "",
         pdbCodesHTML: pdbCodesHTML
     };
 }
 
-async function fetchUniprotInfo(accessionNumber) {
-    const url = `https://rest.uniprot.org/uniprotkb/${accessionNumber}.json?fields=xref_pdb,length,mass`;
-    if (accessionNumber.includes(',')) {
-        return {pdbCodes:[], mass:"N/A", length:"N/A"};
+async function fetchUniprotInfo(accessionNumbers) {
+    // Split the accessionNumbers string by comma and trim each part
+    const accessionNumberList = accessionNumbers.split(',').map(an => an.trim());
+
+    // Initialize arrays to hold the results for each accession number
+    let combinedPdbCodes = [];
+    let massValues = [];
+    let lengthValues = [];
+
+    // Process each accession number
+    for (const accessionNumber of accessionNumberList) {
+        const url = `https://rest.uniprot.org/uniprotkb/${accessionNumber}.json?fields=xref_pdb,length,mass`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            // Extract PDB codes and avoid duplicates
+            const pdbCodes = data.uniProtKBCrossReferences
+                .filter(xref => xref.database === "PDB")
+                .map(xref => xref.id);
+            combinedPdbCodes = [...new Set([...combinedPdbCodes, ...pdbCodes])];
+
+            // Add mass and length to their respective arrays
+            const mass = data.sequence ?  (data.sequence.molWeight / 1000).toFixed(2) : "N/A";
+            const length = data.sequence ? data.sequence.length : "N/A";
+            massValues.push(mass);
+            lengthValues.push(length);
+            
+        } catch (error) {
+            console.error('Error fetching data for accession number:', accessionNumber, error);
+            // Ensure that mass and length values are added as "N/A" in case of an error
+            massValues.push("N/A");
+            lengthValues.push("N/A");
+        }
     }
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-        const pdbCodes = data.uniProtKBCrossReferences
-            .filter(xref => xref.database === "PDB")
-            .map(xref => xref.id);
-        const mass = data.sequence.molWeight;
-        const length = data.sequence.length;
-        return {pdbCodes:pdbCodes,
-                mass:mass,
-                length:length};
-    } catch (error) {
-        console.error('Error fetching PDB Codes:', error);
-        return {pdbCodes:[], mass:"N/A", length:"N/A"};
-    }
+    // Return the results with mass and length as comma-separated strings
+    return {
+        pdbCodes: combinedPdbCodes,
+        mass: massValues.join(', '),
+        length: lengthValues.join(', '),
+    };
 }
+
 
 function copyToClipboard(text, iconElement) {
     navigator.clipboard.writeText(text).then(function() {
@@ -228,9 +348,9 @@ function copyToClipboard(text, iconElement) {
     });
 }
 
-async function fetchPublicationYear(pmid) {
+async function fetchPublicationYear(refId,refType) {
   try {
-    const response = await fetch(`/publication-year?pmid=${pmid}`);
+    const response = await fetch(`/publication-year?refId=${refId}&refType=${refType}`);
     const data = await response.json(); // Assuming the backend sends JSON with a 'year' property
     return data.year || "N/A";
   } catch (error) {
@@ -238,6 +358,37 @@ async function fetchPublicationYear(pmid) {
     return "N/A";
   }
 }
+
+document.getElementById('downloadBtn').addEventListener('click', function() {
+    const columnSelect = document.getElementById('columnSelect');
+    const selectedColumnIndex = columnSelect.value;
+    const rows = document.querySelectorAll('#query-table tbody tr');
+    let columnData = new Set(); // Using a Set to automatically handle unique values
+
+    rows.forEach(row => {
+        const cell = row.cells[selectedColumnIndex];
+        if(cell) {
+            const cellTexts = cell.textContent.split(',').map(text => text.trim()); // Split and trim
+            cellTexts.forEach(text => {
+                if(text) columnData.add(text); // Add each text to the Set
+            });
+        }
+    });
+
+    const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
+    downloadTxtFile(txtContent);
+});
+
+function downloadTxtFile(text) {
+    const element = document.createElement('a');
+    const file = new Blob([text], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "download.txt";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+    document.body.removeChild(element);
+}
+
 </script>
 </body>
 </html>

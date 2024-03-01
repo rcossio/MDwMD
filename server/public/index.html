@@ -69,7 +69,7 @@
       box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2); /* Subtle shadow for selected item */
   }
 
-  .signed-as-header {
+  .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -84,7 +84,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div class="signed-as-header">
+<div class="header">
   <nav class="navbar">
       <a class="navbar-item navbar-selected" href="#">New evidence</a>
       <a class="navbar-item" href="/browse.html">Browse</a>
@@ -99,16 +99,20 @@
 
     <!-- PubMed ID, Reference Type -->
     <div class="form-row align-items-center mb-2">
-      <div class="col">
-        <label for="pubmedId" class="form-label">PubMed ID (alt. DOI or ISBN)<span class="required-asterisk">*</span></label>
+      <div class="col-5">
+        <label for="referenceId" class="form-label">PubMed ID (alt. DOI)<span class="required-asterisk">*</span></label>
         <div class="input-group">
-          <input type="text" class="form-control" id="pubmedId" placeholder="PubMed ID" value="">
+          <input type="text" class="form-control" id="referenceId" placeholder="PubMed ID" value="">
           <div class="input-group-append">
             <button type="button" id="pubmedLink" class="btn btn-primary btn-square d-none">→</button>
           </div>
         </div>
       </div>
-      <div class="col">
+      <div class="col-2 d-flex flex-column align-items-start mt-5 pr-3 pl-1">
+        <input type="checkbox" id="doiCheckbox" aria-label="Checkbox for DOI">
+        <label for="doiCheckbox">DOI</label>
+      </div>      
+      <div class="col-5">
         <label for="referenceType" class="form-label">Reference Type</label>
         <select class="form-control" id="referenceType">
           <option value="" selected>Choose...</option>
@@ -170,7 +174,6 @@
           <input type="checkbox" class="custom-control-input" id="manualEstimationCheckbox">
           <label class="custom-control-label" for="manualEstimationCheckbox">Manual estimation</label>
         </div>
-        <!-- <label for="manualProcessing" class="form-label">Manual estimation</label> -->
         <select class="form-control d-none" id="manualProcessing">
         <option value="" selected>Choose...</option>
         <option value="visual">Visual approximation (from plots)</option>
@@ -205,9 +208,21 @@
       <label for="comment" class="form-label">Additional comments</label>
       <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
     </div>
+    
+    <!-- Replaces another entry -->
+    <div class="form-group mb-2">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="replaceEntryCheckbox">
+        <label class="custom-control-label" for="replaceEntryCheckbox">Replace and entry</label>
+      </div>
+      <input type="text" class="form-control d-none" id="replacedEntry" placeholder="Entry ID..." value="">
+    </div>
+
     <div class="form-group text-center">
         <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
-    </div> 
+    </div>
+    
+
   </form>
 
   <div class="useful-links mt-4 text-center">
@@ -286,7 +301,7 @@
               }
           });
   
-          $('#pubmedId').on('input', function() {
+          $('#referenceId').on('input', function() {
               const val = $(this).val();
               const btn = $('#pubmedLink');
               btn.toggleClass('d-none', !val); // Show button if value is not empty
@@ -301,6 +316,8 @@
   
       function submitForm() {
 
+          const isDoi = document.getElementById('doiCheckbox').checked;
+
           const formData = {
             diffusionCoefficient: document.getElementById('diffusionCoefficient').value || null,
             diffusionError: document.getElementById('error').value || null,
@@ -312,15 +329,18 @@
             proteinName: document.getElementById('proteinName').value || null,
             species: document.getElementById('species').value || null,
             accessionNumber: document.getElementById('accessionNumber').value || null,
-            pubmedId: document.getElementById('pubmedId').value || null,
+            referenceId: document.getElementById('referenceId').value || null,
+            referenceIdType: isDoi ? 'doi' : 'pmid',
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
             timestamp: new Date().toISOString(),
-            userName: userName || 'Anonymous'
+            userName: userName || 'Anonymous',
           };
+          const replacedEntry = document.getElementById('replacedEntry').value || null
+
 
           // Check if mandatory fields are filled
-          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'pubmedId'];
+          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId'];
 
           for (let field of mandatoryFields) {
               if (!formData[field]) {
@@ -332,11 +352,6 @@
                 return;
               }
           }
-
-          // Change "-" to null in accession number (e.g. large complex with too many proteins)
-          if (formData.accessionNumber === '-') {
-              formData.accessionNumber = null;
-          }
   
           // Send data to server
           fetch('/update-data', {
@@ -344,7 +359,10 @@
               headers: {
                   'Content-Type': 'application/json',
               },
-              body: JSON.stringify(formData),
+              body: JSON.stringify({
+                data:formData,
+                replacedEntry
+              }),
           })
           .then(response => {
               console.log(response.body);
@@ -383,6 +401,18 @@
       }
 
       toggleManualProcessingVisibility();
+
+      function toggleReplaceEntryVisibility() {
+        $('#replaceEntryCheckbox').change(function() {
+            if ($(this).is(':checked')) {
+                $('#replacedEntry').removeClass('d-none');
+            } else {
+                $('#replacedEntry').addClass('d-none');
+            }
+        });
+      }
+
+      toggleReplaceEntryVisibility();
 
   });
 </script>

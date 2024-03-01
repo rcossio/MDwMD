@@ -26,11 +26,14 @@ const diffusionSchema = new mongoose.Schema({
   proteinName: String,
   species: String,
   accessionNumber: String,
-  pubmedId: String,
+  referenceId: String,
+  referenceIdType: String,
   referenceType: String,
   comment: String, 
   timestamp: String,
-  userName: String 
+  userName: String,
+  active: Boolean,
+  supersededBy: { type: mongoose.Schema.Types.ObjectId }
 });
 
 // Create Mongoose Model
@@ -45,32 +48,60 @@ app.get('/', (req, res) => {
 });
 
 // Handle POST Request
-app.post('/update-data', (req, res) => {
-  const newData = req.body;
+app.post('/update-data', async (req, res) => {
+  const {data, replacedEntry} = req.body;
 
-  DiffusionData.create(newData) 
-  .then(() => {
+  try {
+    const newEntryId = await DiffusionData.create({...data, active: true}); 
+    if(replacedEntry){
+      await DiffusionData.updateOne({_id: replacedEntry}, { $set: { supersededBy: newEntryId, active: false } });
+    }
     res.send({ status: 'success', payload: 'Data saved to MongoDB' });
-  })
-  .catch((err) => {
-    console.error('Error saving data:', err);
-    res.status(500).send('Error saving data');
-  });
+  } catch (err) {
+      console.error('Error saving data:', err);
+      res.status(500).send('Error saving data');
+  }
 });
 
 // Handle GET Request for Search
 app.get('/search', (req, res) => {
-  const { query } = req.query;
+  const { query,species } = req.query;
+
+  let queryConditions = [
+    { active: true },
+    {
+      $or: [
+        { proteinName: new RegExp(query, 'i') },
+        { accessionNumber: new RegExp(query, 'i') }
+      ]
+    }
+  ];
+  
+  // Add species filter only if speciesList is not empty and not null
+  const speciesList = species.split(',').map(item => item.trim()).filter(item => item !== '')
+  
+  if (speciesList && speciesList.length > 0) {
+    queryConditions.push({ species: { $in: speciesList } });
+  }
+
 
   DiffusionData.find({
-    $or: [
-      { proteinName: new RegExp(query, 'i') },
-      { accessionNumber: new RegExp(query, 'i') }
-    ]
+    $and: queryConditions
   })
   .sort({ accessionNumber: 1 })
   .then(data => {
-    res.send({ status: 'success', payload: data });
+    // Extract species from the results and create a unique list
+    const species = new Set(data.map(item => item.species));
+    const speciesList = Array.from(species).map(Number).sort((a, b) => a - b);    
+
+    // Send the response with both results and species list
+    res.json({
+      status: 'success',
+      payload: {
+        result: data,
+        species: speciesList
+      }
+    });
   })
   .catch(err => {
     console.error('Error during search:', err);
@@ -80,28 +111,50 @@ app.get('/search', (req, res) => {
 
 // Handle GET Request for fetching publication year
 app.get('/publication-year', (req, res) => {
-  const { pmid } = req.query;
+  const { refId, refType } = req.query;
 
   const fetchPublicationYear = async () => {
-    const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${pmid}&idtype=pmid&retmode=xml`;
+    let url, response, text;
+    if (refType === 'pmid') {
+      url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${refId}&retmode=xml`;
+    } else if (refType === 'doi') {
+      url = `https://api.crossref.org/works/${refId}`;
+    }
+    
+    try {
+      const fetch = (await import('node-fetch')).default;
+      response = await fetch(url);
+      text = await response.text();
+    } catch (error) {
+      console.error('Fetch error:', error);
+      return Promise.reject('Failed to fetch data');
+    }
 
-    // Fetch response using node-fetch
-    const response = await (await (await import('node-fetch')).default(url)).text();
-    return new Promise((resolve, reject) => {
-      xml2js.parseString(response, (err, result) => {
-        if (err) {
-          reject('Error parsing XML');
-          console.error(err);
-        } else {
-          try {
-            const year = result.PubmedArticleSet.PubmedArticle[0].MedlineCitation[0].Article[0].Journal[0].JournalIssue[0].PubDate[0].Year[0];
-            resolve(year);
-          } catch (parseError) {
-            reject('Error extracting publication year');
+    if (refType === 'pmid') {
+      return new Promise((resolve, reject) => {
+        xml2js.parseString(text, (err, result) => {
+          if (err) {
+            reject('Error parsing XML');
+          } else {
+            try {
+              const year = result.PubmedArticleSet.PubmedArticle[0].MedlineCitation[0].Article[0].Journal[0].JournalIssue[0].PubDate[0].Year[0];
+              resolve(year);
+            } catch (parseError) {
+              reject('Error extracting publication year');
+            }
           }
-        }
+        });
       });
-    });
+    } else if (refType === 'doi') {
+      try {
+        const json = JSON.parse(text);
+        const year = json.message['published-print']?.['date-parts'][0][0] || json.message['published-online']?.['date-parts'][0][0];
+        return Promise.resolve(year);
+      } catch (parseError) {
+        console.error('Error parsing JSON:', parseError);
+        return Promise.reject('Error extracting publication year from DOI');
+      }
+    }
   };
 
   limiter.schedule(fetchPublicationYear)
