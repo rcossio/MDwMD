@@ -1,5 +1,31 @@
 [
     {
+        "accessionNumber": "P00766",
+        "experimentalDiffusionCoefficient": [
+            31.5,
+            94.80000000000001,
+            84.0
+        ],
+        "calculatedDiffusionCoefficient": 93.79
+    },
+    {
+        "accessionNumber": "P00974",
+        "experimentalDiffusionCoefficient": [
+            129.0,
+            144.0
+        ],
+        "calculatedDiffusionCoefficient": 133.1
+    },
+    {
+        "accessionNumber": "P61823",
+        "experimentalDiffusionCoefficient": [
+            117.0,
+            119.0,
+            106.8
+        ],
+        "calculatedDiffusionCoefficient": 107.9
+    },
+    {
         "accessionNumber": "P01308",
         "experimentalDiffusionCoefficient": [
             111.0,
@@ -65,5 +91,41 @@
             66.77
         ],
         "calculatedDiffusionCoefficient": 67.0
+    },
+    {
+        "accessionNumber": "P00336",
+        "experimentalDiffusionCoefficient": [
+            50.8
+        ],
+        "calculatedDiffusionCoefficient": 50.54
+    },
+    {
+        "accessionNumber": "P00339",
+        "experimentalDiffusionCoefficient": [
+            52.5
+        ],
+        "calculatedDiffusionCoefficient": 49.89
+    },
+    {
+        "accessionNumber": "P01267",
+        "experimentalDiffusionCoefficient": [
+            24.900000000000002
+        ],
+        "calculatedDiffusionCoefficient": 30.46
+    },
+    {
+        "accessionNumber": "P00571",
+        "experimentalDiffusionCoefficient": [
+            102.0
+        ],
+        "calculatedDiffusionCoefficient": 90.98
+    },
+    {
+        "accessionNumber": "P08246",
+        "experimentalDiffusionCoefficient": [
+            100.9,
+            89.80000000000001
+        ],
+        "calculatedDiffusionCoefficient": 92.3
     }
 ]

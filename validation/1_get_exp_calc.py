@@ -13,7 +13,7 @@ hydropro_calcs = db['hydropro_calcs']
 
 # Query the "data_from_experiments" collection
 query = {
-    "species": "9606",
+    "species": {"$in": ["9606", "9823","9913"]},
     "active": True,
     "$and": [
         {"pdbStructures": {"$ne": []}},  # Not an empty array

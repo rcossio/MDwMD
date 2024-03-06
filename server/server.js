@@ -33,7 +33,8 @@ const diffusionSchema = new mongoose.Schema({
   timestamp: String,
   userName: String,
   active: Boolean,
-  supersededBy: { type: mongoose.Schema.Types.ObjectId }
+  supersededBy: { type: mongoose.Schema.Types.ObjectId },
+  pdbStructures: [String]
 });
 
 // Create Mongoose Model
@@ -52,7 +53,7 @@ app.post('/update-data', async (req, res) => {
   const {data, replacedEntry} = req.body;
 
   try {
-    const newEntryId = await DiffusionData.create({...data, active: true}); 
+    const newEntryId = await DiffusionData.create({...data, active: true, pdbStructures: []}); 
     if(replacedEntry){
       await DiffusionData.updateOne({_id: replacedEntry}, { $set: { supersededBy: newEntryId, active: false } });
     }

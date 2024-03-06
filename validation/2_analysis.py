@@ -56,14 +56,14 @@ plt.legend()
 plt.grid(True)
 
 # Save plot
-plt.savefig('/home/radossio/MDwMD/validation_set/plot3.png', bbox_inches='tight')
+plt.savefig('plot3.png', bbox_inches='tight')
 
 
 
 
 # Plotting the model
 plt.figure(figsize=(8, 8))  # Adjust figure size to make it square
-plt.plot(x_range, y_pred_range, 'g-', label='Regression Line', zorder=4)
+plt.plot(x_range, x_range, 'g-', label='Regression Line', zorder=4)
 
 # Scatter plot for y_means vs. x_predictions to show the relationship
 plt.scatter(x_predictions, y_means, marker='o', color='blue', edgecolor='black', label='Data Points', zorder=5)
