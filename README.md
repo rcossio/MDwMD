@@ -37,16 +37,20 @@ The project is organized into the following directories, each containing relevan
 
 - **Data Loading and Filtering**: Address the issue of data loading and filtering where old entries interfere with new, filtered entries. Implementing `AbortController` is proposed as a solution.
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
+- **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
+- **PDB linking**: There is no current way of linking the PDBs to the complexes with a front-end. Think of a way.
 
 ### HYDROPRO
 
 - **PDB preparation**: Since HYDROPRO counts non-H atoms from HETATM, most common co-crystalised molecules should be filtered out
 - **Crystal waters**: Crystal waters could be part of the system or not, hence we can leave them of remove them. Both situations must be tested to see wich lead to less error.
+- **Molecular weight estimation**: (optional) The script that estimates molecular weight gives different results than PDB, it would be nice to reproduce what they calculated.
 
 ### Validation
 
 - **Error estimation**: Right now each complex (with possibly multiple experiments) have a single PDB linked. We need to calculate the error associated to each PDB (hence we must treat different PDBs as different samples for the error)
 - **Decide experiment outliers**: Some experiments might have outliers. We must stablish criteria to remove them from the DB.
+- **Data quantity**: We don't have enough data to have a respectable validation set.
 
 ## Conclusion
 
