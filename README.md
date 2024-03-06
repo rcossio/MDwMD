@@ -16,14 +16,22 @@ The project is organized into the following directories, each containing relevan
 - **server**: Contains the web application for database access.
 - **data**: Reserved for initial data and processing scripts, currently unused.
 - **validation**: Scripts to evaluate the performance of the modelling strategies
-- **hydropro**: Houses scripts for running HydroPRO calculations.
+- **hydropro**: Houses scripts for running HYDROPRO calculations.
 - **md**: Contains scripts for conducting molecular dynamics simulations.
 
 ## Next Steps 
 
+### Concepts
+- **Use cases**: Identity use cases of the diffucion coefficient of proteins so they can be presented to the community
+
 ### Database
 
 - **PMID Information Table**: Implement a static collection containing PMID information to bypass slow API request times due to frequency limitations of NCBI e-utils.
+
+### Back-end
+
+- **Good practices**: The project started with a MVP, but we need to apply good programming practices in the backend to have a modular and scalable back-end.
+- **Upload to AWS**: Use AWS EC2
 
 ### Front-end
 
@@ -33,8 +41,12 @@ The project is organized into the following directories, each containing relevan
 ### HYDROPRO
 
 - **PDB preparation**: Since HYDROPRO counts non-H atoms from HETATM, most common co-crystalised molecules should be filtered out
-
 - **Crystal waters**: Crystal waters could be part of the system or not, hence we can leave them of remove them. Both situations must be tested to see wich lead to less error.
+
+### Validation
+
+- **Error estimation**: Right now each complex (with possibly multiple experiments) have a single PDB linked. We need to calculate the error associated to each PDB (hence we must treat different PDBs as different samples for the error)
+- **Decide experiment outliers**: Some experiments might have outliers. We must stablish criteria to remove them from the DB.
 
 ## Conclusion
 

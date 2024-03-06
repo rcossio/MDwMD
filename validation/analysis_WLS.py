@@ -1,4 +1,7 @@
 
+# Unsused script. It performs a weighted least squares (WLS) regression on the data and plots the results.
+# But a normal linear regression is enough for the data.
+
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.pyplot as plt
