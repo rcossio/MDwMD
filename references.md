@@ -1,3 +1,5 @@
+# References
+
 ### Applications
 
 - **Half life estimation in tissue**: Here they estimated the half-life of rhNGF in brain tissue to be 45min. Krewson, Christine E., and W. Mark Saltzman. "Transport and elimination of recombinant human NGF during long-term delivery to the brain." Brain research 727.1-2 (1996): 169-181. https://www.sciencedirect.com/science/article/pii/0006899396003782
@@ -21,3 +23,17 @@ https://www.cell.com/biophysj/fulltext/S0006-3495(11)00776-4
 - **Shell model**: Explains the shell model.
 de la Torre, José García, María L. Huertas, and Beatriz Carrasco. "Calculation of hydrodynamic properties of globular proteins from their atomic-level structure." Biophysical journal 78.2 (2000): 719-730.
 https://www.cell.com/fulltext/S0006-3495(00)76630-6
+
+### Articles with experimental diffusion values
+
+- **10.1016/S0006-3495(00)76630-6**: Main HYDROPRO calibration set. https://www.cell.com/fulltext/S0006-3495(00)76630-6
+- **10.1021/ct600062y**: Used to calibrate HYDROPRO. https://pubs.acs.org/doi/10.1021/ct600062y
+- **10.1002/mabi.200900474**: Used to calibrate HYDROPRO. https://onlinelibrary.wiley.com/doi/10.1002/mabi.200900474
+- **10.1107/S0021889897003336**: https://onlinelibrary.wiley.com/doi/abs/10.1107/S0021889897003336
+- **10.1002/jcc.21939**: Only 4 values. https://onlinelibrary.wiley.com/doi/full/10.1002/jcc.21939
+- **10.1126/science.124.3235.1293**: Only 3 somatotropins (one already in DB). https://sci-hub.et-fine.com/10.1126/science.124.3235.1293
+- **10.1152/jn.00352.2004**:Hydrodynamic radii obtained from diffusion coefficient. https://journals.physiology.org/doi/epdf/10.1152/jn.00352.2004
+- **BioMThermDB**: DB of thermodynamic properties of proteins (browse diffusion coefficient). https://phys-biol-modeling.fkkt.uni-lj.si/
+
+
+

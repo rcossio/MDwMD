@@ -22,7 +22,8 @@ The project is organized into the following directories, each containing relevan
 ## Next Steps 
 
 ### Concepts
-- **Use cases**: Identity use cases of the diffucion coefficient of proteins so they can be presented to the community
+- **BioMThermDB 1.0**: Understand similarities and differences with this DB to provide a better solution to the community. Also find how was BioMThermDB built, so you can learn and leverage your methods from theirs.
+- **Use cases**: Identity use cases of the diffucion coefficient of proteins so they can be presented to the community.
 
 ### Database
 
