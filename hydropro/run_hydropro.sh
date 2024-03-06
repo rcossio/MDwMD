@@ -13,23 +13,29 @@ echo "pdbCode,diffusionCoefficient,estimatedMolecularWeight" > results.csv
 while IFS= read -r pdbCode; do
   # Create a directory for the pdbCode within the results directory
   mkdir -p "${results_dir}/${pdbCode}"
-  curl -o "${results_dir}/${pdbCode}/${pdbCode}.pdb1.gz" "https://files.rcsb.org/download/${pdbCode}.pdb1.gz"
-  gzip -d "${results_dir}/${pdbCode}/${pdbCode}.pdb1.gz"
-  mv "${results_dir}/${pdbCode}/${pdbCode}.pdb1" "${results_dir}/${pdbCode}/${pdbCode}.pdb"
+  cd "${results_dir}/${pdbCode}"
+  
+  # Download the PDB file
+  curl -o $pdbCode.pdb1.gz "https://files.rcsb.org/download/${pdbCode}.pdb1.gz"
+  gzip -d $pdbCode.pdb1.gz
+  mv $pdbCode.pdb1 $pdbCode.pdb
 
+  # Remove hydrogen, deuterium, water and other non-atom lines from the PDB file
+  # HYDROPRO counts HETATM for the calculation
+  grep -v "          H" $pdbCode.pdb | grep -v "          D" | grep -v " HOH" | grep -v " DOD" | grep -E "MODEL|ATOM|TER|HETATM|ENDMDL|END" > "${pdbCode}_clean.pdb"
 
   # Create the input.dat file with the specified template
-  cat > "${results_dir}/${pdbCode}/hydropro.dat" <<EOF
+  cat > hydropro.dat <<EOF
 ${pdbCode}          !nameOfMolecule
 result              !nameForOutputFile
-${pdbCode}.pdb      !pdbFile
+${pdbCode}_clean.pdb  !pdbFile
 1                   !calculationType
 2.9,                !AER (radius of primary elements)
 -1,                 !NSIG
 20.0,               !temperature (centigrade)
 0.01,               !ETA (viscosity of the solvent in poises)
-50000.,             !molecularWeight
-0.700,              !partialSpecificVolume (cm3/g)
+50000.,             !dummy molecularWeight
+0.700,              !dummy partialSpecificVolume (cm3/g)
 1.0,                !solventDensity (g/cm3)
 0,                  !numberOfValuesOfQ (try0)
 0,                  !numberOfIntervals (try0)

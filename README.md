@@ -15,19 +15,26 @@ The project is organized into the following directories, each containing relevan
 
 - **server**: Contains the web application for database access.
 - **data**: Reserved for initial data and processing scripts, currently unused.
+- **validation**: Scripts to evaluate the performance of the modelling strategies
 - **hydropro**: Houses scripts for running HydroPRO calculations.
 - **md**: Contains scripts for conducting molecular dynamics simulations.
 
-## Next Steps and Expansion Opportunities
+## Next Steps 
 
-### Improvements
+### Database
 
 - **PMID Information Table**: Implement a static collection containing PMID information to bypass slow API request times due to frequency limitations of NCBI e-utils.
 
-### Bug Fixes
+### Front-end
 
 - **Data Loading and Filtering**: Address the issue of data loading and filtering where old entries interfere with new, filtered entries. Implementing `AbortController` is proposed as a solution.
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
+
+### HYDROPRO
+
+- **PDB preparation**: Since HYDROPRO counts non-H atoms from HETATM, most common co-crystalised molecules should be filtered out
+
+- **Crystal waters**: Crystal waters could be part of the system or not, hence we can leave them of remove them. Both situations must be tested to see wich lead to less error.
 
 ## Conclusion
 
