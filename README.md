@@ -53,6 +53,22 @@ The project is organized into the following directories, each containing relevan
 - **Decide experiment outliers**: Some experiments might have outliers. We must stablish criteria to remove them from the DB.
 - **Data quantity**: We don't have enough data to have a respectable validation set.
 
+
+## Insights from Other DBs
+
+- **Data scattering**: "Data is scattered and in that way is useless", a phase I liked.
+- **Context**: Provides contextual information about experiments, including pH levels, concentration and temperature.
+- **Updates** We should displaying the latest update status prominently on the main page to inform users of the current data accuracy.
+- **Experimental diversity**: Covers a variety of experimental conditions, such as different pH levels and protein families, we can focus on protein families, species, molecular weights and distribution of diffusion coefficients. I dont feel confident to include methods, since i dont understand them.
+- **Promoting diffusion**: The paper identifies diffusion as the least reported feature, its and opportunity to explain why our DB is relevant.
+- **CSV**: we should add the option to download data in CSV format.
+- **Data echoing**: We can include their data to make a whole DB (i.e. the data is included as secondary references, or curated to first). Is this scriptable? We can also add the data from Bionumbers with the indexed terms "diffusion", and "diffusion coefficient".
+- **Data collection and curation**: Explain how data was treated to show it is trustable. Explain the main keywords used in google scholar searchs. MPTherm explains this well
+- **Diluted diffusion**: We have to clearly state that the DB is about diluted solution diffusion (<10mg/ml), preferably infinite diffusion. 
+- **Navbars**: Home (overview, updates, cite us), Browse, DB statistics, Tutorial, Upload data   
+
+
+
 ## Conclusion
 
 This project represents a foundational step towards simplifying the acquisition and estimation of self-diffusion coefficients for proteins, offering significant potential for scientific research and analysis. Through ongoing development and community collaboration, we aim to enhance its utility and impact within the scientific community.
