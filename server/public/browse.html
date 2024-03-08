@@ -118,6 +118,7 @@
           <th class="small-cell">Mass (kDa)</th>
           <th class="large-cell">Comment</th>
           <th>PDB codes</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="searchResults"></tbody>
@@ -192,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${transformedRow.mass}</td>
                         <td class="large-cell">${transformedRow.comment}</td>
                         <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
+                        <td>${transformedRow.manageIcon}</td>
                     `;
                     resultsBody.appendChild(tr);
                 });
@@ -227,6 +229,7 @@ function filterResultsBySpecies(speciesName, results) {
                 <td>${transformedRow.mass}</td>
                 <td class="medium-cell">${transformedRow.comment}</td>
                 <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
+                <td>${transformedRow.manageIcon}</td>
             `;
             resultsBody.appendChild(tr);
         });
@@ -271,7 +274,7 @@ async function transformDataRow(row) {
 
     // Return the new object with formatted/display properties
     return {
-        copyIcon: `<i class="fas fa-copy copy-icon" onclick="copyToClipboard('${row._id}', this)"></i>`,
+        copyIcon: `<i class="fas fa-copy" onclick="copyToClipboard('${row._id}', this)"></i>`,
         proteinName: row.proteinName || "",
         speciesLink: `<a href="https://www.uniprot.org/taxonomy/${row.species}">${row.species || ""}</a>`,
         accessionNumberLink: `<a href="https://www.uniprot.org/uniprotkb/${row.accessionNumber}/entry">${row.accessionNumber || ""}</a>`,
@@ -281,7 +284,8 @@ async function transformDataRow(row) {
         reference: `${referenceString} <a href="${referenceURL}">${row.referenceId || ""}</a> (${publicationYear})`,
         mass: mass,
         comment: row.comment || "",
-        pdbCodesHTML: pdbCodesHTML
+        pdbCodesHTML: pdbCodesHTML,
+        manageIcon: `<a href="/manage.html?id=${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>`
     };
 }
 

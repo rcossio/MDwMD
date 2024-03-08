@@ -34,7 +34,8 @@ const diffusionSchema = new mongoose.Schema({
   userName: String,
   active: Boolean,
   supersededBy: { type: mongoose.Schema.Types.ObjectId },
-  pdbStructures: [String]
+  pdbStructures: [String],
+  discardedPdbStructures: [{ pdbId: String, reason: String, _id: false }]
 });
 
 // Create Mongoose Model
@@ -49,11 +50,11 @@ app.get('/', (req, res) => {
 });
 
 // Handle POST Request
-app.post('/update-data', async (req, res) => {
+app.post('/manage-data', async (req, res) => {
   const {data, replacedEntry} = req.body;
 
   try {
-    const newEntryId = await DiffusionData.create({...data, active: true, pdbStructures: []}); 
+    const newEntryId = await DiffusionData.create({...data, active: true, timestamp: new Date().toISOString()}); 
     if(replacedEntry){
       await DiffusionData.updateOne({_id: replacedEntry}, { $set: { supersededBy: newEntryId, active: false } });
     }
@@ -62,6 +63,16 @@ app.post('/update-data', async (req, res) => {
       console.error('Error saving data:', err);
       res.status(500).send('Error saving data');
   }
+});
+
+// Handle PUT Request
+app.put('/manage-data', async (req, res) => {
+  const {id, data} = req.body;
+  DiffusionData.updateOne({_id: id}, { $set: data })
+  .then(() => { res.send({ status: 'success', payload: 'Data updated in MongoDB' }); })
+  .catch(err => { 
+    console.error('Error updating data:', err)
+    res.status(500).send('Error updating data'); })
 });
 
 // Handle GET Request for Search
@@ -107,6 +118,23 @@ app.get('/search', (req, res) => {
   .catch(err => {
     console.error('Error during search:', err);
     res.status(500).send('Error during search');
+  });
+});
+
+// Handle GET Request to get by id
+app.get('/find-by-id/:id', (req, res) => {
+  const { id } = req.params;
+
+  DiffusionData.findById(id)
+  .then(data => {
+    res.json({
+      status: 'success',
+      payload: data
+    });
+  })
+  .catch(err => {
+    console.error('Error during findById:', err);
+    res.status(500).send('Error during findById');
   });
 });
 

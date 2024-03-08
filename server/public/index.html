@@ -155,12 +155,12 @@
         <input type="number" class="form-control" id="diffusionCoefficient" placeholder="Coefficient" value="">
       </div>
       <div class="col">
-        <label for="error" class="form-label">Error</label>
-        <input type="number" class="form-control" id="error" placeholder="Error" value="">
+        <label for="diffusionError" class="form-label">Error</label>
+        <input type="number" class="form-control" id="diffusionError" placeholder="Error" value="">
       </div>
       <div class="col">
-        <label for="unit" class="form-label">Unit<span class="required-asterisk">*</span></label>
-        <select class="form-control" id="unit">
+        <label for="diffusionUnit" class="form-label">Unit<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="diffusionUnit">
           <option value="" selected>Choose...</option>
           <option value="um2/s">um²/s</option>
           <option value="1e-7 cm2/s">10^(-7) cm²/s</option>
@@ -208,8 +208,33 @@
       <label for="comment" class="form-label">Additional comments</label>
       <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
     </div>
-    
-    <!-- Replaces another entry -->
+
+    <!-- Manages PDBs -->
+    <div class="form-group mb-2">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="managePdbsCheckbox">
+        <label class="custom-control-label" for="managePdbsCheckbox">Manage PDBs</label>
+      </div>
+      <div class="form-row align-items-center mb-2 d-none" id="validPdbDiv">
+        <div class="col-3">
+          <label for="pdbStructures" class="form-label">Valid PDBs</label>
+        </div>
+        <div class="col-9">
+          <input type="text" class="form-control" id="pdbStructures" placeholder="4PTI, 8CAT, ..." value="">
+        </div>
+      </div>
+      <div class="form-row align-items-center mb-2 d-none" id="discardedPdbDiv">
+        <div class="col-3">
+          <label for="discardedPdbStructures" class="form-label">Discarded PDBs</label>
+        </div>
+        <div class="col-9">
+          <input type="text" class="form-control" id="discardedPdbStructures" placeholder="1MBO:mutated, 4GPD: wrong aggregation, ..." value="">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Replaces another entry --> 
     <div class="form-group mb-2">
       <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="replaceEntryCheckbox">
@@ -218,6 +243,7 @@
       <input type="text" class="form-control d-none" id="replacedEntry" placeholder="Entry ID..." value="">
     </div>
 
+    <!-- Submit button -->
     <div class="form-group text-center">
         <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
     </div>
@@ -320,8 +346,8 @@
 
           const formData = {
             diffusionCoefficient: document.getElementById('diffusionCoefficient').value || null,
-            diffusionError: document.getElementById('error').value || null,
-            diffusionUnit: document.getElementById('unit').value || null,
+            diffusionError: document.getElementById('diffusionError').value || null,
+            diffusionUnit: document.getElementById('diffusionUnit').value || null,
             manualProcessing: document.getElementById('manualProcessing').value || null,
             otherManualProcessing: document.getElementById('otherManualProcessing').value || null,
             method: document.getElementById('method').value || null,
@@ -333,9 +359,18 @@
             referenceIdType: isDoi ? 'doi' : 'pmid',
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
-            timestamp: new Date().toISOString(),
             userName: userName || 'Anonymous',
+            pdbStructures: document.getElementById('pdbStructures').value.split(',').map(s => s.trim().toUpperCase()) || null,
+            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').map((input) => {
+              data = input.split(':')
+              return {
+                pdbId: data[0].trim().toUpperCase(),
+                reason: data[1].trim()
+              }
+            }) || null
           };
+        
+          // Entry that is replaced by this one, in POST is a separate field
           const replacedEntry = document.getElementById('replacedEntry').value || null
 
 
@@ -354,7 +389,7 @@
           }
   
           // Send data to server
-          fetch('/update-data', {
+          fetch('/manage-data', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -365,7 +400,6 @@
               }),
           })
           .then(response => {
-              console.log(response.body);
               // Show toast message in green
               $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
               $('#submissionToast').find('.toast-body').css('background-color', 'lightcyan');
@@ -413,6 +447,20 @@
       }
 
       toggleReplaceEntryVisibility();
+
+      function toggleMangagePdbVisibility() {
+        $('#managePdbsCheckbox').change(function() {
+            if ($(this).is(':checked')) {
+                $('#validPdbDiv').removeClass('d-none');
+                $('#discardedPdbDiv').removeClass('d-none');
+            } else {
+                $('#validPdbDiv').addClass('d-none');
+                $('#discardedPdbDiv').addClass('d-none');
+            }
+        });
+      }
+
+      toggleMangagePdbVisibility();
 
   });
 </script>
