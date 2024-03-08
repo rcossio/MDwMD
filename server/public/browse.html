@@ -117,7 +117,8 @@
           <th class="medium-cell">PMID/ DOI</th>
           <th class="small-cell">Mass (kDa)</th>
           <th class="large-cell">Comment</th>
-          <th>PDB codes</th>
+          <th class="pdb-code-cell">PDBs</th>
+          <th class="pdb-code-cell">Unk. PDBs</th>
           <th></th>
         </tr>
       </thead>
@@ -192,7 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="medium-cell">${transformedRow.reference}</td>
                         <td>${transformedRow.mass}</td>
                         <td class="large-cell">${transformedRow.comment}</td>
-                        <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
+                        <td class="pdb-code-cell">${transformedRow.pdbCodes}</td>
+                        <td class="pdb-code-cell">${transformedRow.unknownPdbCodes}</td>
                         <td>${transformedRow.manageIcon}</td>
                     `;
                     resultsBody.appendChild(tr);
@@ -228,7 +230,8 @@ function filterResultsBySpecies(speciesName, results) {
                 <td class="medium-cell">${transformedRow.reference}</td>
                 <td>${transformedRow.mass}</td>
                 <td class="medium-cell">${transformedRow.comment}</td>
-                <td class="pdb-code-cell">${transformedRow.pdbCodesHTML}</td>
+                <td class="pdb-code-cell">${transformedRow.pdbCodes}</td>
+                <td class="pdb-code-cell">${transformedRow.unknownPdbCodes}</td>
                 <td>${transformedRow.manageIcon}</td>
             `;
             resultsBody.appendChild(tr);
@@ -250,7 +253,7 @@ async function transformDataRow(row) {
                 '';
 
     // Fetch additional info asynchronously
-    const { pdbCodes, mass } = await fetchUniprotInfo(row.accessionNumber);
+    const { uniprotPdbCodes, mass } = await fetchUniprotInfo(row.accessionNumber);
     const publicationYear = await fetchPublicationYear(row.referenceId,row.referenceIdType);
 
     // Construct the reference string
@@ -270,7 +273,12 @@ async function transformDataRow(row) {
         "";
 
     // Generate PDB codes HTML
-    const pdbCodesHTML = pdbCodes.map(pdbCode => `<a href="https://www.rcsb.org/structure/${pdbCode}/">${pdbCode}</a>`).join(', ');
+    const pdbCodes = row.pdbStructures.map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ')
+
+    const unknownPdbCodes = uniprotPdbCodes
+        .filter(code => !row.pdbStructures.includes(code))
+        .filter(code => !row.discardedPdbStructures.map(s => s.pdbId).includes(code))
+        .map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ');
 
     // Return the new object with formatted/display properties
     return {
@@ -282,9 +290,10 @@ async function transformDataRow(row) {
         diffusionError: diffusionErrorFormatted,
         methodDisplay: `${methodValue} ${manualProcessingValue}`,
         reference: `${referenceString} <a href="${referenceURL}">${row.referenceId || ""}</a> (${publicationYear})`,
-        mass: mass,
+        mass,
         comment: row.comment || "",
-        pdbCodesHTML: pdbCodesHTML,
+        pdbCodes,
+        unknownPdbCodes,
         manageIcon: `<a href="/manage.html?id=${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>`
     };
 }
@@ -331,7 +340,7 @@ async function fetchUniprotInfo(accessionNumbers) {
 
     // Return the results with mass and length as comma-separated strings
     return {
-        pdbCodes: combinedPdbCodes,
+        uniprotPdbCodes: combinedPdbCodes,
         mass: massValues.join(', '),
         length: lengthValues.join(', '),
     };

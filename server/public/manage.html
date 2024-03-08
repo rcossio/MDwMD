@@ -84,7 +84,7 @@
 <body>
     <div class="header">
       <nav class="navbar">
-          <a class="navbar-item navbar-selected" href="#">New evidence</a>
+          <a class="navbar-item navbar-selected" href="/">New evidence</a>
           <a class="navbar-item" href="/browse.html">Browse</a>
       </nav>
       <div class="ml-auto">Signed as <strong id="usernameDisplay">Anonymous</strong></div>
@@ -366,8 +366,8 @@
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
             userName: userName || 'Anonymous',
-            pdbStructures: document.getElementById('pdbStructures').value.split(',').map(s => s.trim().toUpperCase()) || null,
-            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').map((input) => {
+            pdbStructures: document.getElementById('pdbStructures').value.split(',').filter(s => s.trim()).map(s => s.trim().toUpperCase()) || null,
+            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').filter(s => s.trim()).map((input) => {
               data = input.split(':')
               return {
                 pdbId: data[0].trim().toUpperCase(),
@@ -413,7 +413,7 @@
               // Show toast message in green
               $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
               $('#submissionToast').find('.toast-body').css('background-color', 'lightcyan');
-              $('.toast-body').text(`Submitted ${$('#proteinName').val()}`);
+              $('.toast-body').text(`Updated ${$('#proteinName').val()}`);
               $('#submissionToast').toast('show');
               // Clear form fields
               clearFormFields();
@@ -479,7 +479,6 @@
         .then(data => {
           if (data.status === 'success') {
             const entry = data.payload;
-            console.log(entry)
             // Populate the form fields with the retrieved data
             $('#diffusionCoefficient').val(entry.diffusionCoefficient);
             $('#diffusionError').val(entry.diffusionError);
