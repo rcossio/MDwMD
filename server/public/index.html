@@ -118,6 +118,7 @@
           <option value="" selected>Choose...</option>
           <option value="primary">Main reference (experiment)</option>
           <option value="secondary">Secondary reference (tables, lists or citations)</option>
+          <option value="surrogate_primary">Best Available Reference (secondary but main is unreachable)</option>
         </select>
       </div> 
     </div>
@@ -360,8 +361,8 @@
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
             userName: userName || 'Anonymous',
-            pdbStructures: document.getElementById('pdbStructures').value.split(',').map(s => s.trim().toUpperCase()) || null,
-            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').map((input) => {
+            pdbStructures: document.getElementById('pdbStructures').value.split(',').filter(s => s.trim()).map(s => s.trim().toUpperCase()) || null,
+            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').filter(s => s.trim()).map((input) => {
               data = input.split(':')
               return {
                 pdbId: data[0].trim().toUpperCase(),

@@ -65,7 +65,7 @@
             max-width: 100px;
         }
 
-        #species-filter {
+        #species-filter #reference-type-filter {
            display: none;
         }
 
@@ -92,15 +92,21 @@
 
     <!-- Search Field -->
     <div class="form-inline">
-        <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-50" placeholder="Search by Protein Name or Accession Number">
+        <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-50" placeholder="Search by Protein Name, Accession Number, Pubmed ID ...">
         <input type="text" id="speciesInput" class="form-control mb-3 mr-2" placeholder="Filter by species ID">
         <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2">Search</button>
     </div>
   
-    <!-- Filter banner -->
+    <!-- Filter banner: Species -->
     <div id="species-filter" class="mt-3">
         <strong>Filter by species:</strong>
         <div id="speciesList"></div>
+    </div>
+
+    <!-- Filter banner: Reference type -->
+    <div id="reference-type-filter" class="mt-3">
+        <strong>Filter by reference type:</strong>
+        <div id="referenceTypeList"></div>
     </div>
 
     <!-- Results Table -->
@@ -156,18 +162,23 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(async data => {
             const results = data.payload.result;
-            const species = data.payload.species; // Extract species list from payload
+            const species = data.payload.species; 
+            const referenceTypes = data.payload.referenceTypes; 
+
             const resultsBody = document.getElementById('searchResults');
             const speciesList = document.getElementById('speciesList');
+            const referenceTypeList = document.getElementById('referenceTypeList');
             
             // Sort results by accessionNumber
             results.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
 
             document.getElementById('species-filter').style.display = 'block';
+            document.getElementById('reference-type-filter').style.display = 'block';
             document.getElementById('query-table').style.display = 'table';
 
             resultsBody.innerHTML = ''; // Clear previous results
             speciesList.innerHTML = ''; // Clear previous species list
+            referenceTypeList.innerHTML = ''; // Clear previous reference type list
 
             // Populate species filter
             species.forEach(speciesName => {
@@ -176,6 +187,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 speciesButton.className = 'btn btn-sm btn-outline-secondary mr-2 mb-2';
                 speciesButton.onclick = () => filterResultsBySpecies(speciesName, results);
                 speciesList.appendChild(speciesButton);
+            });
+
+            // Populate reference type filter
+            referenceTypes.forEach(referenceType => {
+                const referenceTypeButton = document.createElement('button');
+                referenceTypeButton.textContent = referenceType;
+                referenceTypeButton.className = 'btn btn-sm btn-outline-secondary mr-2 mb-2';
+                referenceTypeButton.onclick = () => filterResultsByReferenceType(referenceType, results);
+                referenceTypeList.appendChild(referenceTypeButton);
             });
 
             // Display results
@@ -239,6 +259,39 @@ function filterResultsBySpecies(speciesName, results) {
     }   
 }
 
+function filterResultsByReferenceType(referenceType, results) {
+    const filteredResults = results.filter(result => result.referenceType === referenceType);
+        
+    // Sort filtered results by accessionNumber
+    filteredResults.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
+
+    const resultsBody = document.getElementById('searchResults');
+    resultsBody.innerHTML = ''; // Clear current results
+    
+    // Display filtered results
+    for (const row of filteredResults) {
+        transformDataRow(row).then(transformedRow => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${transformedRow.copyIcon}</td>
+                <td class="small-cell">${transformedRow.proteinName}</td>
+                <td class="small-cell">${transformedRow.speciesLink}</td>
+                <td class="small-cell">${transformedRow.accessionNumberLink}</td>
+                <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
+                <td class="small-cell">${transformedRow.diffusionError}</td>
+                <td class="medium-cell">${transformedRow.methodDisplay}</td>
+                <td class="medium-cell">${transformedRow.reference}</td>
+                <td>${transformedRow.mass}</td>
+                <td class="medium-cell">${transformedRow.comment}</td>
+                <td class="pdb-code-cell">${transformedRow.pdbCodes}</td>
+                <td class="pdb-code-cell">${transformedRow.unknownPdbCodes}</td>
+                <td>${transformedRow.manageIcon}</td>
+            `;
+            resultsBody.appendChild(tr);
+        });
+    }   
+}
+
 
 // DTO function to encapsulate all transformation logic
 async function transformDataRow(row) {
@@ -257,7 +310,11 @@ async function transformDataRow(row) {
     const publicationYear = await fetchPublicationYear(row.referenceId,row.referenceIdType);
 
     // Construct the reference string
-    const referenceString = row.referenceType === 'primary' ? '🔸' : '';
+    const referenceString = row.referenceType === 'primary' ? 
+        '🔸' :
+        row.referenceType === 'surrogate_primary'? 
+        '🔻':
+        '';
     const referenceURL = row.referenceIdType === 'pmid' ? 
         `https://pubmed.ncbi.nlm.nih.gov/${row.referenceId}/` : 
         `https://doi.org/${row.referenceId}`;
@@ -390,6 +447,21 @@ document.getElementById('downloadBtn').addEventListener('click', function() {
 
     const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
     downloadTxtFile(txtContent);
+});
+
+// Trigger search when Enter key is pressed
+document.getElementById('searchInput').addEventListener('keypress', function(event) {
+    if (event.keyCode === 13) { // 13 is the keycode for Enter
+        event.preventDefault(); // Prevent the default action to stop form submission
+        document.getElementById('searchBtn').click(); // Trigger search button click
+    }
+});
+
+document.getElementById('speciesInput').addEventListener('keypress', function(event) {
+    if (event.keyCode === 13) { // Check if Enter key is pressed
+        event.preventDefault(); // Stop the form from submitting
+        document.getElementById('searchBtn').click(); // Click the search button programmatically
+    }
 });
 
 function downloadTxtFile(text) {

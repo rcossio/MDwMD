@@ -33,6 +33,8 @@ Wang, Junmei, and Tingjun Hou. "Application of molecular dynamics simulations in
 Bullerjahn, Jakob Tómas, Sören von Bülow, and Gerhard Hummer. "Optimal estimates of self-diffusion coefficients from molecular dynamics simulations." The Journal of Chemical Physics 153.2 (2020).
 https://pubs.aip.org/aip/jcp/article/153/2/024116/76262/Optimal-estimates-of-self-diffusion-coefficients
 
+- **Diffusion of BPTI and Lysozyme**: (check post-citations) 10.1006/jmbi.1994.1172 
+
 
 ### HYDROPRO references:
 
@@ -57,4 +59,12 @@ https://www.cell.com/fulltext/S0006-3495(00)76630-6
 - **10.1002/bip.10023**: An NMR study with 4 proteins. https://pubmed.ncbi.nlm.nih.gov/11787001/
 - **10.1038/nmat1489**: https://www.nature.com/articles/nmat1489
 - **10.1073/pnas.101109798**: they measure some dilute and concentrated D values. https://www.pnas.org/doi/abs/10.1073/pnas.101109798
-
+- **10.1002/bip.360310203**: Like 7 proteins
+- **10.1016/s0065-3233(08)60232-6**: Like 30 proteins
+- **10.1038/227242a0**: hemocyanin
+- **10.1002/bip.360310203**: varias
+- **Handbook**: This has about 1000 proteins. Smith M.H. Molecular weights of proteins and some other materials including sedimentation diffusion and frictional coefficients and partial specific volumes.in: Sober H.A. Handbook of Biochemistry. Selected Data for Molecular Biology. CRC Press,  Boca Raton, FL1970
+- **10.1042/bj0300528**: varias
+- **10.1016/0003-2697(84)90152-0**: algunas proteinas raras
+- **10.1038/1391051a0**: Svedberg, before the ultracentrifuge. Many references mixed for sedimentation and diffusion (hard to dig)
+- **10.1529/biophysj.105.078188**: many

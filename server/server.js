@@ -77,14 +77,15 @@ app.put('/manage-data', async (req, res) => {
 
 // Handle GET Request for Search
 app.get('/search', (req, res) => {
-  const { query,species } = req.query;
+  const { query, species } = req.query;
 
   let queryConditions = [
     { active: true },
     {
       $or: [
         { proteinName: new RegExp(query, 'i') },
-        { accessionNumber: new RegExp(query, 'i') }
+        { accessionNumber: new RegExp(query, 'i') },
+        { referenceId: new RegExp(query, 'i') }
       ]
     }
   ];
@@ -106,12 +107,17 @@ app.get('/search', (req, res) => {
     const species = new Set(data.map(item => item.species));
     const speciesList = Array.from(species).map(Number).sort((a, b) => a - b);    
 
+    // Extract referenceType from the results and create a unique list
+    const referenceTypes = new Set(data.map(item => item.referenceType));
+    const referenceTypesList = Array.from(referenceTypes).sort((a, b) => a.localeCompare(b));
+    
     // Send the response with both results and species list
     res.json({
       status: 'success',
       payload: {
         result: data,
-        species: speciesList
+        species: speciesList,
+        referenceTypes: referenceTypesList
       }
     });
   })

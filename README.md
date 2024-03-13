@@ -22,11 +22,11 @@ The project is organized into the following directories, each containing relevan
 ## Next Steps 
 
 ### Concepts
-- **BioMThermDB 1.0**: Understand similarities and differences with this DB to provide a better solution to the community. Also find how was BioMThermDB built, so you can learn and leverage your methods from theirs.
-- **Use cases**: Identity use cases of the diffucion coefficient of proteins so they can be presented to the community.
+- **Use cases**: Identity concrete use cases of the diffusion coefficient of proteins so they can be presented to the community.
 
 ### Database
 
+- **Load Data**: Follow HydroPro text to load enough diffusion data and linked PDBs so that you can make a good model.
 - **PMID Information Table**: Implement a static collection containing PMID information to bypass slow API request times due to frequency limitations of NCBI e-utils.
 
 ### Back-end
@@ -36,10 +36,9 @@ The project is organized into the following directories, each containing relevan
 
 ### Front-end
 
+- **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
 - **Data Loading and Filtering**: Address the issue of data loading and filtering where old entries interfere with new, filtered entries. Implementing `AbortController` is proposed as a solution.
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
-- **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
-- **PDB linking**: There is no current way of linking the PDBs to the complexes with a front-end. Think of a way.
 
 ### HYDROPRO
 

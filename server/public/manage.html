@@ -116,6 +116,7 @@
               <option value="" selected>Choose...</option>
               <option value="primary">Main reference (experiment)</option>
               <option value="secondary">Secondary reference (tables, lists or citations)</option>
+              <option value="surrogate_primary">Best Available Reference (secondary but main is unreachable)</option>
             </select>
           </div> 
         </div>
@@ -501,7 +502,7 @@
             // Handle checkbox states
             $('#manualEstimationCheckbox').prop('checked', !!entry.manualProcessing);
             $('#managePdbsCheckbox').prop('checked', !!(entry.pdbStructures || entry.discardedPdbStructures));
-            $('#replaceEntryCheckbox').prop('checked', !!entry.supersededBy);
+            $('#doiCheckbox').prop('checked', (entry.referenceIdType === 'doi'));
 
             // Show/hide fields based on checkbox states
             if ($('#manualEstimationCheckbox').is(':checked')) {
