@@ -1,8 +1,12 @@
 from pymongo.mongo_client import MongoClient
 import json
+import os
+from dotenv import load_dotenv
 
 # Establish a connection to the MongoDB database
-uri = "mongodb+srv://guest:4321guest@cluster0.hgqsmv1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+load_dotenv()
+uri = os.getenv('MONGO_URI')
+
 # Create a new client and connect to the server
 client = MongoClient(uri)
 db = client['diffusion_db']
@@ -13,11 +17,10 @@ hydropro_calcs = db['hydropro_calcs']
 
 # Query the "data_from_experiments" collection
 query = {
-    "species": {"$in": ["9606", "9823","9913"]},
     "active": True,
     "$and": [
-        {"pdbStructures": {"$ne": []}},  # Not an empty array
-        {"pdbStructures": {"$ne": ""}}   # Not an empty string
+        {"pdbStructures": {"$ne": []}},
+        {"pdbStructures": {"$ne": ""}}
     ]
 }
 documents = data_from_experiments.find(query)

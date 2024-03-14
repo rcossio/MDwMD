@@ -22,7 +22,7 @@ The project is organized into the following directories, each containing relevan
 ## Next Steps 
 
 ### Concepts
-- **Use cases**: Identity concrete use cases of the diffusion coefficient of proteins so they can be presented to the community.
+- **Use cases**: Identify concrete use cases of the diffusion coefficient of proteins so they can be presented to the community.
 
 ### Database
 
@@ -50,7 +50,10 @@ The project is organized into the following directories, each containing relevan
 
 - **Error estimation**: Right now each complex (with possibly multiple experiments) have a single PDB linked. We need to calculate the error associated to each PDB (hence we must treat different PDBs as different samples for the error)
 - **Decide experiment outliers**: Some experiments might have outliers. We must stablish criteria to remove them from the DB.
-- **Data quantity**: We don't have enough data to have a respectable validation set.
+- **Data quantity**: We may have enough data to have a respectable validation set. How much is enough?
+
+### Molecular dynamics
+- **Ligandless complexes**: Start by complex without ligand, they are easier
 
 
 ## Insights from Other DBs

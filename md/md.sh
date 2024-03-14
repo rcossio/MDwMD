@@ -5,13 +5,20 @@
 # I am trying to understand the mdp files needed for minimization, equilibration and production runs
 # I am trying to verify if the steps chosen are correct (min, NPT heat, NVT unrestraining, prod)
 
+
+# TO MIND:
+# Ligands need to be treated differently
+# grep LIG prot.pdb > lig.pdb
+# grep -v LIG prot.pdb > prot_solo.pdb
+
 export PATH="/opt/gromacs/2023.2/bin:$PATH"
 
 input="5PTI"
 
 # 1. Convert PDB to GROMACS format, selecting force field and water model
 gmx pdb2gmx -f "5PTI.pdb" -o 1.protein_prepared.gro -p topology.top -ff amber99sb -water tip3p -ignh -nobackup
-
+#Giorgia uses Charmm18 & TIP3P
+# Posre itp is created here?
 
 # 2. Define the simulation box
 gmx editconf -f 1.protein_prepared.gro -o 2.box_defined.gro -c -d 1.0 -bt cubic -nobackup
