@@ -10,6 +10,7 @@
 # Ligands need to be treated differently
 # grep LIG prot.pdb > lig.pdb
 # grep -v LIG prot.pdb > prot_solo.pdb
+# Use CGenFF to create the .str
 
 export PATH="/opt/gromacs/2023.2/bin:$PATH"
 

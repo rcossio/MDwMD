@@ -1,4 +1,4 @@
 *.png
 *.json
 unipd/
-*.env
+.env
