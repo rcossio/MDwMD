@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Database</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         .navbar {
             display: flex;
@@ -77,6 +77,9 @@
             display: none
         }
 
+        #advancedSearchBtn .fa-sliders {
+            transform: rotate(90deg); /* Rotates the icon 90 degrees */
+        }
     </style>
 </head>
 <body>
@@ -95,6 +98,7 @@
         <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-50" placeholder="Search by Protein Name, Accession Number, Pubmed ID ...">
         <input type="text" id="speciesInput" class="form-control mb-3 mr-2" placeholder="Filter by species ID">
         <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2">Search</button>
+        <button type="button" id="advancedSearchBtn" class="btn btn-primary mb-3 mr-2"><i class="fas fa-sliders"></i></button>
     </div>
   
     <!-- Filter banner -->
@@ -156,6 +160,25 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    document.getElementById('searchInput').addEventListener('keypress', function(event) {
+        if (event.keyCode === 13) { // 13 is the keycode for Enter
+            event.preventDefault(); // Prevent the default action to stop form submission
+            document.getElementById('searchBtn').click(); // Trigger search button click
+        }
+    });
+
+    document.getElementById('speciesInput').addEventListener('keypress', function(event) {
+        if (event.keyCode === 13) { // Check if Enter key is pressed
+            event.preventDefault(); // Stop the form from submitting
+            document.getElementById('searchBtn').click(); // Click the search button programmatically
+        }
+    });
+
+    document.getElementById('advancedSearchBtn').addEventListener('click', async function() {
+        alert('This feature is not implemented yet');
+    });
+
     document.getElementById('searchBtn').addEventListener('click', async function() {
         const query = document.getElementById('searchInput').value;
         const species = document.getElementById('speciesInput').value;
@@ -226,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error:', error));
     });
+
 });
 
 function filterResultsBySpecies(speciesName, results) {
@@ -294,8 +318,30 @@ function filterResultsByReferenceType(referenceType, results) {
     }   
 }
 
+function copyToClipboard(text, iconElement) {
+    navigator.clipboard.writeText(text).then(function() {
+        iconElement.className = 'fas fa-check';
+        iconElement.style.color = 'green';
 
-// DTO function to encapsulate all transformation logic
+        setTimeout(function() {
+            iconElement.className = 'fas fa-copy';
+            iconElement.style.color = ''; 
+        }, 2000); 
+    }).catch(function(err) {
+        console.error('Could not copy text:', err);
+    });
+}
+
+function downloadTxtFile(text) {
+    const element = document.createElement('a');
+    const file = new Blob([text], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "download.txt";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+    document.body.removeChild(element);
+}
+
 async function transformDataRow(row) {
     // Method processing
     const methodValue = row.method === 'Other' ? row.otherMethod : row.method;
@@ -405,21 +451,6 @@ async function fetchUniprotInfo(accessionNumbers) {
     };
 }
 
-
-function copyToClipboard(text, iconElement) {
-    navigator.clipboard.writeText(text).then(function() {
-        iconElement.className = 'fas fa-check';
-        iconElement.style.color = 'green';
-
-        setTimeout(function() {
-            iconElement.className = 'fas fa-copy';
-            iconElement.style.color = ''; 
-        }, 2000); 
-    }).catch(function(err) {
-        console.error('Could not copy text:', err);
-    });
-}
-
 async function fetchPublicationYear(refId,refType) {
   try {
     const response = await fetch(`/publication-year?refId=${refId}&refType=${refType}`);
@@ -450,31 +481,6 @@ document.getElementById('downloadBtn').addEventListener('click', function() {
     const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
     downloadTxtFile(txtContent);
 });
-
-// Trigger search when Enter key is pressed
-document.getElementById('searchInput').addEventListener('keypress', function(event) {
-    if (event.keyCode === 13) { // 13 is the keycode for Enter
-        event.preventDefault(); // Prevent the default action to stop form submission
-        document.getElementById('searchBtn').click(); // Trigger search button click
-    }
-});
-
-document.getElementById('speciesInput').addEventListener('keypress', function(event) {
-    if (event.keyCode === 13) { // Check if Enter key is pressed
-        event.preventDefault(); // Stop the form from submitting
-        document.getElementById('searchBtn').click(); // Click the search button programmatically
-    }
-});
-
-function downloadTxtFile(text) {
-    const element = document.createElement('a');
-    const file = new Blob([text], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "download.txt";
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-    document.body.removeChild(element);
-}
 
 </script>
 </body>

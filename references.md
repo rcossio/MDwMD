@@ -68,3 +68,4 @@ https://www.cell.com/fulltext/S0006-3495(00)76630-6
 - **10.1016/0003-2697(84)90152-0**: algunas proteinas raras
 - **10.1038/1391051a0**: Svedberg, before the ultracentrifuge. Many references mixed for sedimentation and diffusion (hard to dig)
 - **10.1529/biophysj.105.078188**: many
+- **10.1021/cr60065a004**: from svedberg
