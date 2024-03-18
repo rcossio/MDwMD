@@ -351,7 +351,6 @@ async function transformDataRow(row) {
 
     // Fetch additional info asynchronously
     const { uniprotPdbCodes, mass } = await fetchUniprotInfo(row.accessionNumber);
-    const publicationYear = await fetchPublicationYear(row.referenceId, row.referenceIdType);
 
     // Construct the reference string
     const referenceTypeIcon = row.referenceType === 'primary' ? '🔸' : 
@@ -380,7 +379,7 @@ async function transformDataRow(row) {
         diffusionCoefficient: diffusionCoefficientFormatted,
         diffusionError: diffusionErrorFormatted,
         methodDisplay: `${methodValue} ${manualProcessingValue}`,
-        reference: `${referenceTypeIcon} <a href="${referenceURL}">${row.referenceId || ""}</a> (${publicationYear})`,
+        reference: `${referenceTypeIcon} <a href="${referenceURL}">${row.referenceId || ""}</a> (${row.year})`,
         mass,
         comment: row.comment || "",
         pdbCodes,
@@ -436,17 +435,6 @@ async function fetchUniprotInfo(accessionNumbers) {
         mass: massValues.join(', '),
         length: lengthValues.join(', '),
     };
-}
-
-async function fetchPublicationYear(refId,refType) {
-  try {
-    const response = await fetch(`/publication-year?refId=${refId}&refType=${refType}`);
-    const data = await response.json(); // Assuming the backend sends JSON with a 'year' property
-    return data.year || "N/A";
-  } catch (error) {
-    console.error('Error fetching publication year from backend:', error);
-    return "N/A";
-  }
 }
 
 document.getElementById('downloadBtn').addEventListener('click', function() {
