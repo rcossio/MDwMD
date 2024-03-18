@@ -76,8 +76,8 @@ app.put('/manage-data', async (req, res) => {
 });
 
 // Handle GET Request for Search
-app.get('/search', (req, res) => {
-  const { query, species } = req.query;
+app.post('/search', (req, res) => {
+  const { query, species, referenceType } = req.body;
 
   let queryConditions = [
     { active: true },
@@ -97,6 +97,10 @@ app.get('/search', (req, res) => {
     queryConditions.push({ species: { $in: speciesList } });
   }
 
+  // Add referenceType filter only if referenceType is not null
+  if (referenceType) {
+    queryConditions.push({ referenceType });
+  }
 
   DiffusionData.find({
     $and: queryConditions
@@ -115,7 +119,7 @@ app.get('/search', (req, res) => {
     res.json({
       status: 'success',
       payload: {
-        result: data,
+        results: data,
         species: speciesList,
         referenceTypes: referenceTypesList
       }
