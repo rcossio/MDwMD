@@ -24,12 +24,13 @@ def calculate_molecular_mass_with_adjustments(pdb_file):
         'Mn': 54.938, # Manganese
         'Cu': 63.546, # Copper
         'Co': 58.933, # Cobalt
-	'F': 18.998,  # Fluorine
+	    'F': 18.998,  # Fluorine
         'Na': 22.990, # Sodium
-	'Cl': 35.45,  # Chlorine
+	    'Cl': 35.45,  # Chlorine
         'K': 39.098,  # Potassium
-	'I': 126.90,  # Iodine
-	'Hg': 200.59, # Mercury
+	    'I': 126.90,  # Iodine
+	    'Hg': 200.59, # Mercury
+        'Cd': 112.41  # Cadmium
     }
     
     # Dictionary for additional hydrogens per residue type (simplified estimation)

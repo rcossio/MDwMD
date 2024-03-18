@@ -27,18 +27,20 @@ The project is organized into the following directories, each containing relevan
 ### Database
 
 - **Load Data**: Follow HydroPro text to load enough diffusion data and linked PDBs so that you can make a good model.
-- **PMID Information Table**: Implement a static collection containing PMID information to bypass slow API request times due to frequency limitations of NCBI e-utils.
+- **Duplicated uniprot**: Trypsin and trypsinogen have the same uniprot id, as well as chemotrypsin/chemotrypsinogen. We need a new identifier.
 
 ### Back-end
 
 - **Good practices**: The project started with a MVP, but we need to apply good programming practices in the backend to have a modular and scalable back-end.
 - **Upload to AWS**: Use AWS EC2
+- **Conect References colection**: When posting a new experiment we should fetch the reference data
 
 ### Front-end
 
 - **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
-- **Data Loading and Filtering**: Address the issue of data loading and filtering where old entries interfere with new, filtered entries. Implementing `AbortController` is proposed as a solution.
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
+- **Loading animation and clean-up**: Upon pressing the Search button, it should display an animation of loading, instead of just keeping the old view
+- **Data loading**: When loading a new data, trim the information, otherwise wierd character may be copied
 
 ### HYDROPRO
 

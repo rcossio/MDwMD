@@ -46,9 +46,6 @@ ${pdbCode}_clean.pdb  !pdbFile
 
 EOF
 
-  # Navigate to the created directory
-  cd "${results_dir}/${pdbCode}"
-
   # Execute the HydroPro command
   $hydropro_command
 
