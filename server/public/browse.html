@@ -133,6 +133,7 @@
       <tbody id="searchResults"></tbody>
     </table>
 
+    <!-- Download section -->
     <div id="download-form-div" class="mt-3 d-none">
         <form id="downloadForm">
             <div class="form-group">
@@ -186,14 +187,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(async data => {
             const { results, species, referenceTypes } = data.payload;
 
-            // Generate filters buttons
-            const speciesListDiv = document.getElementById('speciesList');
-            const referenceTypeListDiv = document.getElementById('referenceTypeList');
-
-            document.getElementById('filter-banner').classList.remove('d-none');
-            generateFilter(results, species, speciesListDiv, filterResultsBySpecies);
-            generateFilter(results, referenceTypes, referenceTypeListDiv, filterResultsByReferenceType);
-
             // Display results
             const resultsBody = document.getElementById('searchResults');
             resultsBody.innerHTML = ''; // Clear previous results
@@ -202,36 +195,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Collect all promises from transformDataRow
             const rowPromises = results.map(row => 
-                transformDataRow(row).then(transformedRow => {
+                displayDataRow(row).then(displayRow => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${transformedRow.copyIcon}</td>
-                        <td class="small-cell">${transformedRow.proteinName}</td>
-                        <td class="small-cell">${transformedRow.speciesLink}</td>
-                        <td class="small-cell">${transformedRow.accessionNumberLink}</td>
-                        <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
-                        <td class="small-cell">${transformedRow.diffusionError}</td>
-                        <td class="medium-cell">${transformedRow.methodDisplay}</td>
-                        <td class="medium-cell">${transformedRow.reference}</td>
-                        <td>${transformedRow.mass}</td>
-                        <td class="large-cell">${transformedRow.comment}</td>
-                        <td class="pdb-code-cell">${transformedRow.pdbCodes}</td>
-                        <td class="pdb-code-cell">${transformedRow.unknownPdbCodes}</td>
-                        <td>${transformedRow.manageIcon}</td>
-                    `;
+                    tr.innerHTML = generateRowHTML(displayRow);
                     resultsBody.appendChild(tr);
                 })
             );
 
             // Once all rows have been processed, show the download form
             Promise.all(rowPromises).then(() => {
+                // Generate filters buttons
+                const speciesListDiv = document.getElementById('speciesList');
+                const referenceTypeListDiv = document.getElementById('referenceTypeList');
+
+                document.getElementById('filter-banner').classList.remove('d-none');
+                generateFilter(results, species, speciesListDiv, filterResultsBySpecies);
+                generateFilter(results, referenceTypes, referenceTypeListDiv, filterResultsByReferenceType);
+
+                // Show download button
                 document.getElementById('download-form-div').classList.remove('d-none');
             });
         })
         .catch(error => console.error('Error:', error));
     });
 
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        const columnSelect = document.getElementById('columnSelect');
+        const selectedColumnIndex = columnSelect.value;
+        const rows = document.querySelectorAll('#query-table tbody tr');
+        let columnData = new Set(); // Using a Set to automatically handle unique values
+
+        rows.forEach(row => {
+            const cell = row.cells[selectedColumnIndex];
+            if(cell) {
+                const cellTexts = cell.textContent.split(',').map(text => text.trim()); // Split and trim
+                cellTexts.forEach(text => {
+                    if(text) columnData.add(text); // Add each text to the Set
+                });
+            }
+        });
+
+        const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
+        downloadTxtFile(txtContent);
+    });
+
 });
+
 
 function generateFilter(results, items, div,  filterFunction) {
     div.innerHTML = ''; 
@@ -244,6 +253,24 @@ function generateFilter(results, items, div,  filterFunction) {
     });
 }
 
+
+function generateRowHTML(displayRow) {
+    return `<td>${displayRow.copyIcon}</td>
+            <td class="small-cell">${displayRow.proteinName}</td>
+            <td class="small-cell">${displayRow.speciesLink}</td>
+            <td class="small-cell">${displayRow.accessionNumberLink}</td>
+            <td class="small-cell">${displayRow.diffusionCoefficient}</td>
+            <td class="small-cell">${displayRow.diffusionError}</td>
+            <td class="medium-cell">${displayRow.methodDisplay}</td>
+            <td class="medium-cell">${displayRow.reference}</td>
+            <td>${displayRow.mass}</td>
+            <td class="large-cell">${displayRow.comment}</td>
+            <td class="pdb-code-cell">${displayRow.pdbCodes}</td>
+            <td class="pdb-code-cell">${displayRow.unknownPdbCodes}</td>
+            <td>${displayRow.manageIcon}</td>`;
+}
+
+
 function filterResultsBySpecies(speciesName, results) {
     const filteredResults = results.filter(result => parseInt(result.species) === speciesName);
         
@@ -255,27 +282,14 @@ function filterResultsBySpecies(speciesName, results) {
     
     // Display filtered results
     for (const row of filteredResults) {
-        transformDataRow(row).then(transformedRow => {
+        displayDataRow(row).then(displayRow => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${transformedRow.copyIcon}</td>
-                <td class="small-cell">${transformedRow.proteinName}</td>
-                <td class="small-cell">${transformedRow.speciesLink}</td>
-                <td class="small-cell">${transformedRow.accessionNumberLink}</td>
-                <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
-                <td class="small-cell">${transformedRow.diffusionError}</td>
-                <td class="medium-cell">${transformedRow.methodDisplay}</td>
-                <td class="medium-cell">${transformedRow.reference}</td>
-                <td>${transformedRow.mass}</td>
-                <td class="medium-cell">${transformedRow.comment}</td>
-                <td class="pdb-code-cell">${transformedRow.pdbCodes}</td>
-                <td class="pdb-code-cell">${transformedRow.unknownPdbCodes}</td>
-                <td>${transformedRow.manageIcon}</td>
-            `;
+            tr.innerHTML = generateRowHTML(displayRow);
             resultsBody.appendChild(tr);
         });
     }   
 }
+
 
 function filterResultsByReferenceType(referenceType, results) {
     const filteredResults = results.filter(result => result.referenceType === referenceType);
@@ -288,27 +302,14 @@ function filterResultsByReferenceType(referenceType, results) {
     
     // Display filtered results
     for (const row of filteredResults) {
-        transformDataRow(row).then(transformedRow => {
+        displayDataRow(row).then(displayRow => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${transformedRow.copyIcon}</td>
-                <td class="small-cell">${transformedRow.proteinName}</td>
-                <td class="small-cell">${transformedRow.speciesLink}</td>
-                <td class="small-cell">${transformedRow.accessionNumberLink}</td>
-                <td class="small-cell">${transformedRow.diffusionCoefficient}</td>
-                <td class="small-cell">${transformedRow.diffusionError}</td>
-                <td class="medium-cell">${transformedRow.methodDisplay}</td>
-                <td class="medium-cell">${transformedRow.reference}</td>
-                <td>${transformedRow.mass}</td>
-                <td class="medium-cell">${transformedRow.comment}</td>
-                <td class="pdb-code-cell">${transformedRow.pdbCodes}</td>
-                <td class="pdb-code-cell">${transformedRow.unknownPdbCodes}</td>
-                <td>${transformedRow.manageIcon}</td>
-            `;
+            tr.innerHTML = generateRowHTML(displayRow);
             resultsBody.appendChild(tr);
         });
     }   
 }
+
 
 function triggerSearchOnEnter(event) {
     if (event.keyCode === 13) { // Check if Enter key is pressed
@@ -316,6 +317,7 @@ function triggerSearchOnEnter(event) {
         document.getElementById('searchBtn').click(); 
     }
 }
+
 
 function copyToClipboard(text, iconElement) {
     navigator.clipboard.writeText(text).then(function() {
@@ -331,6 +333,7 @@ function copyToClipboard(text, iconElement) {
     });
 }
 
+
 function downloadTxtFile(text) {
     const element = document.createElement('a');
     const file = new Blob([text], {type: 'text/plain'});
@@ -342,7 +345,7 @@ function downloadTxtFile(text) {
 }
 
 
-async function transformDataRow(row) {
+async function displayDataRow(row) {
     // Method processing 
     const methodValue = row.method === 'Other' ? row.otherMethod : row.method;
     const manualProcessingValue = row.manualProcessing === 'Other' ? row.otherManualProcessing :
@@ -436,26 +439,6 @@ async function fetchUniprotInfo(accessionNumbers) {
         length: lengthValues.join(', '),
     };
 }
-
-document.getElementById('downloadBtn').addEventListener('click', function() {
-    const columnSelect = document.getElementById('columnSelect');
-    const selectedColumnIndex = columnSelect.value;
-    const rows = document.querySelectorAll('#query-table tbody tr');
-    let columnData = new Set(); // Using a Set to automatically handle unique values
-
-    rows.forEach(row => {
-        const cell = row.cells[selectedColumnIndex];
-        if(cell) {
-            const cellTexts = cell.textContent.split(',').map(text => text.trim()); // Split and trim
-            cellTexts.forEach(text => {
-                if(text) columnData.add(text); // Add each text to the Set
-            });
-        }
-    });
-
-    const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
-    downloadTxtFile(txtContent);
-});
 
 </script>
 </body>
