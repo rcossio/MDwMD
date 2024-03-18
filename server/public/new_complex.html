@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a New Complex</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-row > div {
+        padding-right: 5px; /* Adjusts space between columns */
+        }
+        .form-group {
+        margin-bottom: 10px; /* Reduces space between form groups */
+        }
+        .form-label {
+        margin-bottom: 5px; /* Brings labels closer to inputs */
+        }
+        .btn-square {
+        width: 36px; /* Square shape for buttons */
+        height: 36px;
+        padding: 0;
+        margin-left: 5px; /* Space between input and button */
+        vertical-align: top; /* Aligns button with input */
+        }
+        .input-group-text {
+        height: calc(1.5em + .75rem + 2px); /* Adjusts height to match inputs */
+        }
+        .custom-form {
+        max-width: 600px; /* Makes form less wide */
+        margin: auto;
+        }
+        .btn-uniprot, .btn-taxonomy, .btn-pubmed {
+        color: white;
+        margin-right: 10px;
+        }
+        .btn-uniprot { background-color: Navy; }
+        .btn-taxonomy { background-color: DarkOliveGreen; }
+        .btn-pubmed { background-color: DarkSlateGray; }
+
+        .required-asterisk { color: red; }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+        }
+        input[type="number"] {
+        -moz-appearance: textfield;
+        }
+
+        .navbar {
+        display: flex;
+        }
+        .navbar-item {
+        padding: 5px 10px;
+        margin-right: 10px; /* Space between items */
+        cursor: pointer;
+        text-decoration: none; /* Removes underline from links */
+        color: black; /* Default text color */
+        background-color: transparent; /* Transparent background by default */
+        }
+        .navbar-item:hover {
+        background-color: #f0f0f0; /* Light background on hover */
+        text-decoration: none; /* Keeps links without underline on hover */
+        color: black; /* Default text color */
+        font-weight: bold; /* Bold text on hover */
+        }
+        .navbar-selected {
+        background-color: #e9e9e9; /* Slightly darker background for selected item */
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2); /* Subtle shadow for selected item */
+        }
+
+        .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: lightgray;
+        padding: 10px;
+        margin-bottom: 10px;
+        }
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="header">
+    <nav class="navbar">
+        <a class="navbar-item" href="/index.html">New experiment</a>
+        <a class="navbar-item" href="/browse.html">Browse</a>
+        <a class="navbar-item navbar-selected" href="/">New complex</a>
+    </nav>
+    <div class="ml-auto">Signed as <strong id="usernameDisplay">Anonymous</strong></div>
+</div>
+
+<div class="container custom-form">
+    <h2 class="mt-2">Create a New Complex</h2>
+    <form>
+        <!-- Name -->
+        <div class="form-row mb-2">
+            <div class="col">
+                <label for="complexName">Complex Name<span class="required-asterisk">*</span></label>
+                <input type="text" class="form-control" id="complexName" placeholder="Complex Name">
+            </div>
+        </div>
+
+        <!-- Comments -->
+        <div class="form-row mb-2">
+            <div class="col">
+                <label for="comments">Comments</label>
+                <textarea class="form-control" id="comments" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- PDBs -->
+        <div class="form-row mb-2">
+            <!-- Valid PDB Section -->
+            <div class="col-5">
+                <label>Valid PDB</label>
+                <button type="button" class="btn btn-success addPdbBtn rounded-circle" id="addValidPdb">+</button>
+                <div id="validPdbContainer" class="mt-1">
+                    <input type="text" class="form-control" id="valid-pdb-0">
+                </div>
+            </div>
+            
+            <!-- Discarded PDB Section -->
+            <div class="col-7">
+                <label>Discarded PDB</label>
+                <button type="button" class="btn btn-secondary addPdbBtn rounded-circle" id="addDiscardedPdb">+</button>
+                <div class="row mt-1">
+                    <div class="col-6" id="discardedPdbContainer">
+                        <!-- Inputs for discarded PDB codes will be appended here -->
+                        <input type="text" class="form-control" id="invalid-pdb-code-0" placeholder="PDB Code">
+                    </div>
+                    <div class="col-6" id="discardedPdbCommentsContainer">
+                        <input type="text" class="form-control" id="invalid-pdb-note-0" placeholder="Comments">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="form-group text-center">
+            <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        let userName = prompt("Please enter your name:", "");
+        // Set the content of the #usernameDisplay element
+        document.querySelector('#usernameDisplay').textContent = userName ? userName : 'Anonymous';
+
+        let validPdbCount = 1;
+        let discardedPdbCount = 1;
+
+        // Function to add new PDB input
+        function addPdbInput(containerId, baseId) {
+            const container = document.getElementById(containerId);
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.className = 'form-control mt-1';
+            newInput.id = baseId + '-' + (containerId === 'validPdbContainer' ? validPdbCount++ : discardedPdbCount++);
+            container.appendChild(newInput);
+        }
+
+        document.getElementById('addValidPdb').addEventListener('click', function() {
+            addPdbInput('validPdbContainer', 'valid-pdb');
+        });
+
+        document.getElementById('addDiscardedPdb').addEventListener('click', function() {
+            addPdbInput('discardedPdbContainer', 'invalid-pdb-code');
+            addPdbInput('discardedPdbCommentsContainer', 'invalid-pdb-note');
+        });
+
+        // Additional JavaScript for handling the rest of the form functionalities
+    });
+</script>
+</body>
+</html>
