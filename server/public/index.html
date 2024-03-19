@@ -402,6 +402,9 @@
               }),
           })
           .then(response => {
+              if (!response.ok) {
+                    throw new Error('Network response was not ok');
+              }
               // Show toast message in green
               $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
               $('#submissionToast').find('.toast-body').css('background-color', 'lightcyan');

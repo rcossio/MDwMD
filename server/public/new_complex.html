@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create a New Complex</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         .form-row > div {
         padding-right: 5px; /* Adjusts space between columns */
@@ -29,24 +30,8 @@
         max-width: 600px; /* Makes form less wide */
         margin: auto;
         }
-        .btn-uniprot, .btn-taxonomy, .btn-pubmed {
-        color: white;
-        margin-right: 10px;
-        }
-        .btn-uniprot { background-color: Navy; }
-        .btn-taxonomy { background-color: DarkOliveGreen; }
-        .btn-pubmed { background-color: DarkSlateGray; }
 
         .required-asterisk { color: red; }
-
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-        }
-        input[type="number"] {
-        -moz-appearance: textfield;
-        }
 
         .navbar {
         display: flex;
@@ -79,6 +64,13 @@
         margin-bottom: 10px;
         }
 
+        #discardedPdbContainer {
+            padding-right: 2px;
+        }
+        #discardedPdbCommentsContainer {
+            padding-left: 2px;
+        }
+
     </style>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -108,34 +100,46 @@
         <!-- Comments -->
         <div class="form-row mb-2">
             <div class="col">
-                <label for="comments">Comments</label>
-                <textarea class="form-control" id="comments" rows="3"></textarea>
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" placeholder="Comments, conditions, etc." rows="3"></textarea>
             </div>
         </div>
 
         <!-- PDBs -->
-        <div class="form-row mb-2">
+        <div class="form-row mb-2 mt-3">
             <!-- Valid PDB Section -->
             <div class="col-5">
-                <label>Valid PDB</label>
-                <button type="button" class="btn btn-success addPdbBtn rounded-circle" id="addValidPdb">+</button>
+                <button type="button" class="btn btn-sm btn-success rounded-circle mr-1" id="addValidPdb"><i class="fa-solid fa-plus"></i></button>
+                <label class="mr-4" >Valid PDB <span class="required-asterisk">*</span></label>
+                <button type="button" class="btn btn-sm btn-secondary" id="pasteValid">Paste <i class="fa-solid fa-paste"></i></button>
                 <div id="validPdbContainer" class="mt-1">
-                    <input type="text" class="form-control" id="valid-pdb-0">
+                    <input type="text" class="form-control" id="valid-pdb-0" placeholder="3TIC">
                 </div>
             </div>
             
             <!-- Discarded PDB Section -->
             <div class="col-7">
-                <label>Discarded PDB</label>
-                <button type="button" class="btn btn-secondary addPdbBtn rounded-circle" id="addDiscardedPdb">+</button>
+                <button type="button" class="btn btn-sm btn-info rounded-circle mr-1" id="addDiscardedPdb"><i class="fa-solid fa-plus"></i></button>
+                <label class="mr-5">Discarded PDB</label>
+                <button type="button" class="btn btn-sm btn-secondary ml-5" id="pasteInvalid">Paste <i class="fa-solid fa-paste"></i></button>
                 <div class="row mt-1">
                     <div class="col-6" id="discardedPdbContainer">
-                        <!-- Inputs for discarded PDB codes will be appended here -->
-                        <input type="text" class="form-control" id="invalid-pdb-code-0" placeholder="PDB Code">
+                        <input type="text" class="form-control" id="invalid-pdb-code-0" placeholder="5HTZ">
                     </div>
                     <div class="col-6" id="discardedPdbCommentsContainer">
-                        <input type="text" class="form-control" id="invalid-pdb-note-0" placeholder="Comments">
+                        <input type="text" class="form-control" id="invalid-pdb-note-0" placeholder="mutated">
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Experiments Section -->
+        <div class="form-row mb-2 mt-3">
+            <div class="col-12">
+                <button type="button" class="btn btn-sm btn-primary rounded-circle mr-1" id="addExperiment"><i class="fa-solid fa-plus"></i></button>
+                <label class="mr-5" >Experiments</label>
+                <div id="experimentsContainer" class="mt-1">
+                    <input type="text" class="form-control" id="experiment-0" placeholder="Experiment ID">
                 </div>
             </div>
         </div>
@@ -145,6 +149,24 @@
             <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
         </div>
     </form>
+
+    <!-- Toast container -->
+    <div id="toastContainer" aria-live="polite" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; z-index: 1050; min-height: 200px;">
+        <div id="submissionToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+            <div class="toast-header" style="background-color: khaki;">
+                <strong class="mr-auto text-dark" id="toast-title" style>
+                    <!-- The message will be inserted dynamically -->
+                </strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="toast-body" style="background-color: palegoldenrod; padding:10px;">
+                <!-- The message will be inserted dynamically -->
+            </div>
+        </div>
+    </div>
+    
 </div>
 
 <script>
@@ -154,26 +176,184 @@
         // Set the content of the #usernameDisplay element
         document.querySelector('#usernameDisplay').textContent = userName ? userName : 'Anonymous';
 
+        $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
+
         let validPdbCount = 1;
         let discardedPdbCount = 1;
+        let discardedPdbCommentsCount = 1;
+        let experimentsContainer=1;
 
         // Function to add new PDB input
-        function addPdbInput(containerId, baseId) {
+        function addInput(containerId, baseId) {
             const container = document.getElementById(containerId);
             const newInput = document.createElement('input');
             newInput.type = 'text';
             newInput.className = 'form-control mt-1';
-            newInput.id = baseId + '-' + (containerId === 'validPdbContainer' ? validPdbCount++ : discardedPdbCount++);
+            newInput.id = baseId + '-' + (containerId === 'validPdbContainer' ? 
+                                            validPdbCount++ :
+                                            containerId === 'discardedPdbContainer' ? 
+                                            discardedPdbCount++ : 
+                                            containerId === 'discardedPdbCommentsContainer' ? 
+                                                discardedPdbCommentsCount++: 
+                                                experimentsContainer++);
             container.appendChild(newInput);
         }
 
         document.getElementById('addValidPdb').addEventListener('click', function() {
-            addPdbInput('validPdbContainer', 'valid-pdb');
+            addInput('validPdbContainer', 'valid-pdb');
         });
 
         document.getElementById('addDiscardedPdb').addEventListener('click', function() {
-            addPdbInput('discardedPdbContainer', 'invalid-pdb-code');
-            addPdbInput('discardedPdbCommentsContainer', 'invalid-pdb-note');
+            addInput('discardedPdbContainer', 'invalid-pdb-code');
+            addInput('discardedPdbCommentsContainer', 'invalid-pdb-note');
+        });
+
+        document.getElementById('addExperiment').addEventListener('click', function() {
+            addInput('experimentsContainer', 'experiment');
+        });
+
+        document.getElementById('pasteValid').addEventListener('click', async function(){
+            const text = await navigator.clipboard.readText();
+
+            const pdbCodes = text.split(',').map(item => item.trim().toUpperCase())
+
+            const wrongFormat = pdbCodes.some(pdbCode => pdbCode.length !== 4)
+            if (wrongFormat) {
+                const toastBody = document.getElementById('toast-body');
+                const toastTitle = document.getElementById('toast-title');
+                toastTitle.textContent = "Wrong format";
+                toastBody.textContent = "Check PDB codes are 4 characters long.";
+                $("#submissionToast").toast("show");
+                return;
+            }
+
+            pdbCodes.forEach((pdbCode, index) => {
+                const input = document.getElementById(`valid-pdb-${index}`);
+                if (input) {
+                    input.value = pdbCode;
+                } else {
+                    addInput('validPdbContainer', 'valid-pdb');
+                    document.getElementById(`valid-pdb-${index}`).value = pdbCode;
+                }
+            })
+        })
+
+        document.getElementById("pasteInvalid").addEventListener("click", async function(){
+            const text = await navigator.clipboard.readText();
+
+            let wrongFormat;
+
+            const copiedObjects = text.split(',').map((item) => {
+                parts = item.split(':')
+                if (parts.length !== 2) {
+                    wrongFormat = true;
+                    return;
+                } else if (parts[0].trim().length !== 4) {
+                    wrongFormat = true;
+                    return;
+                } else if (parts[1].trim().length === 0) {
+                    wrongFormat = true;
+                    return;
+                }
+
+                return {
+                    pdbCode: parts[0].trim().toUpperCase(),
+                    note: parts[1].trim()
+                }
+            })
+
+            if (wrongFormat) {
+                const toastBody = document.getElementById('toast-body');
+                const toastTitle = document.getElementById('toast-title');
+                toastTitle.textContent = "Wrong format";
+                toastBody.textContent = "It should be 1ABC:note, 2DEF:note";
+                $("#submissionToast").toast("show");
+                return;
+            }
+
+            copiedObjects.forEach((copiedObject, index) => {
+                const pdbInput = document.getElementById(`invalid-pdb-code-${index}`);
+                const noteInput = document.getElementById(`invalid-pdb-note-${index}`);
+
+                if (pdbInput && noteInput) {
+                    pdbInput.value = copiedObject.pdbCode;
+                    noteInput.value = copiedObject.note;
+                } else {
+                    addInput('discardedPdbContainer', 'invalid-pdb-code');
+                    addInput('discardedPdbCommentsContainer', 'invalid-pdb-note');
+                    document.getElementById(`invalid-pdb-code-${index}`).value = copiedObject.pdbCode;
+                    document.getElementById(`invalid-pdb-note-${index}`).value = copiedObject.note;
+                }
+            })
+
+        })
+
+        document.getElementById('submitForm').addEventListener('click', function() {
+
+            const pdbCodes = Array.from(document.querySelectorAll('[id^=valid-pdb-]')).map(input => input.value).filter(i => i.trim());
+
+            const experiments = Array.from(document.querySelectorAll('[id^=experiment-]')).map(input => input.value).filter(i => i.trim());
+            const discardedPdbObj = Array.from(document.querySelectorAll('[id^=invalid-pdb-code-]')).filter(i => i.value.trim()).map((input, index) => {
+                return {
+                    pdbCode: input.value,
+                    note: document.getElementById(`invalid-pdb-note-${index}`).value
+                }
+            });
+
+            const formData = {
+            name: document.getElementById('complexName').value || null,
+            description: document.getElementById('description').value || null,
+            userName: userName || 'Anonymous',
+            pdbStructures: pdbCodes || null,
+            experiments: experiments || null,
+            discardedPdb: discardedPdbObj || null
+            };
+
+            // Check if mandatory fields are filled
+            const mandatoryFields = ['name', 'pdbStructures', 'experiments'];
+
+            for (let field of mandatoryFields) {
+                if (!formData[field] || formData[field].length === 0) {
+                //change toast to red color
+                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
+                $('#toast-body').css('background-color', 'lightpink');
+                const toastBody = document.getElementById('toast-body');
+                const toastTitle = document.getElementById('toast-title');
+                toastTitle.textContent = "Missing field";
+                toastBody.textContent = `Please fill in ${field}.`;
+                $("#submissionToast").toast("show");
+                return;
+                }
+            }
+
+            // Send data to server
+            fetch('/complex', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                // Show toast message in green
+                $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
+                $('#toast-body').css('background-color', 'lightcyan');
+                const toastBody = document.getElementById('toast-body');
+                const toastTitle = document.getElementById('toast-title');
+                toastTitle.textContent = "Missing field";
+                toastBody.textContent = `Submitted ${$('#complexName').val()}`;
+                $("#submissionToast").toast("show");
+
+
+                // Clear form fields
+                clearFormFields();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
         });
 
         // Additional JavaScript for handling the rest of the form functionalities
