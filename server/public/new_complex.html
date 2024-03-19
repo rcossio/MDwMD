@@ -92,7 +92,7 @@
         <!-- Name -->
         <div class="form-row mb-2">
             <div class="col">
-                <label for="complexName">Complex Name<span class="required-asterisk">*</span></label>
+                <label for="complexName">Complex Name <span class="required-asterisk">*</span></label>
                 <input type="text" class="form-control" id="complexName" placeholder="Complex Name">
             </div>
         </div>
@@ -137,7 +137,7 @@
         <div class="form-row mb-2 mt-3">
             <div class="col-12">
                 <button type="button" class="btn btn-sm btn-primary rounded-circle mr-1" id="addExperiment"><i class="fa-solid fa-plus"></i></button>
-                <label class="mr-5" >Experiments</label>
+                <label class="mr-5" >Experiments <span class="required-asterisk">*</span></label>
                 <div id="experimentsContainer" class="mt-1">
                     <input type="text" class="form-control" id="experiment-0" placeholder="Experiment ID">
                 </div>
@@ -181,35 +181,54 @@
         let validPdbCount = 1;
         let discardedPdbCount = 1;
         let discardedPdbCommentsCount = 1;
-        let experimentsContainer=1;
+        let experimentsCount=1;
 
         // Function to add new PDB input
-        function addInput(containerId, baseId) {
+        function addInput(containerId, baseId, counter) {
             const container = document.getElementById(containerId);
             const newInput = document.createElement('input');
             newInput.type = 'text';
             newInput.className = 'form-control mt-1';
-            newInput.id = baseId + '-' + (containerId === 'validPdbContainer' ? 
-                                            validPdbCount++ :
-                                            containerId === 'discardedPdbContainer' ? 
-                                            discardedPdbCount++ : 
-                                            containerId === 'discardedPdbCommentsContainer' ? 
-                                                discardedPdbCommentsCount++: 
-                                                experimentsContainer++);
+            newInput.id = baseId + '-' + counter;
             container.appendChild(newInput);
         }
 
+        //function to add new experiment input
+        function addExperimentInput() {
+            const container = document.getElementById('experimentsContainer');
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.className = 'form-control mt-1';
+            newInput.id = 'experiment-' + (experimentsCount++);
+            container.appendChild(newInput);
+
+            document.getElementById(newInput.id).addEventListener('focusout', function() {
+                const expInputs = document.querySelectorAll('[id^="experiment-"]');
+                if ((newInput.value.trim() !== '') && ( newInput.id === expInputs[expInputs.length - 1].id)) {
+                    addExperimentInput()
+                }
+            });
+        }
+
+        document.getElementById('experiment-0').addEventListener('focusout', function() {
+                const input = document.getElementById('experiment-0')
+                const expInputs = document.querySelectorAll('[id^="experiment-"]');
+                if ((input.value.trim() !== '') && ( input.id === expInputs[expInputs.length - 1].id)) {
+                    addExperimentInput()
+                }
+        });
+
         document.getElementById('addValidPdb').addEventListener('click', function() {
-            addInput('validPdbContainer', 'valid-pdb');
+            addInput('validPdbContainer', 'valid-pdb', validPdbCount++);
         });
 
         document.getElementById('addDiscardedPdb').addEventListener('click', function() {
-            addInput('discardedPdbContainer', 'invalid-pdb-code');
-            addInput('discardedPdbCommentsContainer', 'invalid-pdb-note');
+            addInput('discardedPdbContainer', 'invalid-pdb-code', discardedPdbCount++);
+            addInput('discardedPdbCommentsContainer', 'invalid-pdb-note', discardedPdbCommentsCount++);
         });
 
         document.getElementById('addExperiment').addEventListener('click', function() {
-            addInput('experimentsContainer', 'experiment');
+            addExperimentInput();
         });
 
         document.getElementById('pasteValid').addEventListener('click', async function(){
@@ -232,7 +251,7 @@
                 if (input) {
                     input.value = pdbCode;
                 } else {
-                    addInput('validPdbContainer', 'valid-pdb');
+                    addInput('validPdbContainer', 'valid-pdb', validPdbCount++);
                     document.getElementById(`valid-pdb-${index}`).value = pdbCode;
                 }
             })
@@ -248,7 +267,7 @@
                 if (parts.length !== 2) {
                     wrongFormat = true;
                     return;
-                } else if (parts[0].trim().length !== 4) {
+                } else if (parts[0].trim().replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4) { //1ABC:A[m] is valid format, 1ABC[3] as well
                     wrongFormat = true;
                     return;
                 } else if (parts[1].trim().length === 0) {
@@ -279,8 +298,8 @@
                     pdbInput.value = copiedObject.pdbCode;
                     noteInput.value = copiedObject.note;
                 } else {
-                    addInput('discardedPdbContainer', 'invalid-pdb-code');
-                    addInput('discardedPdbCommentsContainer', 'invalid-pdb-note');
+                    addInput('discardedPdbContainer', 'invalid-pdb-code', discardedPdbCount++);
+                    addInput('discardedPdbCommentsContainer', 'invalid-pdb-note', discardedPdbCommentsCount++);
                     document.getElementById(`invalid-pdb-code-${index}`).value = copiedObject.pdbCode;
                     document.getElementById(`invalid-pdb-note-${index}`).value = copiedObject.note;
                 }
@@ -290,23 +309,34 @@
 
         document.getElementById('submitForm').addEventListener('click', function() {
 
-            const pdbCodes = Array.from(document.querySelectorAll('[id^=valid-pdb-]')).map(input => input.value).filter(i => i.trim());
+            const pdbCodes = Array.from(
+                                new Set(
+                                    Array.from(document.querySelectorAll('[id^=valid-pdb-]')).map(input => input.value.toUpperCase()).filter(i => i.trim())
+                                )
+                            );
 
-            const experiments = Array.from(document.querySelectorAll('[id^=experiment-]')).map(input => input.value).filter(i => i.trim());
+            const experiments = Array.from(
+                                    new Set(
+                                        Array.from(document.querySelectorAll('[id^=experiment-]'))
+                                        .map(input => input.value)
+                                        .filter(i => i.trim())
+                                    )
+                                );
+
             const discardedPdbObj = Array.from(document.querySelectorAll('[id^=invalid-pdb-code-]')).filter(i => i.value.trim()).map((input, index) => {
                 return {
-                    pdbCode: input.value,
+                    pdbCode: input.value.toUpperCase(),
                     note: document.getElementById(`invalid-pdb-note-${index}`).value
                 }
             });
 
             const formData = {
-            name: document.getElementById('complexName').value || null,
-            description: document.getElementById('description').value || null,
-            userName: userName || 'Anonymous',
-            pdbStructures: pdbCodes || null,
-            experiments: experiments || null,
-            discardedPdb: discardedPdbObj || null
+                name: document.getElementById('complexName').value || null,
+                description: document.getElementById('description').value || null,
+                userName: userName || 'Anonymous',
+                pdbStructures: pdbCodes || null,
+                experiments: experiments || null,
+                discardedPdb: discardedPdbObj || null
             };
 
             // Check if mandatory fields are filled
@@ -326,13 +356,42 @@
                 }
             }
 
+            //if any of the discardedPdb keys are in the pdbStructures, show a toast message
+            const discardedPdbCodes = discardedPdbObj.map(obj => obj.pdbCode);
+            const intersection = pdbCodes.filter(pdbCode => discardedPdbCodes.includes(pdbCode));
+            if (intersection.length > 0) {
+                //change toast to red color
+                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
+                $('#toast-body').css('background-color', 'lightpink');
+                const toastBody = document.getElementById('toast-body');
+                const toastTitle = document.getElementById('toast-title');
+                toastTitle.textContent = "Invalid and discarded PDB?";
+                toastBody.textContent = `Codes: ${intersection.join(', ')}`;
+                $("#submissionToast").toast("show");
+                return;
+            }
+
+            //if any of the discardedPdb or the pdbStructures are not 4 characters long, show a toast message
+            const wrongLength = discardedPdbCodes.concat(pdbCodes).some(pdbCode => pdbCode.replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4);
+            if (wrongLength) {
+                //change toast to red color
+                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
+                $('#toast-body').css('background-color', 'lightpink');
+                const toastBody = document.getElementById('toast-body');
+                const toastTitle = document.getElementById('toast-title');
+                toastTitle.textContent = "Wrong PDB format";
+                toastBody.textContent = "PDB codes should be 4 characters long.";
+                $("#submissionToast").toast("show");
+                return;
+            }
+
             // Send data to server
             fetch('/complex', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({data:formData}),
             })
             .then(response => {
                 if (!response.ok) {
@@ -355,6 +414,15 @@
                 console.error('Error:', error);
             });
         });
+
+        function clearFormFields() {
+            $('#complexName').val('');
+            $('#description').val('');
+            $('[id^=valid-pdb-]').val('');
+            $('[id^=experiment-]').val('');
+            $('[id^=invalid-pdb-code-]').val('');
+            $('[id^=invalid-pdb-note-]').val('');
+        }
 
         // Additional JavaScript for handling the rest of the form functionalities
     });
