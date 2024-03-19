@@ -41,6 +41,7 @@ The project is organized into the following directories, each containing relevan
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
 - **Loading animation and clean-up**: Upon pressing the Search button, it should display an animation of loading, instead of just keeping the old view
 - **Data loading**: When loading a new data, trim the information, otherwise wierd character may be copied
+- **Toast color**: toast color doesnt return no normal after shoring green in New Complex
 
 ### HYDROPRO
 

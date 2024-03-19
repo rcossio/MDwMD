@@ -422,6 +422,32 @@
             $('[id^=experiment-]').val('');
             $('[id^=invalid-pdb-code-]').val('');
             $('[id^=invalid-pdb-note-]').val('');
+            
+            // Remove extra inputs
+            const validPdbInputs = document.querySelectorAll('[id^=valid-pdb-]');
+            for (let i = validPdbInputs.length - 1; i > 0; i--) {
+                validPdbInputs[i].remove();
+            }
+            validPdbCount = 1;
+
+            const experimentInputs = document.querySelectorAll('[id^=experiment-]');
+            for (let i = experimentInputs.length - 1; i > 0; i--) {
+                experimentInputs[i].remove();
+            }
+            experimentsCount = 1;
+
+            const discardedPdbInputs = document.querySelectorAll('[id^=invalid-pdb-code-]');
+            for (let i = discardedPdbInputs.length - 1; i > 0; i--) {
+                discardedPdbInputs[i].remove();
+            }
+            discardedPdbCount = 1;
+
+            const discardedPdbNoteInputs = document.querySelectorAll('[id^=invalid-pdb-note-]');
+            for (let i = discardedPdbNoteInputs.length - 1; i > 0; i--) {
+                discardedPdbNoteInputs[i].remove();
+            }
+            discardedPdbCommentsCount = 1;
+            
         }
 
         // Additional JavaScript for handling the rest of the form functionalities
