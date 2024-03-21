@@ -15,7 +15,7 @@ def get_db_connection():
 
 def get_experiment_coef(id, db):
     """Convert diffusion coefficient to a unified scale based on units."""
-    experiment = db['data_from_experiments'].find_one({"_id": ObjectId(id)}) 
+    experiment = db['experiments'].find_one({"_id": ObjectId(id)}) 
 
     unit = experiment.get('diffusionUnit')
     coefficient = experiment.get('diffusionCoefficient', '')
@@ -39,10 +39,10 @@ def main():
     """Main function to orchestrate data fetching and processing."""
     db = get_db_connection()
     data = []
-    complexes = db['complexes'].find({})
-    print('Processing', complexes.count(), 'complexes...')
+    proteins = db['proteins'].find({})
+    print('Processing', proteins.count(), 'proteins...')
 
-    for doc in complexes:
+    for doc in proteins:
 
         item = {
             "id": str(doc['_id']),

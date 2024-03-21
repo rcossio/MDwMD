@@ -4,7 +4,7 @@ const Bottleneck = require('bottleneck');
 const xml2js = require('xml2js').parseStringPromise; 
 const DiffusionData = require('../dao/diffusionModel'); 
 const ReferenceData = require('../dao/referenceModel'); 
-const ComplexData = require('../dao/complexModel');
+const ProteinData = require('../dao/proteinModel');
 
 // Initialize a new bottleneck limiter
 const limiter = new Bottleneck({
@@ -181,11 +181,11 @@ router.get('/find-by-id/:id', (req, res) => {
   
 
 // Handle POST Request
-router.post('/complex', async (req, res) => {
+router.post('/protein', async (req, res) => {
   const { data } = req.body;
 
   try {
-    await ComplexData.create({ ...data, active: true, timestamp: new Date().toISOString() });
+    await ProteinData.create({ ...data, active: true, timestamp: new Date().toISOString() });
 
     res.send({ status: 'success', payload: 'Data saved to MongoDB' });
   } catch (err) {

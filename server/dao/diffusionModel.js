@@ -25,7 +25,7 @@ const diffusionSchema = new mongoose.Schema({
 });
   
 // Create Mongoose Model
-const DiffusionData = mongoose.model('data_from_experiments', diffusionSchema);
+const DiffusionData = mongoose.model('experiments', diffusionSchema);
 
 module.exports = DiffusionData;
   

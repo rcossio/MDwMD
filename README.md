@@ -1,18 +1,25 @@
 # Project Overview
 
-This project aims to develop a database designed to simplify the process of obtaining and estimating self-diffusion coefficients for a wide range of proteins. By leveraging a comprehensive collection of experimental molecular diffusion data and integrating additional information through APIs from Uniprot and NCBI e-utils, we aim to provide a robust resource for researchers and scientists. Furthermore, the project includes collections of predicted molecular diffusion values generated through HydroPRO and molecular dynamics simulations, facilitating the analysis of these methods' predictive capabilities on unknown datasets.
+This project aims to develop a database designed to simplify the process of obtaining and estimating self-diffusion coefficients, which includes validating a prediction model, for a wide range of proteins. By leveraging a comprehensive collection of experimental molecular diffusion data, integrating additional information through APIs like Uniprot and NCBI e-utils, and predicted molecular diffusion values generated through HydroPRO and molecular dynamics simulations we aim to provide a robust resource for researchers and scientists.
 
 ## Database Structure
 
-The database is structured into several key components, each serving a specific function within the broader scope of the project:
+The database contains the following collections:
 
-- **Experimental Molecular Diffusion**: A collection of measured diffusion coefficients, enhanced with additional data sourced from Uniprot and NCBI e-utils.
-- **Predicted Molecular Diffusion**: Includes predictions from HydroPRO and molecular dynamics, aimed at evaluating and extrapolating these methods to uncharted data.
+- **Proteins**: It relates the protein at a certain state or condition with its related PDB structures and experiments. 
+
+- **Experimental Molecular Diffusion**: Contains experimentally measured diffusion coefficients,it can be enhanced when querying with additional data sourced from Uniprot. 
+
+- **References**: It contains reference identifiers, such as PubmedID or DOI. It can be automatically re deployed be means of NCBI e-utils to gather more information from the references. Right now it just contains the year.
+
+- **HydroPRO Predicted Molecular Diffusion**: Includes predictions from HydroPRO, used to validate the method and calculate the error, allowing data extrapolation.
+
 
 ## Project Organization
 
 The project is organized into the following directories, each containing relevant files and scripts:
 
+- **db**: Constains scripts to mantain, check and operate in the DB
 - **server**: Contains the web application for database access.
 - **data**: Reserved for initial data and processing scripts, currently unused.
 - **validation**: Scripts to evaluate the performance of the modelling strategies
@@ -41,7 +48,7 @@ The project is organized into the following directories, each containing relevan
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
 - **Loading animation and clean-up**: Upon pressing the Search button, it should display an animation of loading, instead of just keeping the old view
 - **Data loading**: When loading a new data, trim the information, otherwise wierd character may be copied
-- **Toast color**: toast color doesnt return no normal after shoring green in New Complex
+- **Toast color**: toast color doesnt return no normal after shoring green in New Protein
 
 ### HYDROPRO
 

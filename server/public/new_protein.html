@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create a New Complex</title>
+    <title>Create a New Protein</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -81,19 +81,19 @@
     <nav class="navbar">
         <a class="navbar-item" href="/index.html">New experiment</a>
         <a class="navbar-item" href="/browse.html">Browse</a>
-        <a class="navbar-item navbar-selected" href="/">New complex</a>
+        <a class="navbar-item navbar-selected" href="/">New protein</a>
     </nav>
     <div class="ml-auto">Signed as <strong id="usernameDisplay">Anonymous</strong></div>
 </div>
 
 <div class="container custom-form">
-    <h2 class="mt-2">Create a New Complex</h2>
+    <h2 class="mt-2">Create a New Protein</h2>
     <form>
         <!-- Name -->
         <div class="form-row mb-2">
             <div class="col">
-                <label for="complexName">Complex Name <span class="required-asterisk">*</span></label>
-                <input type="text" class="form-control" id="complexName" placeholder="Complex Name">
+                <label for="proteinName">Protein Name <span class="required-asterisk">*</span></label>
+                <input type="text" class="form-control" id="proteinName" placeholder="Protein Name">
             </div>
         </div>
 
@@ -331,7 +331,7 @@
             });
 
             const formData = {
-                name: document.getElementById('complexName').value || null,
+                name: document.getElementById('proteinName').value || null,
                 description: document.getElementById('description').value || null,
                 userName: userName || 'Anonymous',
                 pdbStructures: pdbCodes || null,
@@ -386,7 +386,7 @@
             }
 
             // Send data to server
-            fetch('/complex', {
+            fetch('/protein', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -403,7 +403,7 @@
                 const toastBody = document.getElementById('toast-body');
                 const toastTitle = document.getElementById('toast-title');
                 toastTitle.textContent = "Missing field";
-                toastBody.textContent = `Submitted ${$('#complexName').val()}`;
+                toastBody.textContent = `Submitted ${$('#proteinName').val()}`;
                 $("#submissionToast").toast("show");
 
 
@@ -416,7 +416,7 @@
         });
 
         function clearFormFields() {
-            $('#complexName').val('');
+            $('#proteinName').val('');
             $('#description').val('');
             $('[id^=valid-pdb-]').val('');
             $('[id^=experiment-]').val('');

@@ -5,11 +5,13 @@
 - **Half life estimation in tissue**: Here they estimated the half-life of rhNGF in brain tissue to be 45min. Krewson, Christine E., and W. Mark Saltzman. "Transport and elimination of recombinant human NGF during long-term delivery to the brain." Brain research 727.1-2 (1996): 169-181. https://www.sciencedirect.com/science/article/pii/0006899396003782
 - **Angiogenesis**: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0019989
 - **Tumor growth**: The phase-field model in tumor growth. https://www.tandfonline.com/doi/full/10.1080/14786435.2010.501771. See also https://ieeexplore.ieee.org/abstract/document/8251268
-- **Chemotaxis**: https://pubmed.ncbi.nlm.nih.gov/32855311/
-- **(yet to read)**: organoid development. https://www.sciencedirect.com/science/article/pii/S2468451120300015
-- **(yet to read)**: Here they point out that diffusion is relevant for accessing the brain https://www.nature.com/articles/nmat1159
+- **Chemotaxis (but no diffusion model)**: https://pubmed.ncbi.nlm.nih.gov/32855311/
+- **Organoid development (perspective)**: organoid development. https://www.sciencedirect.com/science/article/pii/S2468451120300015
 - **(yet to read)**: They make a matematical model to study the degradation of tissue matrix or gel and relate it to diffusivity (?). https://link.springer.com/article/10.1007/s10237-013-0493-0. See also Dothe's thesis in https://scholar.colorado.edu/downloads/9s161655t.
-- **(yet to read)**: It references to transferrin and sphingomyelinase studies related to diffusion. https://pubs.acs.org/doi/full/10.1021/mp300495e
+- **Anastomosis**: un'altro paper di Travasso dove il modello che uso è utilizzato per studiare l'insorgenza di anastomosi (e.g. connections between different vessels). Il coefficiente di diffusione è nell'Equazione 2 (pg. 3). Moreira-Soares, M. et al. (2018) Angiogenic Factors produced by Hypoxic Cells are a leading driver of Anastomoses in Sprouting Angiogenesis–a computational study. Sci. Reports 2018 81, 8, 1–12.
+- **Angiogenesis**: un paper di un gruppo portoghese dove sviluppano un modello matematico per l'angiogenesi riferito ad un modello in vivo. L'equazione di diffusione è la 1 (pg. 873). Guerra, A. et al. (2021) Sprouting Angiogenesis: A Numerical Approach with Experimental Validation. Ann. Biomed. Eng., 49, 871–884.
+- **Review**: una perspective di ARA Anderson, uno degli scienziati più influenti del settore. Nella figura 1 (pg. 229) mostra come l'equazione di diffusione si può usare per diverse cose. Anderson, A.R.A. and Quaranta,V. (2008) Integrative mathematical oncology. Nat. Rev. Cancer 2008 83, 8, 227–234.
+- **Angiogenesis** : un paper di Yankeelov (un'altro influente scienzato del settore) che sviluppa un modello matematico e lo calibra con un modello in chip. Phillips,C.M. et al. (2023) Towards integration of time-resolved confocal microscopy of a 3D in vitro microfluidic platform with a hybrid multiscale model of tumor angiogenesis. PLOS Comput. Biol., 19, e1009499.
 
 
 Keep in mind what Gemini said:
