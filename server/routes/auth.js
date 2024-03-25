@@ -18,11 +18,11 @@ router.post('/login', async (req, res) => {
 
           tokenExpirationSeconds = 10 *60 // 10 minutes
 
-          const token = jwt.sign({ id: user._id }, config.jwtSecret, { expiresIn: tokenExpirationSeconds });
+          const token = jwt.sign({ _id: user._id }, config.jwtSecret, { expiresIn: tokenExpirationSeconds });
           res.cookie('jwt', token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: tokenExpirationSeconds * 1000}); 
 
           
-          const userData = { alias: `${user.name} ${user.lastname[0]}.`, id: user._id.toString() };
+          const userData = { alias: `${user.name} ${user.lastname[0]}.`, _id: user._id.toString() };
           res.cookie('userData', JSON.stringify(userData), { httpOnly: false, secure: true, sameSite: 'Strict', maxAge: tokenExpirationSeconds * 1000 });
 
           res.json({ message: "User logged in successfully"});
@@ -44,7 +44,7 @@ router.post('/register', async (req, res) => {
     try {
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await User.create({ email, password:passwordHash, name, lastname });
-      res.json({ message: 'User created successfully', id:user._id });
+      res.json({ message: 'User created successfully', _id:user._id });
     } catch (error) {
       res.status(500).json({ message: 'Internal server error' });
     }

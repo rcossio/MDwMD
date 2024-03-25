@@ -10,7 +10,7 @@ const verifyToken = async (req, res, next) => {
         return res.status(401).json({ message: 'Unauthorized access' });
       }
 
-      const user = await User.findById(decoded.id);
+      const user = await User.findById(decoded._id);
 
       if (!user) {
         return res.status(401).json({ message: 'Unauthorized access' });

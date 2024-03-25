@@ -106,8 +106,8 @@ router.post('/experiment',verifyToken, async (req, res) => {
           referenceIdType: item.referenceIdType,
           referenceType: item.referenceType,
           comment: item.comment,
-          pdbStructures: protein.pdbStructures,
-          discardedPdb: protein.discardedPdb,
+          pdbStructures: protein?.pdbStructures || [],
+          discardedPdb: protein?.discardedPdb || [],
           year: year
         };
       });
