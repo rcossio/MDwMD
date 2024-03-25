@@ -408,7 +408,7 @@ async function displayDataRow(row) {
     const pdbCodesToHTML = codes => codes.map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ');
     const pdbCodes = pdbCodesToHTML(row.pdbStructures);
     const unknownPdbCodes = pdbCodesToHTML(uniprotPdbCodes.filter(code => 
-        !row.pdbStructures.includes(code) && !row.discardedPdbStructures.map(s => s.pdbId).includes(code)));
+        !row.pdbStructures.includes(code) && !row.discardedPdb.map(s => s.pdbId).includes(code)));
 
     return {
         copyIcon: `<i class="fas fa-copy" onclick="copyToClipboard('${row._id}', this)"></i>`,

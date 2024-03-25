@@ -87,6 +87,9 @@ router.post('/experiment',verifyToken, async (req, res) => {
             }
         }
   
+        // Find the corresponding protein
+        const protein = await Protein.findOne({ experiments: item._id });
+
         return {
           _id: item._id,
           diffusionCoefficient: item.diffusionCoefficient,
@@ -103,8 +106,8 @@ router.post('/experiment',verifyToken, async (req, res) => {
           referenceIdType: item.referenceIdType,
           referenceType: item.referenceType,
           comment: item.comment,
-          pdbStructures: item.pdbStructures,
-          discardedPdbStructures: item.discardedPdbStructures,
+          pdbStructures: protein.pdbStructures,
+          discardedPdb: protein.discardedPdb,
           year: year
         };
       });
