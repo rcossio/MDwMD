@@ -5,6 +5,8 @@ const xml2js = require('xml2js').parseStringPromise;
 const Diffusion = require('../models/diffusion'); 
 const Reference = require('../models/reference'); 
 const Protein = require('../models/protein');
+const verifyToken = require('../middleware/verifyToken');
+const path = require('path');
 
 // Initialize a new bottleneck limiter
 const limiter = new Bottleneck({
@@ -12,18 +14,21 @@ const limiter = new Bottleneck({
   minTime: 500
 });
 
-// Define your routes here
-router.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
-
 // Serve HTML Page
 router.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '/public/index.html'));
+  res.sendFile(path.resolve('public', 'index.html'));
+});
+
+router.get('/new_experiment',verifyToken, (req, res) => {
+  res.sendFile(path.resolve('public', 'new_experiment.html'));
+});
+
+router.get('/new_protein',verifyToken, (req, res) => {
+  res.sendFile(path.resolve('public', 'new_protein.html'));
 });
 
 // Handle POST Request
-router.post('/manage-data', async (req, res) => {
+router.post('/manage-data',verifyToken, async (req, res) => {
   const { data, replacedEntry } = req.body;
 
   try {
@@ -39,7 +44,7 @@ router.post('/manage-data', async (req, res) => {
 });
 
 // Handle PUT Request
-router.put('/manage-data', async (req, res) => {
+router.put('/manage-data',verifyToken, async (req, res) => {
   const { id, data } = req.body;
   Diffusion.updateOne({ _id: id }, { $set: data })
     .then(() => res.send({ status: 'success', payload: 'Data updated in MongoDB' }))
@@ -181,7 +186,7 @@ router.get('/find-by-id/:id', (req, res) => {
   
 
 // Handle POST Request
-router.post('/protein', async (req, res) => {
+router.post('/protein',verifyToken, async (req, res) => {
   const { data } = req.body;
 
   try {

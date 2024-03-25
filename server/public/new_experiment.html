@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add New Evidence</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  .form-row > div {
+    padding-right: 5px; /* Adjusts space between columns */
+  }
+  .form-group {
+    margin-bottom: 10px; /* Reduces space between form groups */
+  }
+  .form-label {
+    margin-bottom: 5px; /* Brings labels closer to inputs */
+  }
+  .btn-square {
+    width: 36px; /* Square shape */
+    height: 36px;
+    padding: 0;
+    margin-left: 5px; /* Space between input and button */
+    vertical-align: top; /* Aligns button with input */
+  }
+  .input-group-text {
+    height: calc(1.5em + .75rem + 2px); /* Adjusts height to match inputs */
+  }
+  .custom-form {
+    max-width: 600px; /* Makes form less wide */
+    margin: auto;
+  }
+  .btn-uniprot { background-color: Navy; color: white; margin-right: 10px; }
+  .btn-taxonomy { background-color: DarkOliveGreen; color: white; margin-right: 10px; }
+  .btn-pubmed { background-color: DarkSlateGray; color: white; }
+  
+  .required-asterisk {color: red;}
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  .navbar {
+      display: flex;
+  }
+
+  .navbar-item {
+    padding: 5px 10px;
+    margin-right: 10px; /* Space between items */
+    cursor: pointer;
+    text-decoration: none; /* Removes underline from links */
+    color: black; /* Default text color */
+    background-color: transparent; /* Transparent background by default */
+  }
+
+  .navbar-item:hover {
+      background-color: #f0f0f0; /* Light background on hover */
+      text-decoration: none; /* Removes underline from links */
+      color: black; /* Default text color */
+      font-weight: bold; /* Bold text on hover */
+  }
+
+  .navbar-selected {
+      background-color: #e9e9e9; /* Slightly darker background for selected item */
+      box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2); /* Subtle shadow for selected item */
+  }
+
+  .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: lightgray;
+      padding: 10px;
+      margin-bottom: 10px;
+  }
+
+</style>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="header">
+  <nav class="navbar">
+    <a class="navbar-item" href="/">Browse</a>
+    <a class="navbar-item navbar-selected" href="/new_experiment">New experiment</a>
+    <a class="navbar-item" href="/new_protein">New protein</a>
+  </nav>
+  <div id="signInDiv" class="ml-auto"></div>
+</div>
+
+<div class="container custom-form">
+  <h2 class="mt-2">Add New Experiment</h2>
+  <p><span class="required-asterisk">*</span> required fields.</p>
+  <form>
+
+    <!-- PubMed ID, Reference Type -->
+    <div class="form-row align-items-center mb-2">
+      <div class="col-5">
+        <label for="referenceId" class="form-label">PubMed ID (alt. DOI)<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="referenceId" placeholder="PubMed ID" value="">
+          <div class="input-group-append">
+            <button type="button" id="pubmedLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-2 d-flex flex-column align-items-start mt-5 pr-3 pl-1">
+        <input type="checkbox" id="doiCheckbox" aria-label="Checkbox for DOI">
+        <label for="doiCheckbox">DOI</label>
+      </div>      
+      <div class="col-5">
+        <label for="referenceType" class="form-label">Reference Type</label>
+        <select class="form-control" id="referenceType">
+          <option value="" selected>Choose...</option>
+          <option value="primary">Main reference (experiment)</option>
+          <option value="secondary">Secondary reference (tables, lists or citations)</option>
+          <option value="surrogate_primary">Best Available Reference (secondary but main is unreachable)</option>
+        </select>
+      </div> 
+    </div>
+
+    <!-- Protein Name, Species, Accession Number -->
+    <div class="form-row align-items-center mb-2">
+      <div class="col">
+        <label for="proteinName" class="form-label">Protein Name<span class="required-asterisk">*</span></label>
+        <input type="text" class="form-control" id="proteinName" placeholder="Protein Name" value="">
+      </div>
+      <div class="col">
+        <label for="species" class="form-label">Species (Taxon ID)<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="species" placeholder="Species" value="">
+          <div class="input-group-append">
+            <button type="button" id="speciesLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <label for="accessionNumber" class="form-label">Accession Number<span class="required-asterisk">*</span></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="accessionNumber" placeholder="Accession Number" value="">
+          <div class="input-group-append">
+            <button type="button" id="accessionLink" class="btn btn-primary btn-square d-none">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diffusion Coefficient, Error, Unit -->
+    <div class="form-row align-items-center mb-2">
+      <div class="col">
+        <label for="diffusionCoefficient" class="form-label">Diffusion Coefficient <span class="required-asterisk">*</span></label>
+        <input type="number" class="form-control" id="diffusionCoefficient" placeholder="Coefficient" value="">
+      </div>
+      <div class="col">
+        <label for="diffusionError" class="form-label">Error</label>
+        <input type="number" class="form-control" id="diffusionError" placeholder="Error" value="">
+      </div>
+      <div class="col">
+        <label for="diffusionUnit" class="form-label">Unit<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="diffusionUnit">
+          <option value="" selected>Choose...</option>
+          <option value="um2/s">um²/s</option>
+          <option value="1e-7 cm2/s">10^(-7) cm²/s</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Manual Processing -->
+    <div class="form-group mb-2">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" class="custom-control-input" id="manualEstimationCheckbox">
+          <label class="custom-control-label" for="manualEstimationCheckbox">Manual estimation</label>
+        </div>
+        <select class="form-control d-none" id="manualProcessing">
+        <option value="" selected>Choose...</option>
+        <option value="visual">Visual approximation (from plots)</option>
+        <option value="calculations">Data inference (integration, calculations, etc.)</option>
+        <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherManualProcessingContainer">
+        <label for="otherManualProcessing" class="form-label">Specify Manual Processing</label>
+        <input type="text" class="form-control" id="otherManualProcessing" placeholder="Please specify" value="">
+    </div>
+    
+    <!-- Method -->
+    <div class="form-group mb-2">
+        <label for="method" class="form-label">Method<span class="required-asterisk">*</span></label>
+        <select class="form-control" id="method">
+        <option value="" selected>Choose...</option>
+        <option value="DLS">Dynamic Light Scattering (DLS) - Photon Correlation Spectroscopy (PCS)</option>
+        <option value="FCS">Fluorescence Correlation Spectroscopy (FCS)</option>
+        <option value="PFG-NMR">Pulse Field Gradient NMR (PFG-NMR)</option>
+        <option value="Unknown">Not informed</option>
+        <option value="Other">Other</option>
+        </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherMethodContainer">
+        <label for="otherMethod" class="form-label">Specify Method</label>
+        <input type="text" class="form-control" id="otherMethod" placeholder="Please specify" value="">
+    </div>
+
+    <!-- Extra data -->
+    <div class="form-group mb-2">
+      <label for="comment" class="form-label">Additional comments</label>
+      <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
+    </div>
+
+    <!-- Manages PDBs -->
+    <div class="form-group mb-2">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="managePdbsCheckbox">
+        <label class="custom-control-label" for="managePdbsCheckbox">Manage PDBs</label>
+      </div>
+      <div class="form-row align-items-center mb-2 d-none" id="validPdbDiv">
+        <div class="col-3">
+          <label for="pdbStructures" class="form-label">Valid PDBs</label>
+        </div>
+        <div class="col-9">
+          <input type="text" class="form-control" id="pdbStructures" placeholder="4PTI, 8CAT, ..." value="">
+        </div>
+      </div>
+      <div class="form-row align-items-center mb-2 d-none" id="discardedPdbDiv">
+        <div class="col-3">
+          <label for="discardedPdbStructures" class="form-label">Discarded PDBs</label>
+        </div>
+        <div class="col-9">
+          <input type="text" class="form-control" id="discardedPdbStructures" placeholder="1MBO:mutated, 4GPD: wrong aggregation, ..." value="">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Replaces another entry --> 
+    <div class="form-group mb-2">
+      <div class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="replaceEntryCheckbox">
+        <label class="custom-control-label" for="replaceEntryCheckbox">Replace and entry</label>
+      </div>
+      <input type="text" class="form-control d-none" id="replacedEntry" placeholder="Entry ID..." value="">
+    </div>
+
+    <!-- Submit button -->
+    <div class="form-group text-center">
+        <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
+    </div>
+    
+
+  </form>
+
+  <div class="useful-links mt-4 text-center">
+    <h3>Useful Links</h3>
+    <div class="d-flex justify-content-center">
+      <a href="https://www.uniprot.org/" class="btn" style="background-color: Navy; color: white; margin-right: 10px;" target="_blank">Uniprot</a>
+      <a href="https://www.uniprot.org/taxonomy/" class="btn" style="background-color: DarkSlateGray; color: white; margin-right: 10px;" target="_blank">Uniprot Taxonomy</a>
+      <a href="https://pubmed.ncbi.nlm.nih.gov/" class="btn" style="background-color: rgb(72, 72, 72); color: white;" target="_blank">PubMed</a>      
+    </div>
+  </div>
+
+  <div aria-live="polite" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; min-height: 200px;">
+    <!-- Position it at the top right corner -->
+    <div style="position: absolute; top: 0; right: 0;">
+      <div id="submissionToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" style="background-color: khaki;">
+          <strong class="mr-auto">Submission Status</strong>
+          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="toast-body" style="background-color: palegoldenrod; width: 400px;">
+          <!-- The message will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>  
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+      setSignInDiv();
+
+      function setSignInDiv() {
+          const alias = getUserAlias();
+          if (alias === 'Anonymous') {
+              $('#signInDiv').html('<a class="btn btn-success" href="/login.html">Sign In</a>');
+          } else {
+          $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
+          };
+      };
+
+
+      function readCookie(name) {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for(let i=0;i < ca.length;i++) {
+              let c = ca[i];
+              while (c.charAt(0)==' ') c = c.substring(1,c.length);
+              if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+          }
+          return null;
+      }
+
+      function getUserAlias() {
+          const userDataCookie = readCookie('userData');
+          if (userDataCookie) {
+              const userData = JSON.parse(decodeURIComponent(userDataCookie));
+              return userData.alias;
+          } else {
+              return 'Anonymous';
+          }
+      }
+
+      function getUserId() {
+          const userDataCookie = readCookie('userData');
+          if (userDataCookie) {
+              const userData = JSON.parse(decodeURIComponent(userDataCookie));
+              return userData._id;
+          } else {
+              return null;
+          }
+      }
+
+      // Function to show or hide 'Other' input fields based on dropdown selection
+      function handleOtherInputFields() {
+          $('#manualProcessing').change(function() {
+              if ($(this).val() === 'Other') {
+                  $('#otherManualProcessingContainer').removeClass('d-none');
+              } else {
+                  $('#otherManualProcessingContainer').addClass('d-none');
+              }
+          });
+          $('#method').change(function() {
+              if ($(this).val() === 'Other') {
+                  $('#otherMethodContainer').removeClass('d-none');
+              } else {
+                  $('#otherMethodContainer').addClass('d-none');
+              }
+          });
+          // Initialize dynamic link buttons
+          initDynamicLinks();
+      }
+  
+      // Initialize event listeners for dynamic link buttons
+      function initDynamicLinks() {
+          $('#accessionNumber').on('input', function() {
+              const val = $(this).val();
+              const btn = $('#accessionLink');
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('https://www.uniprot.org/uniprotkb/${val}/entry', '_blank')`);
+              }
+          });
+  
+          $('#species').on('input', function() {
+              const val = $(this).val();
+              const btn = $('#speciesLink');
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('https://www.uniprot.org/taxonomy/${val}', '_blank')`);
+              }
+          });
+  
+          $('#referenceId').on('input', function() {
+              const val = $(this).val();
+              const btn = $('#pubmedLink');
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('https://pubmed.ncbi.nlm.nih.gov/${val}/', '_blank')`);
+              }
+          });
+      }
+  
+      // Toast configuration
+      $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
+  
+      function submitForm() {
+
+          const isDoi = document.getElementById('doiCheckbox').checked;
+
+          const formData = {
+            diffusionCoefficient: document.getElementById('diffusionCoefficient').value || null,
+            diffusionError: document.getElementById('diffusionError').value || null,
+            diffusionUnit: document.getElementById('diffusionUnit').value || null,
+            manualProcessing: document.getElementById('manualProcessing').value || null,
+            otherManualProcessing: document.getElementById('otherManualProcessing').value || null,
+            method: document.getElementById('method').value || null,
+            otherMethod: document.getElementById('otherMethod').value || null,
+            proteinName: document.getElementById('proteinName').value || null,
+            species: document.getElementById('species').value || null,
+            accessionNumber: document.getElementById('accessionNumber').value || null,
+            referenceId: document.getElementById('referenceId').value || null,
+            referenceIdType: isDoi ? 'doi' : 'pmid',
+            referenceType: document.getElementById('referenceType').value || null,
+            comment: document.getElementById('comment').value || null,
+            userId: getUserId(),
+            pdbStructures: document.getElementById('pdbStructures').value.split(',').filter(s => s.trim()).map(s => s.trim().toUpperCase()) || null,
+            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').filter(s => s.trim()).map((input) => {
+              data = input.split(':')
+              return {
+                pdbId: data[0].trim().toUpperCase(),
+                reason: data[1].trim()
+              }
+            }) || null
+          };
+        
+          // Entry that is replaced by this one, in POST is a separate field
+          const replacedEntry = document.getElementById('replacedEntry').value || null
+
+
+          // Check if mandatory fields are filled
+          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId', 'userID'];
+
+          for (let field of mandatoryFields) {
+              if (!formData[field]) {
+                //change toast to red color
+                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
+                $('#submissionToast').find('.toast-body').css('background-color', 'lightpink');
+                $('.toast-body').text(`Missing field: ${field}`);
+                $('#submissionToast').toast('show');
+                return;
+              }
+          }
+  
+          // Send data to server
+          fetch('/manage-data', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                data:formData,
+                replacedEntry
+              }),
+          })
+          .then(response => {
+              if (!response.ok) {
+                    throw new Error('Network response was not ok');
+              }
+              // Show toast message in green
+              $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
+              $('#submissionToast').find('.toast-body').css('background-color', 'lightcyan');
+              $('.toast-body').text(`Submitted ${$('#proteinName').val()}`);
+              $('#submissionToast').toast('show');
+              // Clear form fields
+              clearFormFields();
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
+      }
+  
+      function clearFormFields() {
+          $('form').find('input[type=text], input[type=number], select').val('');
+      }
+  
+      $('#submitForm').on('click', function(e) {
+          e.preventDefault();
+          submitForm();
+      });
+  
+      handleOtherInputFields(); // Initialize the function to handle 'Other' input fields
+
+      function toggleManualProcessingVisibility() {
+        $('#manualEstimationCheckbox').change(function() {
+            if ($(this).is(':checked')) {
+                $('#manualProcessing').removeClass('d-none');
+            } else {
+                $('#manualProcessing').addClass('d-none');
+            }
+        });
+      }
+
+      toggleManualProcessingVisibility();
+
+      function toggleReplaceEntryVisibility() {
+        $('#replaceEntryCheckbox').change(function() {
+            if ($(this).is(':checked')) {
+                $('#replacedEntry').removeClass('d-none');
+            } else {
+                $('#replacedEntry').addClass('d-none');
+            }
+        });
+      }
+
+      toggleReplaceEntryVisibility();
+
+      function toggleMangagePdbVisibility() {
+        $('#managePdbsCheckbox').change(function() {
+            if ($(this).is(':checked')) {
+                $('#validPdbDiv').removeClass('d-none');
+                $('#discardedPdbDiv').removeClass('d-none');
+            } else {
+                $('#validPdbDiv').addClass('d-none');
+                $('#discardedPdbDiv').addClass('d-none');
+            }
+        });
+      }
+
+      toggleMangagePdbVisibility();
+
+  });
+</script>
+  
+  
+</body>
+</html>

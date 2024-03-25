@@ -79,11 +79,11 @@
 <body>
 <div class="header">
     <nav class="navbar">
-        <a class="navbar-item" href="/index.html">New experiment</a>
-        <a class="navbar-item" href="/browse.html">Browse</a>
-        <a class="navbar-item navbar-selected" href="/">New protein</a>
+        <a class="navbar-item" href="/">Browse</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item navbar-selected" href="/new_protein">New protein</a>
     </nav>
-    <div class="ml-auto">Signed as <strong id="usernameDisplay">Anonymous</strong></div>
+    <div id="signInDiv" class="ml-auto"></div>
 </div>
 
 <div class="container custom-form">
@@ -172,11 +172,49 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-        let userName = prompt("Please enter your name:", "");
-        // Set the content of the #usernameDisplay element
-        document.querySelector('#usernameDisplay').textContent = userName ? userName : 'Anonymous';
-
         $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
+
+        setSignInDiv();
+
+        function setSignInDiv() {
+            const alias = getUserAlias();
+            if (alias === 'Anonymous') {
+                $('#signInDiv').html('<a class="btn btn-success" href="/login.html">Sign In</a>');
+            } else {
+            $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
+            };
+        };
+        
+        function readCookie(name) {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for(let i=0;i < ca.length;i++) {
+              let c = ca[i];
+              while (c.charAt(0)==' ') c = c.substring(1,c.length);
+              if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+          }
+          return null;
+        }
+
+        function getUserAlias() {
+            const userDataCookie = readCookie('userData');
+            if (userDataCookie) {
+                const userData = JSON.parse(decodeURIComponent(userDataCookie));
+                return userData.alias;
+            } else {
+                return 'Anonymous';
+            }
+        }
+
+        function getUserId() {
+          const userDataCookie = readCookie('userData');
+          if (userDataCookie) {
+              const userData = JSON.parse(decodeURIComponent(userDataCookie));
+              return userData._id;
+          } else {
+              return null;
+          }
+        }
 
         let validPdbCount = 1;
         let discardedPdbCount = 1;
@@ -333,14 +371,14 @@
             const formData = {
                 name: document.getElementById('proteinName').value || null,
                 description: document.getElementById('description').value || null,
-                userName: userName || 'Anonymous',
+                userId: getUserId(),
                 pdbStructures: pdbCodes || null,
                 experiments: experiments || null,
                 discardedPdb: discardedPdbObj || null
             };
 
             // Check if mandatory fields are filled
-            const mandatoryFields = ['name', 'pdbStructures', 'experiments'];
+            const mandatoryFields = ['name', 'pdbStructures', 'experiments','userId'];
 
             for (let field of mandatoryFields) {
                 if (!formData[field] || formData[field].length === 0) {

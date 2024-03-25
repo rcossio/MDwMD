@@ -15,8 +15,16 @@ router.post('/login', async (req, res) => {
       }
       bcrypt.compare(password, user.password, (err, isMatch) => {
         if (isMatch && !err) {
-          const token = jwt.sign({ id: user._id, alias:`${user.name} ${user.lastname[0]}.` }, config.jwtSecret, { expiresIn: '1h' });
-          res.cookie('jwt', token, { httpOnly: false, secure: false}); //{ httpOnly: true, secure: true }
+
+          tokenExpirationSeconds = 10 *60 // 10 minutes
+
+          const token = jwt.sign({ id: user._id }, config.jwtSecret, { expiresIn: tokenExpirationSeconds });
+          res.cookie('jwt', token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: tokenExpirationSeconds * 1000}); 
+
+          
+          const userData = { alias: `${user.name} ${user.lastname[0]}.`, id: user._id.toString() };
+          res.cookie('userData', JSON.stringify(userData), { httpOnly: false, secure: true, sameSite: 'Strict', maxAge: tokenExpirationSeconds * 1000 });
+
           res.json({ message: "User logged in successfully"});
         } else {
           res.status(401).json({ message: 'Authentication failed. Wrong password.' });

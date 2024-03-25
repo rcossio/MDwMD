@@ -84,11 +84,11 @@
 <body>
     <div class="header">
       <nav class="navbar">
-          <a class="navbar-item navbar-selected" href="/">New experiment</a>
-          <a class="navbar-item" href="/browse.html">Browse</a>
-          <a class="navbar-item" href="/new_protein.html">New protein</a>
+        <a class="navbar-item" href="/">Browse</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/new_protein">New protein</a>
       </nav>
-      <div class="ml-auto">Signed as <strong id="usernameDisplay">Anonymous</strong></div>
+      <div id="signInDiv" class="ml-auto"></div>
     </div>
     
     <div class="container custom-form">
@@ -290,10 +290,7 @@
         return;
       }
 
-      let userName = prompt("Please enter your name:", "");
-
-      // Set the content of the #usernameDisplay element
-      document.querySelector('#usernameDisplay').textContent = userName ? userName : 'Anonymous';
+      $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
 
       // Function to show or hide 'Other' input fields based on dropdown selection
       function handleOtherInputFields() {
@@ -347,6 +344,48 @@
   
       // Toast configuration
       $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
+      
+      setSignInDiv();
+
+      function setSignInDiv() {
+          const alias = getUserAlias();
+          if (alias === 'Anonymous') {
+              $('#signInDiv').html('<a class="btn btn-success" href="/login.html">Sign In</a>');
+          } else {
+          $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
+          };
+      };
+
+      function readCookie(name) {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for(let i=0;i < ca.length;i++) {
+              let c = ca[i];
+              while (c.charAt(0)==' ') c = c.substring(1,c.length);
+              if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+          }
+          return null;
+      }
+
+      function getUserAlias() {
+          const userDataCookie = readCookie('userData');
+          if (userDataCookie) {
+              const userData = JSON.parse(decodeURIComponent(userDataCookie));
+              return userData.alias;
+          } else {
+              return 'Anonymous';
+          }
+      }
+
+      function getUserId() {
+          const userDataCookie = readCookie('userData');
+          if (userDataCookie) {
+              const userData = JSON.parse(decodeURIComponent(userDataCookie));
+              return userData._id;
+          } else {
+              return null;
+          }
+      }
   
       function submitForm() {
 
@@ -367,7 +406,7 @@
             referenceIdType: isDoi ? 'doi' : 'pmid',
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
-            userName: userName || 'Anonymous',
+            userId: getUserId(),
             pdbStructures: document.getElementById('pdbStructures').value.split(',').filter(s => s.trim()).map(s => s.trim().toUpperCase()) || null,
             discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').filter(s => s.trim()).map((input) => {
               data = input.split(':')
@@ -386,7 +425,7 @@
           const id = urlParams.get('id');
 
           // Check if mandatory fields are filled
-          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId'];
+          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId', 'userId'];
 
           for (let field of mandatoryFields) {
               if (!formData[field]) {

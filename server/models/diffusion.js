@@ -17,9 +17,9 @@ const diffusionSchema = new mongoose.Schema({
     referenceType: String,
     comment: String,
     timestamp: String,
-    userName: String,
     active: Boolean,
-    supersededBy: { type: mongoose.Schema.Types.ObjectId },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+    supersededBy: { type: mongoose.Schema.Types.ObjectId, ref: 'experiments'},
     pdbStructures: [String],
     discardedPdbStructures: [{ pdbId: String, reason: String, _id: false }]
 });

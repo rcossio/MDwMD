@@ -4,12 +4,13 @@ const mongoose = require('mongoose');
 const proteinSchema = new mongoose.Schema({
     name: { type: String, required: true},
     description: String,
-    userName: String,
+    timestamp: String,
+    active: Boolean,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
     pdbStructures: [String],
     experiments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'experiments' }],
     discardedPdb: [{ pdbCode: String, note: String, _id: false }],
-    timestamp: String,
-    active: Boolean,
+
 });
   
 // Create Mongoose Model
