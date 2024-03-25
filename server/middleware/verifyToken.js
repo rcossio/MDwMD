@@ -1,15 +1,27 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config/environment');
+const User = require('../models/user');
 
 // Middleware to verify JWT token
-const verifyToken = (req, res, next) => {
-    const token = req.cookies.jwt || ''; // Assuming the token is sent in a cookie
-    jwt.verify(token, config.jwtSecret, (err, decoded) => {
+const verifyToken = async (req, res, next) => {
+    const token = req.cookies.jwt || '';
+    jwt.verify(token, config.jwtSecret, async (err, decoded) => {
       if (err) {
         return res.status(401).json({ message: 'Unauthorized access' });
       }
-      req.user = decoded; // Add decoded token to request so it can be used in the route
-      next();
+
+      const user = await User.findById(decoded.id);
+
+      if (!user) {
+        return res.status(401).json({ message: 'Unauthorized access' });
+      }
+
+      if (user.role !== 'curator') {
+        return res.status(401).json({ message: 'Unauthorized access' });
+      } else {
+        req.user = decoded; 
+        next();
+      }
     });
 };
 

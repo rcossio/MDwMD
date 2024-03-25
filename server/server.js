@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const config = require('./config/environment');
 
 const mainRouter = require('./routes/main');
+const apiRouter = require('./routes/api');
 const authRouter = require('./routes/auth');
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.static('public'));
 
 // Use router
 app.use('/', mainRouter);
+app.use('/api', apiRouter);
 app.use('/auth', authRouter);
 
 

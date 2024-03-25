@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Add New Evidence</title>
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
   .form-row > div {
     padding-right: 5px; /* Adjusts space between columns */
@@ -90,7 +91,7 @@
     <a class="navbar-item navbar-selected" href="/new_experiment">New experiment</a>
     <a class="navbar-item" href="/new_protein">New protein</a>
   </nav>
-  <div id="signInDiv" class="ml-auto"></div>
+  <div id="signInDiv" class="ml-auto pr-2"></div>
 </div>
 
 <div class="container custom-form">
@@ -211,31 +212,6 @@
       <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
     </div>
 
-    <!-- Manages PDBs -->
-    <div class="form-group mb-2">
-      <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="managePdbsCheckbox">
-        <label class="custom-control-label" for="managePdbsCheckbox">Manage PDBs</label>
-      </div>
-      <div class="form-row align-items-center mb-2 d-none" id="validPdbDiv">
-        <div class="col-3">
-          <label for="pdbStructures" class="form-label">Valid PDBs</label>
-        </div>
-        <div class="col-9">
-          <input type="text" class="form-control" id="pdbStructures" placeholder="4PTI, 8CAT, ..." value="">
-        </div>
-      </div>
-      <div class="form-row align-items-center mb-2 d-none" id="discardedPdbDiv">
-        <div class="col-3">
-          <label for="discardedPdbStructures" class="form-label">Discarded PDBs</label>
-        </div>
-        <div class="col-9">
-          <input type="text" class="form-control" id="discardedPdbStructures" placeholder="1MBO:mutated, 4GPD: wrong aggregation, ..." value="">
-        </div>
-      </div>
-
-    </div>
-
     <!-- Replaces another entry --> 
     <div class="form-group mb-2">
       <div class="custom-control custom-checkbox">
@@ -289,9 +265,9 @@
       function setSignInDiv() {
           const alias = getUserAlias();
           if (alias === 'Anonymous') {
-              $('#signInDiv').html('<a class="btn btn-success" href="/login.html">Sign In</a>');
+              $('#signInDiv').html('<a class="btn btn-success" href="/login">Sign In</a>');
           } else {
-          $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
+          $('#signInDiv').html(`<i class="fa-solid fa-circle-user"></i> <strong>${getUserAlias()}</strong>`);
           };
       };
 
@@ -399,15 +375,7 @@
             referenceIdType: isDoi ? 'doi' : 'pmid',
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
-            userId: getUserId(),
-            pdbStructures: document.getElementById('pdbStructures').value.split(',').filter(s => s.trim()).map(s => s.trim().toUpperCase()) || null,
-            discardedPdbStructures: document.getElementById('discardedPdbStructures').value.split(',').filter(s => s.trim()).map((input) => {
-              data = input.split(':')
-              return {
-                pdbId: data[0].trim().toUpperCase(),
-                reason: data[1].trim()
-              }
-            }) || null
+            userId: getUserId()
           };
         
           // Entry that is replaced by this one, in POST is a separate field
@@ -415,7 +383,7 @@
 
 
           // Check if mandatory fields are filled
-          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId', 'userID'];
+          const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId', 'userId'];
 
           for (let field of mandatoryFields) {
               if (!formData[field]) {
@@ -429,7 +397,7 @@
           }
   
           // Send data to server
-          fetch('/manage-data', {
+          fetch('/api/experiment', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -490,20 +458,6 @@
       }
 
       toggleReplaceEntryVisibility();
-
-      function toggleMangagePdbVisibility() {
-        $('#managePdbsCheckbox').change(function() {
-            if ($(this).is(':checked')) {
-                $('#validPdbDiv').removeClass('d-none');
-                $('#discardedPdbDiv').removeClass('d-none');
-            } else {
-                $('#validPdbDiv').addClass('d-none');
-                $('#discardedPdbDiv').addClass('d-none');
-            }
-        });
-      }
-
-      toggleMangagePdbVisibility();
 
   });
 </script>

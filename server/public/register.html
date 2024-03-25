@@ -95,27 +95,39 @@
 </div>
 
 <div class="container custom-form">
-  <h2 class="mt-2">Log In</h2>
+  <h2 class="mt-2">Register</h2>
   <form>
     <!-- Experiments Section -->
-    <div class="form-row mb-2 mt-3">
-        <div class="col-6">
-            <label class="mb-1" >E-mail</label>
+    <div class="form-col mb-2 mt-3">
+        <div class="row"> 
+          <div  class="col-6 px-1">
+            <label class="mb-1">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter your name">
+          </div>
+          <div class="col-6 px-1">
+            <label class="mb-1">Last Name</label>
+            <input type="text" class="form-control" id="lastname" placeholder="Enter your family name">
+          </div>
+        </div>  
+        <div class="row mt-3"> 
+          <div class="col-6 px-1">
+            <label class="mb-1"> E-mail</label>
             <input type="text" class="form-control" id="email" placeholder="Enter your email">
+          </div>
+          <div class="col-6 px-1">
+            <label class="mb-1">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter your password">
+          </div>
         </div>
-        <div class="col-6">
-          <label class="mb-1">Password</label>
-          <input type="password" class="form-control" id="password" placeholder="Enter your password">
-      </div>
     </div>
 
     <!-- Submit button -->
     <div class="form-group text-center mt-2">
         <div>
-          <button type="button" id="submitForm" class="btn btn-primary btn-lg">Sign In</button>
+          <button type="button" id="submitForm" class="btn btn-primary btn-lg">Sign Up</button>
         </div>
         <div class="mt-2">
-          <a class="btn btn-secondary" href="/register">Register</a>
+          <a class="btn btn-secondary" href="/login">Log in</a>
         </div>
     </div>
   </form>
@@ -179,11 +191,13 @@
       function submitForm() {
           const formData = {
               email: document.getElementById('email').value,
-              password: document.getElementById('password').value
+              password: document.getElementById('password').value,
+              name: document.getElementById('name').value,
+              lastname: document.getElementById('lastname').value
           };
 
           // Check if mandatory fields are filled
-          if (!formData.email || !formData.password) {
+          if (!formData.email || !formData.password || !formData.name || !formData.lastname) {
             //change toast to red color
             $('.toast-body').text(`Missing field`);
             $('#submissionToast').toast('show');
@@ -191,7 +205,7 @@
           }
 
           // Send data to server
-          fetch('/auth/login', {
+          fetch('/auth/register', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -202,13 +216,12 @@
               if (!response.ok) {
                     throw new Error('Network response was not ok');
               }
-              setSignInDiv();
               userAlias = getUserAlias();
               // Show toast message in green
               $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
               $('#submissionToast').find('.toast-body').css('background-color', 'lightcyan');
               $('#submissionToast').find('.toast-header').text('Welcome!')
-              $('.toast-body').text(`${userAlias}, you are now logged in!`);
+              $('.toast-body').text(`${userAlias}, you are now registered!`);
               $('#submissionToast').toast('show');
               // Clear form fields
               clearFormFields();

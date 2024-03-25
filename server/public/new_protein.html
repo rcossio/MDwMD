@@ -83,7 +83,7 @@
         <a class="navbar-item" href="/new_experiment">New experiment</a>
         <a class="navbar-item navbar-selected" href="/new_protein">New protein</a>
     </nav>
-    <div id="signInDiv" class="ml-auto"></div>
+    <div id="signInDiv" class="ml-auto pr-2"></div>
 </div>
 
 <div class="container custom-form">
@@ -179,9 +179,9 @@
         function setSignInDiv() {
             const alias = getUserAlias();
             if (alias === 'Anonymous') {
-                $('#signInDiv').html('<a class="btn btn-success" href="/login.html">Sign In</a>');
+                $('#signInDiv').html('<a class="btn btn-success" href="/login">Sign In</a>');
             } else {
-            $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
+            $('#signInDiv').html(`<i class="fa-solid fa-circle-user"></i> <strong>${getUserAlias()}</strong>`);
             };
         };
         
@@ -424,7 +424,7 @@
             }
 
             // Send data to server
-            fetch('/protein', {
+            fetch('/api/protein', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

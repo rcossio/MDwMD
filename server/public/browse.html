@@ -78,7 +78,7 @@
         <a class="navbar-item" href="/new_experiment">New experiment</a>
         <a class="navbar-item" href="/new_protein">New protein</a>
     </nav>
-    <div id="signInDiv" class="ml-auto"></div>
+    <div id="signInDiv" class="ml-auto pr-2"></div>
 </div>
 
 <div class="container custom-form">
@@ -167,9 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function setSignInDiv() {
         const alias = getUserAlias();
         if (alias === 'Anonymous') {
-            $('#signInDiv').html('<a class="btn btn-success" href="/login.html">Sign In</a>');
+            $('#signInDiv').html('<a class="btn btn-success" href="/login">Sign In</a>');
         } else {
-        $('#signInDiv').html(`Signed as <strong>${getUserAlias()}</strong>`);
+        $('#signInDiv').html(`<i class="fa-solid fa-circle-user"></i> <strong>${getUserAlias()}</strong>`);
         };
     };
 
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const species = document.getElementById('speciesInput').value;
         const referenceType = document.getElementById('referenceTypeInput').value;
 
-        fetch('/search', {
+        fetch('/api/search', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json', 
@@ -423,7 +423,7 @@ async function displayDataRow(row) {
         comment: row.comment || "",
         pdbCodes,
         unknownPdbCodes,
-        manageIcon: `<a href="/manage.html?id=${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>`
+        manageIcon: `<a href="/manage/${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>`
     };
 }
 

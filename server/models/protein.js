@@ -9,8 +9,7 @@ const proteinSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
     pdbStructures: [String],
     experiments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'experiments' }],
-    discardedPdb: [{ pdbCode: String, note: String, _id: false }],
-
+    discardedPdb: [{ pdbCode: String, note: String, _id: false }]
 });
   
 // Create Mongoose Model
