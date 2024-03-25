@@ -28,13 +28,11 @@ The project is organized into the following directories, each containing relevan
 
 ## Next Steps 
 
-### Concepts
-- **Use cases**: Identify concrete use cases of the diffusion coefficient of proteins so they can be presented to the community.
-
 ### Database
 
 - **Load Data**: Follow HydroPro text to load enough diffusion data and linked PDBs so that you can make a good model.
 - **Duplicated uniprot**: Trypsin and trypsinogen have the same uniprot id, as well as chemotrypsin/chemotrypsinogen. We need a new identifier.
+- **MIADE and Disprot**: Read about MIADE and (10.1101/2022.07.12.495092v1) and best practices (https://arxiv.org/pdf/2310.16716.pdf)
 
 ### Back-end
 
@@ -64,6 +62,7 @@ The project is organized into the following directories, each containing relevan
 
 ### Molecular dynamics
 - **Ligandless complexes**: Start by complex without ligand, they are easier
+- **Crysol**: Think of using spherical harmonic coefficients to calculate the diffusion coefficient, instead of bead/shell modelling
 
 
 ## Insights from Other DBs

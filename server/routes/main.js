@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Bottleneck = require('bottleneck');
 const xml2js = require('xml2js').parseStringPromise; 
-const DiffusionData = require('../dao/diffusionModel'); 
-const ReferenceData = require('../dao/referenceModel'); 
-const ProteinData = require('../dao/proteinModel');
+const Diffusion = require('../models/diffusion'); 
+const Reference = require('../models/reference'); 
+const Protein = require('../models/protein');
 
 // Initialize a new bottleneck limiter
 const limiter = new Bottleneck({
-  maxConcurrent: 1, // Maximum number of jobs running at the same time
-  minTime: 500 // Minimum time (in milliseconds) between job executions
+  maxConcurrent: 1, 
+  minTime: 500
 });
 
 // Define your routes here
@@ -27,9 +27,9 @@ router.post('/manage-data', async (req, res) => {
   const { data, replacedEntry } = req.body;
 
   try {
-    const newEntryId = await DiffusionData.create({ ...data, active: true, timestamp: new Date().toISOString() });
+    const newEntryId = await Diffusion.create({ ...data, active: true, timestamp: new Date().toISOString() });
     if (replacedEntry) {
-      await DiffusionData.updateOne({ _id: replacedEntry }, { $set: { supersededBy: newEntryId, active: false } });
+      await Diffusion.updateOne({ _id: replacedEntry }, { $set: { supersededBy: newEntryId, active: false } });
     }
     res.send({ status: 'success', payload: 'Data saved to MongoDB' });
   } catch (err) {
@@ -41,7 +41,7 @@ router.post('/manage-data', async (req, res) => {
 // Handle PUT Request
 router.put('/manage-data', async (req, res) => {
   const { id, data } = req.body;
-  DiffusionData.updateOne({ _id: id }, { $set: data })
+  Diffusion.updateOne({ _id: id }, { $set: data })
     .then(() => res.send({ status: 'success', payload: 'Data updated in MongoDB' }))
     .catch(err => {
       console.error('Error updating data:', err);
@@ -73,11 +73,11 @@ router.post('/search', async (req, res) => {
   }
 
   try {
-    const data = await DiffusionData.find({ $and: queryConditions }).sort({ accessionNumber: 1 });
+    const data = await Diffusion.find({ $and: queryConditions }).sort({ accessionNumber: 1 });
 
     const publicDataTasks = data.map(async (item) => {
       let year;
-      const reference = await ReferenceData.findOne({ $or: [{ pubmedId: item.referenceId }, { DOI: item.referenceId }] });
+      const reference = await Reference.findOne({ $or: [{ pubmedId: item.referenceId }, { DOI: item.referenceId }] });
 
       if (reference) {
           year = reference.year;
@@ -87,9 +87,9 @@ router.post('/search', async (req, res) => {
           // TO FIX: Save the reference data to the database WHEN POSTING THE DATA, NOT WHEN SEARCHING
           try {
             if (item.referenceIdType === 'pmid') {
-              await ReferenceData.create({ pubmedId: item.referenceId, year: year });
+              await Reference.create({ pubmedId: item.referenceId, year: year });
             } else if (item.referenceIdType === 'doi') {
-              await ReferenceData.create({ DOI: item.referenceId, year: year });
+              await Reference.create({ DOI: item.referenceId, year: year });
             }
           } catch (error) {
             console.error('Error saving reference data:', error);
@@ -168,7 +168,7 @@ async function fetchPublicationYear(refId, refIdType) {
 router.get('/find-by-id/:id', (req, res) => {
   const { id } = req.params;
 
-  DiffusionData.findById(id)
+  Diffusion.findById(id)
     .then(data => res.json({
       status: 'success',
       payload: data
@@ -185,7 +185,7 @@ router.post('/protein', async (req, res) => {
   const { data } = req.body;
 
   try {
-    await ProteinData.create({ ...data, active: true, timestamp: new Date().toISOString() });
+    await Protein.create({ ...data, active: true, timestamp: new Date().toISOString() });
 
     res.send({ status: 'success', payload: 'Data saved to MongoDB' });
   } catch (err) {
