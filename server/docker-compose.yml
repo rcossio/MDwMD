@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  app:
+    image: pddt-backend-img
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    networks:
+      - pddt-network-0
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env.production
+
+  mongo:
+    image: mongo
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    restart: unless-stopped
+    container_name: mongo-container-0
+    networks:
+      - pddt-network-0
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env.mongo
+
+networks:
+  pddt-network-0:
+    name: pddt-network-0
+    driver: bridge
