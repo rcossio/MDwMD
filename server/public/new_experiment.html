@@ -176,56 +176,18 @@
       $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
       displayUserAlias('signInDiv');
 
-      // Function to show or hide 'Other' input fields based on dropdown selection
-      function handleOtherInputFields() {
-          $('#manualProcessing').change(function() {
-              if ($(this).val() === 'Other') {
-                  $('#otherManualProcessingContainer').removeClass('d-none');
-              } else {
-                  $('#otherManualProcessingContainer').addClass('d-none');
-              }
-          });
-          $('#method').change(function() {
-              if ($(this).val() === 'Other') {
-                  $('#otherMethodContainer').removeClass('d-none');
-              } else {
-                  $('#otherMethodContainer').addClass('d-none');
-              }
-          });
-          // Initialize dynamic link buttons
-          initDynamicLinks();
-      }
+      setDynamicLink('#accessionNumber', '#accessionLink', 'https://www.uniprot.org/uniprotkb/');
+      setDynamicLink('#species', '#speciesLink', 'https://www.uniprot.org/taxonomy/');
+      setDynamicLink('#referenceId', '#pubmedLink', 'https://pubmed.ncbi.nlm.nih.gov/');
+
+      addOtherInputField('#method', '#otherMethodContainer');
+      addOtherInputField('#manualProcessing', '#otherManualProcessingContainer');
+
+      toggleVisibility('#replaceEntryCheckbox','#replacedEntry');
+      toggleVisibility('#manualEstimationCheckbox', '#manualProcessing');
+
   
-      // Initialize event listeners for dynamic link buttons
-      function initDynamicLinks() {
-          $('#accessionNumber').on('input', function() {
-              const val = $(this).val();
-              const btn = $('#accessionLink');
-              btn.toggleClass('d-none', !val); // Show button if value is not empty
-              if (val) {
-                  btn.attr('onclick', `window.open('https://www.uniprot.org/uniprotkb/${val}/entry', '_blank')`);
-              }
-          });
-  
-          $('#species').on('input', function() {
-              const val = $(this).val();
-              const btn = $('#speciesLink');
-              btn.toggleClass('d-none', !val); // Show button if value is not empty
-              if (val) {
-                  btn.attr('onclick', `window.open('https://www.uniprot.org/taxonomy/${val}', '_blank')`);
-              }
-          });
-  
-          $('#referenceId').on('input', function() {
-              const val = $(this).val();
-              const btn = $('#pubmedLink');
-              btn.toggleClass('d-none', !val); // Show button if value is not empty
-              if (val) {
-                  btn.attr('onclick', `window.open('https://pubmed.ncbi.nlm.nih.gov/${val}/', '_blank')`);
-              }
-          });
-      }
-  
+      // Events
       function submitForm() {
 
           const isDoi = document.getElementById('doiCheckbox').checked;
@@ -291,31 +253,38 @@
           submitForm();
       });
   
-      handleOtherInputFields(); // Initialize the function to handle 'Other' input fields
 
-      function toggleManualProcessingVisibility() {
-        $('#manualEstimationCheckbox').change(function() {
+      // Helper functions
+      function toggleVisibility(checkboxSelector,targetSelector) {
+        $(checkboxSelector).change(function() {
             if ($(this).is(':checked')) {
-                $('#manualProcessing').removeClass('d-none');
+                $(targetSelector).removeClass('d-none');
             } else {
-                $('#manualProcessing').addClass('d-none');
+                $(targetSelector).addClass('d-none');
             }
         });
       }
 
-      toggleManualProcessingVisibility();
-
-      function toggleReplaceEntryVisibility() {
-        $('#replaceEntryCheckbox').change(function() {
-            if ($(this).is(':checked')) {
-                $('#replacedEntry').removeClass('d-none');
-            } else {
-                $('#replacedEntry').addClass('d-none');
-            }
-        });
+      function addOtherInputField(triggerInput, targetInput) {
+          $(triggerInput).change(function() {
+              if ($(this).val() === 'Other') {
+                  $(targetInput).removeClass('d-none');
+              } else {
+                  $(targetInput).addClass('d-none');
+              }
+          });
       }
 
-      toggleReplaceEntryVisibility();
+      function setDynamicLink(inputSelector, buttonSelector, url) {
+          $(inputSelector).on('input', function() {
+              const val = $(this).val();
+              const btn = $(buttonSelector);
+              btn.toggleClass('d-none', !val); // Show button if value is not empty
+              if (val) {
+                  btn.attr('onclick', `window.open('${url}${val}', '_blank')`);
+              }
+          });
+      }
 
   });
 </script>

@@ -71,6 +71,8 @@
       clickOnEnter('submitBtn');
 
       function submitForm() {
+          startSpinnerAnimation(document.getElementById('submitBtn'));
+
           const formData = {
               email: document.getElementById('email').value,
               password: document.getElementById('password').value,
@@ -93,6 +95,7 @@
               body: JSON.stringify(formData),
           })
           .then(response => {
+              stopSpinnerAnimation(document.getElementById('submitBtn'), 'Sign Up');
               if (!response.ok) {
                     showToast('Error', 'Invalid email or password', 'red')
                     throw new Error('Network response was not ok');

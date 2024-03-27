@@ -97,3 +97,14 @@ export function displayUserAlias(divId) {
         document.getElementById(divId).innerHTML = `<i class="fa-solid fa-circle-user"></i> <strong>${alias}</strong>`;
     }
 };
+
+
+export function startSpinnerAnimation(button) {
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.setAttribute('disabled', true);
+}
+
+export function stopSpinnerAnimation(button,text) {
+    button.innerHTML = text;
+    button.removeAttribute('disabled');
+}

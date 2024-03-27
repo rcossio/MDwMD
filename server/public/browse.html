@@ -25,7 +25,7 @@
     <div class="form-inline">
         <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-50" placeholder="Search by Protein Name, Accession Number, Pubmed ID ...">
         <input type="text" id="speciesInput" class="form-control mb-3 mr-2" placeholder="Filter by species ID">
-        <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2">Search</button>
+        <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2" style="width: 100px">Search</button>
         <button type="button" id="advancedSearchBtn" class="btn btn-primary mb-3 mr-2"><i class="fas fa-sliders"></i></button>
     </div>
     <div class="form-inline d-none" id="advancedSearchDiv">
@@ -97,7 +97,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
-    const { getUserAlias, clickOnEnter, displayUserAlias } = await import('./js/utils.js');
+    const { getUserAlias, clickOnEnter, displayUserAlias,startSpinnerAnimation,stopSpinnerAnimation } = await import('./js/utils.js');
     displayUserAlias('signInDiv');
     clickOnEnter('searchBtn');
 
@@ -107,6 +107,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('searchBtn').addEventListener('click', async function() {
+        startSpinnerAnimation(this);
+
         const query = document.getElementById('searchInput').value;
         const species = document.getElementById('speciesInput').value;
         const referenceType = document.getElementById('referenceTypeInput').value;
@@ -143,6 +145,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Once all rows have been processed, show the download form
             Promise.all(rowPromises).then(() => {
+                stopSpinnerAnimation(document.getElementById('searchBtn'), 'Search');
+
                 // Generate filters buttons
                 const speciesListDiv = document.getElementById('speciesList');
                 const referenceTypeListDiv = document.getElementById('referenceTypeList');
@@ -155,7 +159,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('download-form-div').classList.remove('d-none');
             });
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error)
+            stopSpinnerAnimation(document.getElementById('searchBtn'), 'Search');
+        });
     });
 
     document.getElementById('downloadBtn').addEventListener('click', function() {

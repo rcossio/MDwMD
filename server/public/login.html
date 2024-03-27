@@ -51,7 +51,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
-      const { showToast, clearFormFields, displayUserAlias, clickOnEnter } = await import('./js/utils.js');
+      const { showToast, clearFormFields, getUserAlias, displayUserAlias, clickOnEnter, startSpinnerAnimation,stopSpinnerAnimation } = await import('./js/utils.js');
   
       // Configurations
       $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
@@ -60,6 +60,7 @@
 
       // Events
       function submitForm() {
+          startSpinnerAnimation(document.getElementById('submitBtn'));
           const formData = {
               email: document.getElementById('email').value,
               password: document.getElementById('password').value
@@ -80,14 +81,14 @@
               body: JSON.stringify(formData),
           })
           .then(response => {
+              stopSpinnerAnimation(document.getElementById('submitBtn'),'Sign In');
               if (!response.ok) {
                     if (response.status === 401) {
                         showToast('Error', 'Invalid email or password', 'red')
                     }
                     throw new Error('Network response was not ok');
-
               }
-              setSignInDiv();
+              displayUserAlias('signInDiv');
               userAlias = getUserAlias();
               showToast('Welcome', `${userAlias}, you are now logged in!`, 'green');
               clearFormFields();
