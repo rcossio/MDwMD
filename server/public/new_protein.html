@@ -6,72 +6,7 @@
     <title>Create a New Protein</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <style>
-        .form-row > div {
-        padding-right: 5px; /* Adjusts space between columns */
-        }
-        .form-group {
-        margin-bottom: 10px; /* Reduces space between form groups */
-        }
-        .form-label {
-        margin-bottom: 5px; /* Brings labels closer to inputs */
-        }
-        .btn-square {
-        width: 36px; /* Square shape for buttons */
-        height: 36px;
-        padding: 0;
-        margin-left: 5px; /* Space between input and button */
-        vertical-align: top; /* Aligns button with input */
-        }
-        .input-group-text {
-        height: calc(1.5em + .75rem + 2px); /* Adjusts height to match inputs */
-        }
-        .custom-form {
-        max-width: 600px; /* Makes form less wide */
-        margin: auto;
-        }
-
-        .required-asterisk { color: red; }
-
-        .navbar {
-        display: flex;
-        }
-        .navbar-item {
-        padding: 5px 10px;
-        margin-right: 10px; /* Space between items */
-        cursor: pointer;
-        text-decoration: none; /* Removes underline from links */
-        color: black; /* Default text color */
-        background-color: transparent; /* Transparent background by default */
-        }
-        .navbar-item:hover {
-        background-color: #f0f0f0; /* Light background on hover */
-        text-decoration: none; /* Keeps links without underline on hover */
-        color: black; /* Default text color */
-        font-weight: bold; /* Bold text on hover */
-        }
-        .navbar-selected {
-        background-color: #e9e9e9; /* Slightly darker background for selected item */
-        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2); /* Subtle shadow for selected item */
-        }
-
-        .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: lightgray;
-        padding: 10px;
-        margin-bottom: 10px;
-        }
-
-        #discardedPdbContainer {
-            padding-right: 2px;
-        }
-        #discardedPdbCommentsContainer {
-            padding-left: 2px;
-        }
-
-    </style>
+    <link href="/css/styles.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -86,7 +21,7 @@
     <div id="signInDiv" class="ml-auto pr-2"></div>
 </div>
 
-<div class="container custom-form">
+<div class="container form-block">
     <h2 class="mt-2">Create a New Protein</h2>
     <form>
         <!-- Name -->
@@ -123,10 +58,10 @@
                 <label class="mr-5">Discarded PDB</label>
                 <button type="button" class="btn btn-sm btn-secondary ml-5" id="pasteInvalid">Paste <i class="fa-solid fa-paste"></i></button>
                 <div class="row mt-1">
-                    <div class="col-6" id="discardedPdbContainer">
+                    <div class="col-6" id="discardedPdbContainer" style="padding-right: 2px;">
                         <input type="text" class="form-control" id="invalid-pdb-code-0" placeholder="5HTZ">
                     </div>
-                    <div class="col-6" id="discardedPdbCommentsContainer">
+                    <div class="col-6" id="discardedPdbCommentsContainer" style="padding-left: 2px;">
                         <input type="text" class="form-control" id="invalid-pdb-note-0" placeholder="mutated">
                     </div>
                 </div>
@@ -146,75 +81,18 @@
 
         <!-- Submit button -->
         <div class="form-group text-center">
-            <button type="button" id="submitForm" class="btn btn-primary btn-lg">Submit</button>
+            <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Submit</button>
         </div>
     </form>
-
-    <!-- Toast container -->
-    <div id="toastContainer" aria-live="polite" aria-atomic="true" style="position: fixed; top: 20px; right: 20px; z-index: 1050; min-height: 200px;">
-        <div id="submissionToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
-            <div class="toast-header" style="background-color: khaki;">
-                <strong class="mr-auto text-dark" id="toast-title" style>
-                    <!-- The message will be inserted dynamically -->
-                </strong>
-                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div id="toast-body" style="background-color: palegoldenrod; padding:10px;">
-                <!-- The message will be inserted dynamically -->
-            </div>
-        </div>
-    </div>
     
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async() => {
+      const { showToast, getUserId, displayUserAlias } = await import('./js/utils.js');
 
         $('#submissionToast').toast({ delay: 3000 }); // Autohide after 3000ms
-
-        setSignInDiv();
-
-        function setSignInDiv() {
-            const alias = getUserAlias();
-            if (alias === 'Anonymous') {
-                $('#signInDiv').html('<a class="btn btn-success" href="/login">Sign In</a>');
-            } else {
-            $('#signInDiv').html(`<i class="fa-solid fa-circle-user"></i> <strong>${getUserAlias()}</strong>`);
-            };
-        };
-        
-        function readCookie(name) {
-          const nameEQ = name + "=";
-          const ca = document.cookie.split(';');
-          for(let i=0;i < ca.length;i++) {
-              let c = ca[i];
-              while (c.charAt(0)==' ') c = c.substring(1,c.length);
-              if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-          }
-          return null;
-        }
-
-        function getUserAlias() {
-            const userDataCookie = readCookie('userData');
-            if (userDataCookie) {
-                const userData = JSON.parse(decodeURIComponent(userDataCookie));
-                return userData.alias;
-            } else {
-                return 'Anonymous';
-            }
-        }
-
-        function getUserId() {
-          const userDataCookie = readCookie('userData');
-          if (userDataCookie) {
-              const userData = JSON.parse(decodeURIComponent(userDataCookie));
-              return userData._id;
-          } else {
-              return null;
-          }
-        }
+        displayUserAlias('signInDiv');
 
         let validPdbCount = 1;
         let discardedPdbCount = 1;
@@ -276,11 +154,7 @@
 
             const wrongFormat = pdbCodes.some(pdbCode => pdbCode.length !== 4)
             if (wrongFormat) {
-                const toastBody = document.getElementById('toast-body');
-                const toastTitle = document.getElementById('toast-title');
-                toastTitle.textContent = "Wrong format";
-                toastBody.textContent = "Check PDB codes are 4 characters long.";
-                $("#submissionToast").toast("show");
+                showToast("Wrong PDB format", "PDB codes should be 4 characters long.")
                 return;
             }
 
@@ -320,11 +194,7 @@
             })
 
             if (wrongFormat) {
-                const toastBody = document.getElementById('toast-body');
-                const toastTitle = document.getElementById('toast-title');
-                toastTitle.textContent = "Wrong format";
-                toastBody.textContent = "It should be 1ABC:note, 2DEF:note";
-                $("#submissionToast").toast("show");
+                showToast("Wrong format", "It should be 1ABC:note, 2DEF:note");
                 return;
             }
 
@@ -345,7 +215,7 @@
 
         })
 
-        document.getElementById('submitForm').addEventListener('click', function() {
+        document.getElementById('submitBtn').addEventListener('click', function() {
 
             const pdbCodes = Array.from(
                                 new Set(
@@ -382,14 +252,7 @@
 
             for (let field of mandatoryFields) {
                 if (!formData[field] || formData[field].length === 0) {
-                //change toast to red color
-                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
-                $('#toast-body').css('background-color', 'lightpink');
-                const toastBody = document.getElementById('toast-body');
-                const toastTitle = document.getElementById('toast-title');
-                toastTitle.textContent = "Missing field";
-                toastBody.textContent = `Please fill in ${field}.`;
-                $("#submissionToast").toast("show");
+                showToast('Missing field', `Please fill in ${field}.`, 'red');
                 return;
                 }
             }
@@ -398,28 +261,14 @@
             const discardedPdbCodes = discardedPdbObj.map(obj => obj.pdbCode);
             const intersection = pdbCodes.filter(pdbCode => discardedPdbCodes.includes(pdbCode));
             if (intersection.length > 0) {
-                //change toast to red color
-                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
-                $('#toast-body').css('background-color', 'lightpink');
-                const toastBody = document.getElementById('toast-body');
-                const toastTitle = document.getElementById('toast-title');
-                toastTitle.textContent = "Invalid and discarded PDB?";
-                toastBody.textContent = `Codes: ${intersection.join(', ')}`;
-                $("#submissionToast").toast("show");
+                showToast("Invalid and discarded PDB?", `Codes: ${intersection.join(', ')}`, 'red');
                 return;
             }
 
             //if any of the discardedPdb or the pdbStructures are not 4 characters long, show a toast message
             const wrongLength = discardedPdbCodes.concat(pdbCodes).some(pdbCode => pdbCode.replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4);
             if (wrongLength) {
-                //change toast to red color
-                $('#submissionToast').find('.toast-header').css('background-color', 'lightcoral');
-                $('#toast-body').css('background-color', 'lightpink');
-                const toastBody = document.getElementById('toast-body');
-                const toastTitle = document.getElementById('toast-title');
-                toastTitle.textContent = "Wrong PDB format";
-                toastBody.textContent = "PDB codes should be 4 characters long.";
-                $("#submissionToast").toast("show");
+                showToast("Wrong PDB format", "PDB codes should be 4 characters long.");
                 return;
             }
 
@@ -433,27 +282,18 @@
             })
             .then(response => {
                 if (!response.ok) {
+                    showToast('Error', 'Network response was not ok', 'red');
                     throw new Error('Network response was not ok');
                 }
-                // Show toast message in green
-                $('#submissionToast').find('.toast-header').css('background-color', 'rgb(173, 234, 173)');
-                $('#toast-body').css('background-color', 'lightcyan');
-                const toastBody = document.getElementById('toast-body');
-                const toastTitle = document.getElementById('toast-title');
-                toastTitle.textContent = "Missing field";
-                toastBody.textContent = `Submitted ${$('#proteinName').val()}`;
-                $("#submissionToast").toast("show");
-
-
-                // Clear form fields
-                clearFormFields();
+                showToast('Success', `Submitted ${formData.name}`, 'green');
+                resetForm();
             })
             .catch((error) => {
                 console.error('Error:', error);
             });
         });
 
-        function clearFormFields() {
+        function resetForm() {
             $('#proteinName').val('');
             $('#description').val('');
             $('[id^=valid-pdb-]').val('');
@@ -487,8 +327,6 @@
             discardedPdbCommentsCount = 1;
             
         }
-
-        // Additional JavaScript for handling the rest of the form functionalities
     });
 </script>
 </body>
