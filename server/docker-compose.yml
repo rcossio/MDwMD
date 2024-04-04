@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   app:
+    build: .
     image: pddt-backend-img
     restart: unless-stopped
     depends_on:
@@ -10,9 +11,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
     env_file:
-      - .env.production
+      - .env.development
+    cpus: 1
+    mem_limit: 512m
 
   mongo:
     image: mongo
@@ -24,6 +27,8 @@ services:
       - "27017:27017"
     env_file:
       - .env.mongo
+    cpus: 1
+    mem_limit: 512m
 
 networks:
   pddt-network-0:
