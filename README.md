@@ -61,9 +61,14 @@ The project is organized into the following directories, each containing relevan
 - **Decide experiment outliers**: Some experiments might have outliers. We must stablish criteria to remove them from the DB.
 - **Data quantity**: We may have enough data to have a respectable validation set. How much is enough?
 
-### Molecular dynamics
-- **Ligandless complexes**: Start by complex without ligand, they are easier
+### Models
 - **Crysol**: Think of using spherical harmonic coefficients to calculate the diffusion coefficient, instead of bead/shell modelling
+
+### Molecular dynamics
+- **NVT/NPT shift**: The current script makes protein make a shift from NVT to NPT (with restraints from the same structure and no COM correction). This is at least a visualization bug (maybe see https://manual.gromacs.org/current/user-guide/terminology.html).
+- **NPT control**: Do pressure in NPT variates too much? Check this: https://manual.gromacs.org/current/user-guide/terminology.html
+- **Density**: Density is a little higher than expected we get 1027 and expect 1014, check https://pubs.acs.org/doi/pdf/10.1021/ct900549r
+- **Script inputs**: The MD scripts can be improve with this syntax `!printf "Potential\n0\n" | gmx energy -f em.edr -o potential.xvg -xvg none`
 
 
 ## Insights from Other DBs

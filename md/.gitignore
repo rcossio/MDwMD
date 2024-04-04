@@ -1,1 +1,4 @@
 *.gro
+*.xtc
+*.xvg
+results

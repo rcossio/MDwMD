@@ -1,0 +1,328 @@
+#!/bin/bash
+
+# Useful
+# MDP options: https://manual.gromacs.org/2023.2/user-guide/mdp-options.html
+# File formats: https://manual.gromacs.org/2023.2/reference-manual/file-formats.html
+
+# Details
+# Force field setup: https://manual.gromacs.org/2023.2/user-guide/force-fields.html#charmm
+
+
+# Advanced argument parsing
+while getopts "i:h" opt; do
+    case ${opt} in
+        i ) input=${OPTARG} ;;
+        h ) echo "Usage: prepareMD -i inputname"; exit 0 ;;
+        \? ) echo "Invalid option: $OPTARG" 1>&2; exit 1 ;;
+    esac
+done
+
+checkDependency() {
+    command -v $1 >/dev/null 2>&1 || { echo >&2 "I require $1 but it's not installed.  Aborting."; exit 1; }
+}
+
+
+handleError() {
+    if [ $1 -ne 0 ]; then
+        echo "Error occurred in $2" >&2
+        exit $1
+    fi
+}
+
+
+convertPDBToGROMACS() {
+    gmx pdb2gmx -f "$input.pdb" -o protein_processed.gro -p topol.top -i posre.itp -posrefc 1000 -ff charmm36-jul2022 -water tip3p -ignh -nobackup
+    [ -f posre.itp ] || exit 1
+    [ -f topol.top ] || exit 1
+    [ -f protein_processed.gro ] || exit 1
+}
+
+
+defineSimulationBox() {
+    gmx editconf -f protein_processed.gro -o protein_newbox.gro -c -d 1.0 -bt cubic -nobackup
+    [ -f protein_newbox.gro ] || exit 1   
+}
+
+
+solvateSystem() {
+    gmx solvate -cp protein_newbox.gro -cs spc216.gro -o protein_solv.gro -p topol.top -nobackup
+    [ -f protein_solv.gro ] || exit 1
+}
+
+
+addIons() {
+    touch ions.mdp
+    [ -f ions.mdp ] || exit 1
+
+    gmx grompp -f ions.mdp -c protein_solv.gro -o ions.tpr -p topol.top
+    [ -f ions.tpr ] || exit 1
+
+    gmx genion -s ions.tpr -o solv_ions.gro -p topol.top -pname NA -nname CL -conc 0.15 -neutral -nobackup <<< "13"
+    [ -f solv_ions.gro ] || exit 1
+}
+
+
+energyMinimization() {
+    cat > em.mdp << EOF
+integrator      = steep     ; Steepest descent minimization
+emtol           = 100.0     ; Tolerance for energy minimization
+emstep          = 0.01      ; Minimization step size
+nsteps          = 10000     ; Max steps for energy minimization
+nstlist         = 10        ; Update neighbor list every step
+rlist           = 1.2       ; Cut-off for making neighbor list (short range forces)
+cutoff-scheme   = Verlet    ; Use Verlet list for neighbor search
+ns-type         = grid      ; Grid search for neighbor list
+coulombtype     = PME       ; Particle Mesh Ewald for long-range electrostatics
+rcoulomb        = 1.2       ; Cut-off for Coulomb interactions in nm
+rvdw            = 1.2       ; Cut-off for Van der Waals interactions in nm
+constraints     = h-bonds 
+constraint-algorithm = LINCS 
+DispCorr        = no
+EOF
+    [ -f em.mdp ] || exit 1
+
+    gmx grompp -f em.mdp -c solv_ions.gro -p topol.top -o em.tpr
+    [ -f em.tpr ] || exit 1
+
+    gmx mdrun -deffnm em -nb gpu
+    [ -f em.gro ] || exit 1
+    [ -f em.edr ] || exit 1
+    [ -f em.trr ] || exit 1
+    [ -f em.log ] || exit 1
+
+    gmx energy -f em.edr -o em_potential.xvg -xvg none -nobackup <<< $'11\n0\n'
+    [ -f em_potential.xvg ] || exit 1
+    
+}
+
+
+nvtEquilibration() {
+    cat > nvt.mdp << EOF
+; Apply position restraints
+define                  = -DPOSRES
+
+; Run parameters
+integrator              = md 
+dt                      = 0.002     
+nsteps                  = 1000000
+
+; Output control
+nstxout-compressed      = 10000   ; coordinates
+nstvout                 = 10000   ; velocities
+nstcalcenergy 		    = 100    ; energie calculation
+nstenergy               = 10000   ; energy saving
+nstlog                  = 10000   ; log file
+
+; Non-bonded parameters
+cutoff-scheme           = Verlet 
+nstlist                 = 20  
+rlist                   = 1.2
+vdwtype                 = Cut-off
+vdw-modifier            = Force-switch
+rvdw-switch             = 1.0
+rvdw                    = 1.2
+
+; Electrostatics
+coulombtype             = PME       
+rcoulomb                = 1.2      
+DispCorr                = no
+
+; Temperature coupling
+tcoupl                  = V-rescale                 
+tc-grps                 = Protein Non-Protein
+tau-t                   = 0.1 0.1                   
+ref-t                   = 300 300
+
+; Bond constraints
+constraints             = h-bonds
+constraint-algorithm    = LINCS 
+continuation            = no 
+
+; Velocity generation
+gen-vel                 = yes       
+gen-temp                = 300    
+gen-seed                = -1
+
+; Center of mass
+comm-mode               = None
+EOF
+    [ -f nvt.mdp ] || exit 1
+
+    gmx grompp -f nvt.mdp -c em.gro -r em.gro -p topol.top -o nvt.tpr
+    [ -f nvt.tpr ] || exit 1
+
+    gmx mdrun -deffnm nvt -nb gpu
+    [ -f nvt.log ] || exit 1
+    [ -f nvt.trr ] || exit 1
+    [ -f nvt.edr ] || exit 1
+    [ -f nvt.xtc ] || exit 1
+    [ -f nvt.gro ] || exit 1
+    [ -f nvt.cpt ] || exit 1
+
+    gmx energy -f nvt.edr -o nvt_temperature.xvg -xvg none -nobackup <<< $'16\n0\n'
+    [ -f nvt_temperature.xvg ] || exit 1
+}
+
+
+nptEquilibration() {
+    cat > npt.mdp <<EOF
+; Apply position restraints
+define                  = -DPOSRES
+
+; Run parameters
+integrator              = md      
+dt                      = 0.002
+nsteps                  = 1000000
+
+; Output control
+nstxout-compressed      = 10000
+nstvout                 = 10000
+nstfout	          	    = 10000
+nstcalcenergy 		    = 100
+nstenergy               = 10000     
+nstlog                  = 10000       
+
+; Non-bonded parameters
+cutoff-scheme           = Verlet
+nstlist                 = 20      
+rlist                   = 1.2
+vdwtype                 = Cut-off
+vdw-modifier            = Force-switch
+rvdw-switch             = 1.0
+rvdw                    = 1.2  
+
+; Electrostatics
+coulombtype             = PME    
+rcoulomb                = 1.2
+DispCorr                = no
+
+; Temperature coupling
+tcoupl                  = V-rescale               
+tc-grps                 = System
+tau-t                   = 0.1
+ref-t                   = 300
+
+; Pressure coupling
+pcoupl                  = C-rescale                   
+pcoupltype              = isotropic                 
+tau-p                   = 2.0                          
+ref-p                   = 1.0                       
+compressibility         = 4.5e-5                     
+refcoord-scaling        = all
+
+; Bond constraints
+continuation            = yes       
+constraints             = h-bonds 
+constraint-algorithm    = LINCS
+
+; Velocity generation
+gen-vel                 = no   
+
+; Center of mass
+comm-mode               = None
+EOF
+    [ -f npt.mdp ] || exit 1
+
+    gmx grompp -f npt.mdp -c nvt.gro -t nvt.cpt -r em.gro -p topol.top -o npt.tpr
+    [ -f npt.tpr ] || exit 1
+
+    gmx mdrun -deffnm npt -nb gpu
+    [ -f npt.log ] || exit 1
+    [ -f npt.trr ] || exit 1
+    [ -f npt.xtc ] || exit 1
+    [ -f npt.edr ] || exit 1
+    [ -f npt.gro ] || exit 1
+    [ -f npt.cpt ] || exit 1
+
+    gmx energy -f npt.edr -o npt_pressure.xvg -xvg none -nobackup <<< $'17\n0\n'
+    [ -f npt_pressure.xvg ] || exit 1
+
+    gmx energy -f npt.edr -o npt_density.xvg -xvg none -nobackup <<< $'23\n0\n'
+    [ -f npt_density.xvg ] || exit 1
+
+    gmx energy -f npt.edr -o rst_1000.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    [ -f rst_1000.xvg ] || exit 1
+}
+
+
+eliminateRestraints() {
+    cp npt.mdp rst.mdp
+    [ -f rst.mdp ] || exit 1
+
+    sed -i 's/1000/200/g' posre.itp 
+
+    gmx grompp -f rst.mdp -c npt.gro -t npt.cpt -r em.gro -p topol.top -o rst_200.tpr
+    [ -f rst_200.tpr ] || exit 1
+
+    gmx mdrun -deffnm rst_200 -nb gpu
+    [ -f rst_200.log ] || exit 1
+    [ -f rst_200.edr ] || exit 1
+    [ -f rst_200.trr ] || exit 1
+    [ -f rst_200.xtc ] || exit 1
+    [ -f rst_200.gro ] || exit 1
+    [ -f rst_200.cpt ] || exit 1
+
+    gmx energy -f rst_200.edr -o rst_200.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    [ -f rst_200.xvg ] || exit 1
+
+    sed -i 's/200/50/g' posre.itp 
+    gmx grompp -f rst.mdp -c rst_200.gro -t rst_200.cpt -r em.gro -p topol.top -o rst_50.tpr
+    [ -f rst_50.tpr ] || exit 1
+
+    gmx mdrun -deffnm rst_50 -nb gpu
+    [ -f rst_50.log ] || exit 1
+    [ -f rst_50.edr ] || exit 1
+    [ -f rst_50.trr ] || exit 1
+    [ -f rst_50.xtc ] || exit 1
+    [ -f rst_50.gro ] || exit 1
+    [ -f rst_50.cpt ] || exit 1
+
+    gmx energy -f rst_50.edr -o rst_50.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    [ -f rst_50.xvg ] || exit 1
+
+    sed -i 's/50/10/g' posre.itp 
+    gmx grompp -f rst.mdp -c rst_50.gro -t rst_50.cpt -r em.gro -p topol.top -o rst_10.tpr
+    [ -f rst_10.tpr ] || exit 1
+
+    gmx mdrun -deffnm rst_10 -nb gpu
+    [ -f rst_10.log ] || exit 1
+    [ -f rst_10.edr ] || exit 1
+    [ -f rst_10.trr ] || exit 1
+    [ -f rst_10.xtc ] || exit 1
+    [ -f rst_10.gro ] || exit 1
+    [ -f rst_10.cpt ] || exit 1
+
+    gmx energy -f rst_10.edr -o rst_10.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    [ -f rst_10.xvg ] || exit 1
+}
+
+checkDependency "gmx"
+
+convertPDBToGROMACS
+handleError $? "convertPDBToGROMACS"
+
+defineSimulationBox
+handleError $? "defineSimulationBox"
+
+solvateSystem
+handleError $? "solvateSystem"
+
+addIons
+handleError $? "addIons"
+
+energyMinimization
+handleError $? "energyMinimization"
+
+nvtEquilibration
+handleError $? "nvtEquilibration"
+
+nptEquilibration
+handleError $? "nptEquilibration"
+
+eliminateRestraints
+handleError $? "eliminateRestraints"
+
+#shortFreeMD
+#handleError $? "shortFreeMD"
+
+echo "MD Preparation completed successfully."
