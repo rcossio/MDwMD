@@ -31,13 +31,12 @@ The project is organized into the following directories, each containing relevan
 ### Database
 
 - **Load Data**: Follow HydroPro text to load enough diffusion data and linked PDBs so that you can make a good model.
-- **Duplicated uniprot**: Trypsin and trypsinogen have the same uniprot id, as well as chemotrypsin/chemotrypsinogen. We need a new identifier.
 - **MIADE and Disprot**: Read about MIADE and (10.1101/2022.07.12.495092v1) and best practices (https://arxiv.org/pdf/2310.16716.pdf)
 - **Alphafold models**: Enable alphafold models as an array attribute in Protein collection
+- **Protein browsing**: There is no current way of browsing proteins, just experiments
 
 ### Back-end
 
-- **Passport-orcid**: Needed to not have problems with user data
 - **Good practices**: The project started with a MVP, but we need to apply good programming practices in the backend to have a modular and scalable back-end.
 - **Conect References colection**: When posting a new experiment we should fetch the reference data
 
@@ -45,8 +44,7 @@ The project is organized into the following directories, each containing relevan
 
 - **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
-- **Data loading**: When loading a new data, trim the information, otherwise wierd character may be copied
-- **Toast color**: toast color doesnt return no normal after shoring green in New Protein
+- **Data loading**: When loading a new data, trim the information, otherwise a wierd character may be copied
 - **Alphafold**: display alphafold models with the Uniprot API when browsing
 
 ### HYDROPRO
