@@ -14,5 +14,9 @@ module.exports = {
     mongo: {
         uri: process.env.MONGODB_URI 
     },
-    jwtSecret: process.env.JWT_SECRET
+    jwtSecret: process.env.JWT_SECRET,
+    orcid: {
+        clientId: process.env.ORCID_CLIENT_ID,
+        clientSecret: process.env.ORCID_CLIENT_SECRET
+    }
 };
