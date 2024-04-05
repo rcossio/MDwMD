@@ -21,6 +21,13 @@ data = pd.read_csv(StringIO(data_string), sep='\\s+', header=None)
 
 data.columns = ['Index', 'Value']
 
+# Calculate the mean and standard deviation and print them
+mean_value = data['Value'].mean()
+std_deviation = data['Value'].std()
+
+print(f"({filename}) Mean of Values: {mean_value}")
+print(f"({filename}) Standard Deviation of Values: {std_deviation}")
+
 # Calculate the moving average
 data['Moving_Average'] = data['Value'].rolling(window=10).mean()
 

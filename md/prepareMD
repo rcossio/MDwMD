@@ -29,6 +29,85 @@ handleError() {
     fi
 }
 
+createMDP () {
+cat > $1 << EOF
+; Run parameters
+integrator              = md 
+dt                      = 0.002     
+nsteps                  = 500000
+
+; Output control
+nstxout-compressed      = 5000   ; coordinates
+nstvout                 = 5000   ; velocities
+nstcalcenergy 		    = 100    ; energie calculation
+nstenergy               = 5000   ; energy saving
+nstlog                  = 5000   ; log file
+
+; Non-bonded parameters
+cutoff-scheme           = Verlet 
+nstlist                 = 20  
+rlist                   = 1.2
+vdwtype                 = Cut-off
+vdw-modifier            = Force-switch
+rvdw-switch             = 1.0
+rvdw                    = 1.2
+
+; Electrostatics
+coulombtype             = PME       
+rcoulomb                = 1.2      
+DispCorr                = no
+
+; Temperature coupling
+tcoupl                  = V-rescale                 
+tc-grps                 = Protein Non-Protein
+tau-t                   = 0.1 0.1                   
+ref-t                   = 293 293
+
+; Bond constraints
+constraints             = h-bonds
+constraint-algorithm    = LINCS 
+EOF
+}
+
+addPositionRestraints () {
+    cat >> $1 << EOF
+; Position restraints
+define                  = -DPOSRES
+EOF
+}
+
+addPressureCoupling () {
+    cat >> $1 << EOF
+; Pressure coupling
+pcoupl                  = C-rescale
+pcoupltype              = isotropic
+tau-p                   = 2.0
+ref-p                   = 1.0
+compressibility         = 4.5e-5
+refcoord-scaling        = com
+EOF
+}
+
+setupSimulationMode () {
+    if [ $2 == "start" ]; then
+        cat >> $1 << EOF
+; Bond constraints
+continuation            = no
+
+; Velocity generation
+gen-vel                 = yes
+gen-temp                = 293
+gen-seed                = -1
+EOF
+    elif [ $2 == "continue" ]; then
+        cat >> $1 << EOF
+; Bond constraints
+continuation            = yes
+; Velocity generation
+gen-vel                 = no
+EOF
+    fi
+}
 
 convertPDBToGROMACS() {
     gmx pdb2gmx -f "$input.pdb" -o protein_processed.gro -p topol.top -i posre.itp -posrefc 1000 -ff charmm36-jul2022 -water tip3p -ignh -nobackup
@@ -39,7 +118,7 @@ convertPDBToGROMACS() {
 
 
 defineSimulationBox() {
-    gmx editconf -f protein_processed.gro -o protein_newbox.gro -c -d 1.0 -bt cubic -nobackup
+    gmx editconf -f protein_processed.gro -o protein_newbox.gro -c -d 1.5 -bt cubic -nobackup
     [ -f protein_newbox.gro ] || exit 1   
 }
 
@@ -57,7 +136,7 @@ addIons() {
     gmx grompp -f ions.mdp -c protein_solv.gro -o ions.tpr -p topol.top
     [ -f ions.tpr ] || exit 1
 
-    gmx genion -s ions.tpr -o solv_ions.gro -p topol.top -pname NA -nname CL -conc 0.15 -neutral -nobackup <<< "13"
+    gmx genion -s ions.tpr -o solv_ions.gro -p topol.top -pname NA -nname CL -conc 0.15 -neutral -nobackup <<< "SOL"
     [ -f solv_ions.gro ] || exit 1
 }
 
@@ -90,62 +169,16 @@ EOF
     [ -f em.trr ] || exit 1
     [ -f em.log ] || exit 1
 
-    gmx energy -f em.edr -o em_potential.xvg -xvg none -nobackup <<< $'11\n0\n'
+    gmx energy -f em.edr -o em_potential.xvg -xvg none -nobackup <<< $'Potential\n0\n'
     [ -f em_potential.xvg ] || exit 1
     
 }
 
 
 nvtEquilibration() {
-    cat > nvt.mdp << EOF
-; Apply position restraints
-define                  = -DPOSRES
-
-; Run parameters
-integrator              = md 
-dt                      = 0.002     
-nsteps                  = 1000000
-
-; Output control
-nstxout-compressed      = 10000   ; coordinates
-nstvout                 = 10000   ; velocities
-nstcalcenergy 		    = 100    ; energie calculation
-nstenergy               = 10000   ; energy saving
-nstlog                  = 10000   ; log file
-
-; Non-bonded parameters
-cutoff-scheme           = Verlet 
-nstlist                 = 20  
-rlist                   = 1.2
-vdwtype                 = Cut-off
-vdw-modifier            = Force-switch
-rvdw-switch             = 1.0
-rvdw                    = 1.2
-
-; Electrostatics
-coulombtype             = PME       
-rcoulomb                = 1.2      
-DispCorr                = no
-
-; Temperature coupling
-tcoupl                  = V-rescale                 
-tc-grps                 = Protein Non-Protein
-tau-t                   = 0.1 0.1                   
-ref-t                   = 300 300
-
-; Bond constraints
-constraints             = h-bonds
-constraint-algorithm    = LINCS 
-continuation            = no 
-
-; Velocity generation
-gen-vel                 = yes       
-gen-temp                = 300    
-gen-seed                = -1
-
-; Center of mass
-comm-mode               = None
-EOF
+    createMDP nvt.mdp
+    addPositionRestraints nvt.mdp
+    setupSimulationMode nvt.mdp start
     [ -f nvt.mdp ] || exit 1
 
     gmx grompp -f nvt.mdp -c em.gro -r em.gro -p topol.top -o nvt.tpr
@@ -159,68 +192,16 @@ EOF
     [ -f nvt.gro ] || exit 1
     [ -f nvt.cpt ] || exit 1
 
-    gmx energy -f nvt.edr -o nvt_temperature.xvg -xvg none -nobackup <<< $'16\n0\n'
+    gmx energy -f nvt.edr -o nvt_temperature.xvg -xvg none -nobackup <<< $'Temperature\n0\n'
     [ -f nvt_temperature.xvg ] || exit 1
 }
 
 
 nptEquilibration() {
-    cat > npt.mdp <<EOF
-; Apply position restraints
-define                  = -DPOSRES
-
-; Run parameters
-integrator              = md      
-dt                      = 0.002
-nsteps                  = 1000000
-
-; Output control
-nstxout-compressed      = 10000
-nstvout                 = 10000
-nstfout	          	    = 10000
-nstcalcenergy 		    = 100
-nstenergy               = 10000     
-nstlog                  = 10000       
-
-; Non-bonded parameters
-cutoff-scheme           = Verlet
-nstlist                 = 20      
-rlist                   = 1.2
-vdwtype                 = Cut-off
-vdw-modifier            = Force-switch
-rvdw-switch             = 1.0
-rvdw                    = 1.2  
-
-; Electrostatics
-coulombtype             = PME    
-rcoulomb                = 1.2
-DispCorr                = no
-
-; Temperature coupling
-tcoupl                  = V-rescale               
-tc-grps                 = System
-tau-t                   = 0.1
-ref-t                   = 300
-
-; Pressure coupling
-pcoupl                  = C-rescale                   
-pcoupltype              = isotropic                 
-tau-p                   = 2.0                          
-ref-p                   = 1.0                       
-compressibility         = 4.5e-5                     
-refcoord-scaling        = all
-
-; Bond constraints
-continuation            = yes       
-constraints             = h-bonds 
-constraint-algorithm    = LINCS
-
-; Velocity generation
-gen-vel                 = no   
-
-; Center of mass
-comm-mode               = None
-EOF
+    createMDP npt.mdp
+    addPositionRestraints npt.mdp
+    addPressureCoupling npt.mdp
+    setupSimulationMode npt.mdp continue
     [ -f npt.mdp ] || exit 1
 
     gmx grompp -f npt.mdp -c nvt.gro -t nvt.cpt -r em.gro -p topol.top -o npt.tpr
@@ -234,19 +215,16 @@ EOF
     [ -f npt.gro ] || exit 1
     [ -f npt.cpt ] || exit 1
 
-    gmx energy -f npt.edr -o npt_pressure.xvg -xvg none -nobackup <<< $'17\n0\n'
-    [ -f npt_pressure.xvg ] || exit 1
-
-    gmx energy -f npt.edr -o npt_density.xvg -xvg none -nobackup <<< $'23\n0\n'
-    [ -f npt_density.xvg ] || exit 1
-
-    gmx energy -f npt.edr -o rst_1000.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
-    [ -f rst_1000.xvg ] || exit 1
+    gmx energy -f npt.edr -o npt.xvg -xvg none -nobackup <<< $'Pressure\nDensity\nPosition-Rest\nPotential\n0\n'
+    [ -f npt.xvg ] || exit 1
 }
 
 
 eliminateRestraints() {
-    cp npt.mdp rst.mdp
+    createMDP rst.mdp
+    addPositionRestraints rst.mdp
+    addPressureCoupling rst.mdp
+    setupSimulationMode rst.mdp continue
     [ -f rst.mdp ] || exit 1
 
     sed -i 's/1000/200/g' posre.itp 
@@ -262,8 +240,9 @@ eliminateRestraints() {
     [ -f rst_200.gro ] || exit 1
     [ -f rst_200.cpt ] || exit 1
 
-    gmx energy -f rst_200.edr -o rst_200.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    gmx energy -f rst_200.edr -o rst_200.xvg -xvg none -nobackup <<< $'Pressure\nDensity\nPosition-Rest\nPotential\n0\n'
     [ -f rst_200.xvg ] || exit 1
+
 
     sed -i 's/200/50/g' posre.itp 
     gmx grompp -f rst.mdp -c rst_200.gro -t rst_200.cpt -r em.gro -p topol.top -o rst_50.tpr
@@ -277,8 +256,9 @@ eliminateRestraints() {
     [ -f rst_50.gro ] || exit 1
     [ -f rst_50.cpt ] || exit 1
 
-    gmx energy -f rst_50.edr -o rst_50.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    gmx energy -f rst_50.edr -o rst_50.xvg -xvg none -nobackup <<< $'Pressure\nDensity\nPosition-Rest\nPotential\n0\n'
     [ -f rst_50.xvg ] || exit 1
+
 
     sed -i 's/50/10/g' posre.itp 
     gmx grompp -f rst.mdp -c rst_50.gro -t rst_50.cpt -r em.gro -p topol.top -o rst_10.tpr
@@ -292,8 +272,26 @@ eliminateRestraints() {
     [ -f rst_10.gro ] || exit 1
     [ -f rst_10.cpt ] || exit 1
 
-    gmx energy -f rst_10.edr -o rst_10.xvg -xvg none -nobackup <<< $'11\n12\n0\n'
+    gmx energy -f rst_10.edr -o rst_10.xvg -xvg none -nobackup <<< $'Pressure\nDensity\nPosition-Rest\nPotential\n0\n'
     [ -f rst_10.xvg ] || exit 1
+
+
+    createMDP rst.mdp
+    addPressureCoupling rst.mdp
+    setupSimulationMode rst.mdp continue
+    gmx grompp -f rst.mdp -c rst_10.gro -t rst_10.cpt -p topol.top -o rst_0.tpr -maxwarn 1 #Warning with center of mass removal
+    [ -f rst_0.tpr ] || exit 1
+
+    gmx mdrun -deffnm rst_0 -nb gpu
+    [ -f rst_0.log ] || exit 1
+    [ -f rst_0.edr ] || exit 1
+    [ -f rst_0.trr ] || exit 1
+    [ -f rst_0.xtc ] || exit 1
+    [ -f rst_0.gro ] || exit 1
+    [ -f rst_0.cpt ] || exit 1
+
+    gmx energy -f rst_0.edr -o rst_0.xvg -xvg none -nobackup <<< $'Pressure\nDensity\n0\n'
+    [ -f rst_0.xvg ] || exit 1
 }
 
 checkDependency "gmx"

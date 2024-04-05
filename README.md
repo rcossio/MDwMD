@@ -29,33 +29,27 @@ The project is organized into the following directories, each containing relevan
 ## Next Steps 
 
 ### Database
-
 - **Load Data**: Follow HydroPro text to load enough diffusion data and linked PDBs so that you can make a good model.
 - **MIADE and Disprot**: Read about MIADE and (10.1101/2022.07.12.495092v1) and best practices (https://arxiv.org/pdf/2310.16716.pdf)
 - **Alphafold models**: Enable alphafold models as an array attribute in Protein collection
 - **Protein browsing**: There is no current way of browsing proteins, just experiments
 
 ### Back-end
-
 - **Good practices**: The project started with a MVP, but we need to apply good programming practices in the backend to have a modular and scalable back-end.
 - **Conect References colection**: When posting a new experiment we should fetch the reference data
 
 ### Front-end
-
 - **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
 - **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
 - **Data loading**: When loading a new data, trim the information, otherwise a wierd character may be copied
 - **Alphafold**: display alphafold models with the Uniprot API when browsing
 
 ### HYDROPRO
-
 - **PDB preparation**: Since HYDROPRO counts non-H atoms from HETATM, most common co-crystalised molecules should be filtered out
 - **Crystal waters**: Crystal waters could be part of the system or not, hence we can leave them of remove them. Both situations must be tested to see wich lead to less error.
 - **Molecular weight estimation**: (optional) The script that estimates molecular weight gives different results than PDB, it would be nice to reproduce what they calculated.
 
 ### Validation
-
-- **Error estimation**: Right now each complex (with possibly multiple experiments) have a single PDB linked. We need to calculate the error associated to each PDB (hence we must treat different PDBs as different samples for the error)
 - **Decide experiment outliers**: Some experiments might have outliers. We must stablish criteria to remove them from the DB.
 - **Data quantity**: We may have enough data to have a respectable validation set. How much is enough?
 
@@ -64,7 +58,7 @@ The project is organized into the following directories, each containing relevan
 
 ### Molecular dynamics
 - **NVT/NPT shift**: The current script makes protein make a shift from NVT to NPT (with restraints from the same structure and no COM correction). This is at least a visualization bug (maybe see https://manual.gromacs.org/current/user-guide/terminology.html).
-- **NPT control**: Do pressure in NPT variates too much? Check this: https://manual.gromacs.org/current/user-guide/terminology.html
+- **NPT control**: Do pressure in NPT variates too much? Check this: https://manual.gromacs.org/current/user-guide/terminology.html. We expect the fluctuation to be about 91=500\*sqrt(216/6460) to 109=600\*sqrt(216/6460), comparing to a 216 waters box
 - **Density**: Density is a little higher than expected we get 1027 and expect 1014, check https://pubs.acs.org/doi/pdf/10.1021/ct900549r
 - **Script inputs**: The MD scripts can be improve with this syntax `!printf "Potential\n0\n" | gmx energy -f em.edr -o potential.xvg -xvg none`
 

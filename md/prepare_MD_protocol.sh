@@ -23,7 +23,7 @@ touch ions.mdp
 
 gmx grompp -f ions.mdp -c protein_solv.gro -o ions.tpr -p topol.top
 
-gmx genion -s ions.tpr -o solv_ions.gro -p topol.top -pname NA -nname CL -conc 0.15 -neutral -nobackup # Poner 13
+gmx genion -s ions.tpr -o solv_ions.gro -p topol.top -pname NA -nname CL -conc 0.15 -neutral -nobackup # Choose SOL (generally option 13)
 
 # Minimización
 cat > em.mdp << EOF
@@ -47,7 +47,7 @@ gmx grompp -f em.mdp -c solv_ions.gro -p topol.top -o em.tpr
 
 gmx mdrun -v -deffnm em -nb gpu
 
-gmx energy -f em.edr -o em_potential.xvg -xvg none -nobackup # Poner 11 0
+gmx energy -f em.edr -o em_potential.xvg -xvg none -nobackup # Choose "Potential" (generally option 11) and then 0
 
 # Equilibración de temperatura
 cat > nvt.mdp << EOF
@@ -104,7 +104,7 @@ gmx grompp -f nvt.mdp -c em.gro -r em.gro -p topol.top -o nvt.tpr
 
 gmx mdrun -v -deffnm nvt -nb gpu
 
-gmx energy -f nvt.edr -o nvt_temperature.xvg -xvg none -nobackup # Poner 16 0
+gmx energy -f nvt.edr -o nvt_temperature.xvg -xvg none -nobackup # Choose "Temperature" (generally option 16) and then 0
 
 
 # Equilibración de presión
@@ -169,11 +169,11 @@ gmx grompp -f npt.mdp -c nvt.gro -t nvt.cpt -r em.gro -p topol.top -o npt.tpr
 
 gmx mdrun -v -deffnm npt -nb gpu
 
-gmx energy -f npt.edr -o npt_pressure.xvg -xvg none -nobackup # Poner 17 0
+gmx energy -f npt.edr -o npt_pressure.xvg -xvg none -nobackup # Choose "Pressure" (generally option 17) and then 0
 
-gmx energy -f npt.edr -o npt_density.xvg -xvg none -nobackup # Poner 23 0
+gmx energy -f npt.edr -o npt_density.xvg -xvg none -nobackup # Choose "Density" (generally option 23) and then 0
 
-gmx energy -f npt.edr -o rst_1000.xvg -xvg none -nobackup # Poner 11 12 0
+gmx energy -f npt.edr -o rst_1000.xvg -xvg none -nobackup # Choose "Position-Rest." (generally option 11), "Potential" (generally option 12), and then 0
 
 
 # Eliminación de restricciones
@@ -185,7 +185,7 @@ gmx grompp -f rst.mdp -c npt.gro -t npt.cpt -r em.gro -p topol.top -o rst_200.tp
 
 gmx mdrun -v -deffnm rst_200 -nb gpu
 
-gmx energy -f rst_200.edr -o rst_200.xvg -xvg none -nobackup # Poner 11 12 0
+gmx energy -f rst_200.edr -o rst_200.xvg -xvg none -nobackup # Choose "Position-Rest." (generally option 11), "Potential" (generally option 12), and then 0
 
 
 sed -i 's/200/50/g' posre.itp 
@@ -193,7 +193,7 @@ gmx grompp -f rst.mdp -c rst_200.gro -t rst_200.cpt -r em.gro -p topol.top -o rs
 
 gmx mdrun -v -deffnm rst_50 -nb gpu
 
-gmx energy -f rst_50.edr -o rst_50.xvg -xvg none -nobackup # Poner 11 12 0
+gmx energy -f rst_50.edr -o rst_50.xvg -xvg none -nobackup # Choose "Position-Rest." (generally option 11), "Potential" (generally option 12), and then 0
 
 
 sed -i 's/50/10/g' posre.itp 
@@ -201,4 +201,4 @@ gmx grompp -f rst.mdp -c rst_50.gro -t rst_50.cpt -r em.gro -p topol.top -o rst_
 
 gmx mdrun -v -deffnm rst_10 -nb gpu
 
-gmx energy -f rst_10.edr -o rst_10.xvg -xvg none -nobackup # Poner 11 12 0
+gmx energy -f rst_10.edr -o rst_10.xvg -xvg none -nobackup # Choose "Position-Rest." (generally option 11), "Potential" (generally option 12), and then 0
