@@ -1,0 +1,21 @@
+; Run parameters
+integrator      = steep     ; Steepest descent minimization
+emtol           = 100.0     ; Tolerance for energy minimization
+emstep          = 0.01      ; Minimization step size
+nsteps          = 10000     ; Max steps for energy minimization
+
+; Non-bonded parameters
+cutoff-scheme   = Verlet    ; Use Verlet list for neighbor search
+nstlist         = 10        ; Update neighbor list every step
+rlist           = 1.2       ; Cut-off for making neighbor list (short range forces)
+ns-type         = grid      ; Grid search for neighbor list
+rvdw            = 1.2       ; Cut-off for Van der Waals interactions in nm
+
+; Electrostatics
+coulombtype     = PME       ; Particle Mesh Ewald for long-range electrostatics
+rcoulomb        = 1.2       ; Cut-off for Coulomb interactions in nm
+DispCorr        = no
+
+; Bond constraints
+constraints     = h-bonds 
+constraint-algorithm = LINCS 
