@@ -27,7 +27,7 @@ for file in prod.xvg mindist.xvg rmsd_first.xvg rmsd_xray.xvg gyrate.xvg sasa.xv
 do
     scp rodper@aurora:~/$input/$file .
 done
-scp rodper@aurora:~/$input/*_proj.xvg .
+scp rodper@aurora:~/$input/*proj.xvg .
 
 #Energy controls
 awk '{print $1, $2}' prod.xvg > prod_potential.xvg
