@@ -4,7 +4,7 @@ import sys
 
 # Check for the input file
 if len(sys.argv) < 2:
-    print("Usage: python script.py <filename>")
+    print("Usage: python script.py <filename> [moving_average]")
     sys.exit(1)
 
 filename = sys.argv[1]
@@ -28,13 +28,15 @@ std_deviation = data['Value'].std()
 print(f"({filename}) Mean of Values: {mean_value}")
 print(f"({filename}) Standard Deviation of Values: {std_deviation}")
 
-# Calculate the moving average
-data['Moving_Average'] = data['Value'].rolling(window=10).mean()
-
 # Plotting
 plt.figure(figsize=(10, 6))
 plt.plot(data['Index'], data['Value'], label='Original Values')
-plt.plot(data['Index'], data['Moving_Average'], label='Moving Average', color='red')
+
+# Check if moving average is requested
+if len(sys.argv) > 2 and sys.argv[2] == "moving_average":
+    data['Moving_Average'] = data['Value'].rolling(window=10).mean()
+    plt.plot(data['Index'], data['Moving_Average'], label='Moving Average', color='red')
+
 plt.xlabel('Index')
 plt.ylabel('Values')
 plt.legend()
