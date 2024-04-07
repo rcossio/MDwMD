@@ -22,13 +22,14 @@ cd results
 [ ! -d $input ] && mkdir $input
 cd $input
 
-# Restraint elimination
-for file in prod.xvg mindist.xvg rmsd_first.xvg rmsd_xray.xvg gyrate.xvg sasa.xvg dssp.xvg proj.xvg
+# Bring files from the server
+for file in prod.xvg mindist.xvg rmsd_first.xvg rmsd_xray.xvg gyrate.xvg sasa.xvg dssp.xvg  
 do
     scp rodper@aurora:~/$input/$file .
 done
+scp rodper@aurora:~/$input/*_proj.xvg .
 
-#Some controls in production MD
+#Energy controls
 awk '{print $1, $2}' prod.xvg > prod_potential.xvg
 ../../../validation/unipd/bin/python3 ../../make_plot.py prod_potential.xvg moving_average
 rm prod_potential.xvg
@@ -39,6 +40,22 @@ awk '{print $1, $4}' prod.xvg > prod_pressure.xvg
 ../../../validation/unipd/bin/python3 ../../make_plot.py prod_pressure.xvg moving_average
 rm prod_pressure.xvg
 
+#Distance control
+awk '{print $1, $2}' mindist.xvg > min_selfdist.xvg
+../../../validation/unipd/bin/python3 ../../make_plot.py min_selfdist.xvg
+rm min_selfdist.xvg
+
+#RMSD control
+../../../validation/unipd/bin/python3 ../../make_plot.py rmsd_first.xvg moving_average
+../../../validation/unipd/bin/python3 ../../make_plot.py rmsd_xray.xvg moving_average
+
+#Gyrate control
+awk '{print $1, $2}' gyrate.xvg > radius_gyr.xvg
+../../../validation/unipd/bin/python3 ../../make_plot.py radius_gyr.xvg moving_average
+rm radius_gyr.xvg
+
+#SASA control
+../../../validation/unipd/bin/python3 ../../make_plot.py sasa.xvg moving_average
 
 #Plot PCs
 ../../../validation/unipd/bin/python3 ../../plot_pca.py 

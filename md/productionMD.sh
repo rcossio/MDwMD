@@ -127,6 +127,10 @@ freeMD() {
     gmx covar   -s prod.tpr -f prod_center.xtc -o eigenval.xvg -v eigenvect.trr -last 2 -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     gmx anaeig  -s prod.tpr -f prod_center.xtc -v eigenvect.trr -first 1 -last 2 -2d proj.xvg -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
 
+    for name in em nvt npt rst_200 rst_50 rst_10 rst_0 md
+    do
+        gmx anaeig  -s prod.tpr -f $name.gro -v eigenvect.trr -first 1 -last 2 -2d "${name}_proj.xvg" -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    done
     
 
 }

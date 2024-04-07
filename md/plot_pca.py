@@ -4,17 +4,38 @@ from matplotlib.colors import ListedColormap
 
 # Load data
 data = np.loadtxt('proj.xvg')
+em_data = np.loadtxt('em_proj.xvg')
+nvt_data = np.loadtxt('nvt_proj.xvg')
+npt_data = np.loadtxt('npt_proj.xvg')
+rst200_data = np.loadtxt('rst_200_proj.xvg')
+rst50_data   = np.loadtxt('rst_50_proj.xvg')
+rst10_data   = np.loadtxt('rst_10_proj.xvg')
+rst0_data   = np.loadtxt('rst_0_proj.xvg')
+md_data  = np.loadtxt('md_proj.xvg')
 
-# Data columns
+
+# Data columns for the main data
 x = data[:, 0]
 y = data[:, 1]
 
+# Data columns for the additional data
+# Ensure it's treated as a two-dimensional array with a single point
+em_x, em_y = em_data  # Direct unpacking since it's just one pair
+nvt_x, nvt_y = nvt_data 
+npt_x, npt_y = npt_data
+rst200_x, rst200_y = rst200_data
+rst50_x, rst50_y = rst50_data
+rst10_x, rst10_y = rst10_data
+rst0_x, rst0_y = rst0_data
+md_x, md_y = md_data
+
+
 # Create a subset of data points, taking every second point to plot
-sub_x = x[::2]  # Every other x value
-sub_y = y[::2]  # Every other y value
+sub_x = x[::1]  # Every other x value
+sub_y = y[::1]  # Every other y value
 
 # Determine ranges for the plot
-max_val = max(np.max(np.abs(x)), np.max(np.abs(y)))
+max_val = max(np.max(np.abs(x)), np.max(np.abs(y)), abs(em_x), abs(em_y))
 range_val = max_val
 
 # Define the plot range
@@ -42,6 +63,14 @@ start_color = cmap(norm(0))
 end_color = cmap(norm(len(sub_x)-1))
 plt.scatter(sub_x[0], sub_y[0], color=start_color, s=100, zorder=3, edgecolor='black')  # Start point
 plt.scatter(sub_x[-1], sub_y[-1], color=end_color, s=100, zorder=3, edgecolor='black')  # End point
+
+# Add the special point from em_proj.xvg
+plt.text(em_x, em_y, 'M', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_x, npt_y, 'P', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(rst200_x, rst200_y, '1', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(rst50_x, rst50_y, '2', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(rst10_x, rst10_y, '3', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(rst0_x, rst0_y, '4', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
 
 # Set plot limits
 plt.xlim(plot_range)
