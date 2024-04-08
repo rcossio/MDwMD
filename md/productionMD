@@ -23,9 +23,9 @@ nsteps                  = 25000000
 ; Output control
 nstxout-compressed      = 25000   ; coordinates
 nstvout                 = 25000   ; velocities
-nstcalcenergy 		    = 100    ; energie calculation
 nstenergy               = 25000   ; energy saving
 nstlog                  = 25000   ; log file
+nstcalcenergy 		    = 100    ; energie calculation
 
 ; Non-bonded parameters
 cutoff-scheme           = Verlet 
@@ -52,7 +52,7 @@ constraints             = h-bonds
 constraint-algorithm    = LINCS 
 
 ; Center of mass
-comm-mode               = None
+comm-mode               = Linear
 EOF
 }
 
@@ -131,12 +131,18 @@ freeMD() {
     do
         gmx anaeig  -s prod.tpr -f $name.gro -v eigenvect.trr -first 1 -last 2 -2d "${name}_proj.xvg" -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     done
-    
+
+    gmx trjconv -s em.tpr -f prod.xtc       -o prod_whole.xtc  -pbc whole -nobackup <<< "System"
+    gmx trjconv -s em.tpr -f prod_whole.xtc -o prod_nojump.xtc -pbc nojump -nobackup <<< "System"
+    gmx traj -f prod_nojump.xtc -s em.tpr -com -ox com.xvg -xvg none -nobackup <<< "Protein"
+    gmx msd -s em.tpr -f prod_whole.xtc -o msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
 
 }
 
 checkDependency gmx
 freeMD
+
+
 echo "Production MD finished"
 exit 0
 
@@ -152,20 +158,8 @@ exit 0
 
 # https://gromacs.org-gmx-users.maillist.sys.kth.narkive.com/OxMyExmH/gmx-users-unwrap-trajectory-file-using-pbc-nojump
 
-gmx trjconv -f md.xtc       -s em.gro -o md_whole.xtc  -pbc whole -nobackup
-gmx trjconv -f md_whole.xtc -s em.gro -o md_nojump.xtc -pbc nojump -nobackup
+# IMPORTANT about the COM: https://gromacs.bioexcel.eu/t/does-gmx-use-the-center-of-mass-com-to-calculate-the-msd/1968/3
 
-gmx msd -f run01.trr -s run01.tpr -s index.ndx -o msd01.xvg -tu ns -type z
-
-
-#To control
-# - RMSD
-# - Radius of gyration
-# - SASA
-# - Secondary structure content (as percentages)
-# - Potential energy (to check no specific high energies are present)
-# - Kinetic energy (to check it is not accumulating errors)
-# - PCA (to check the protein is moving aroung the minima)
 
 #Think about this warning
 # WARNING: Masses and atomic (Van der Waals) radii will be guessed

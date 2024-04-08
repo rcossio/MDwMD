@@ -41,9 +41,9 @@ nsteps                  = 500000
 ; Output control
 nstxout-compressed      = 5000   ; coordinates
 nstvout                 = 5000   ; velocities
-nstcalcenergy 		    = 100    ; energie calculation
 nstenergy               = 5000   ; energy saving
 nstlog                  = 5000   ; log file
+nstcalcenergy 		    = 100    ; energie calculation
 
 ; Non-bonded parameters
 cutoff-scheme           = Verlet 
@@ -70,7 +70,7 @@ constraints             = h-bonds
 constraint-algorithm    = LINCS 
 
 ; Center of mass
-comm-mode               = None
+comm-mode               = Linear
 EOF
 }
 

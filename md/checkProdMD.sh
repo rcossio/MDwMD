@@ -23,7 +23,7 @@ cd results
 cd $input
 
 # Bring files from the server
-for file in prod.xvg mindist.xvg rmsd_first.xvg rmsd_xray.xvg gyrate.xvg sasa.xvg dssp.xvg  
+for file in prod.xvg mindist.xvg rmsd_first.xvg rmsd_xray.xvg gyrate.xvg sasa.xvg dssp.xvg com.xvg msd_gmx.xvg
 do
     scp rodper@aurora:~/$input/$file .
 done
@@ -59,7 +59,7 @@ rm radius_gyr.xvg
 
 #Plot PCs
 ../../../validation/unipd/bin/python3 ../../plot_pca.py 
-cat > plot.gnu << EOF
+cat > plot_pca.gnu << EOF
 set palette defined ( 0 "red", 1 "orange", 2 "yellow", 3 "green", 4 "blue", 5 "violet")
 set size ratio -1
 set grid
@@ -68,4 +68,16 @@ set grid
 plot "proj.xvg" using 1:2:(\$0/1000.0) w l lc palette, "" every 100 using 1:2:(\$0*100/1000.0) w p pt 7 ps 2 lc palette notitle
 pause -1
 EOF
-echo "Plot script created. Run with 'gnuplot plot.gnu'"
+echo "Plot script created for PCA. Run with 'gnuplot plot_pca.gnu'"
+
+#Diffusion
+../../../validation/unipd/bin/python3 ../../calc_msd.py com.xvg > msd.xvg
+cat > plot_msd.gnu << EOF
+set grid
+plot "msd.xvg" using 1:2 w l t "MSD", "msd_gmx.xvg" using 1:2 w l t "GMX MSD"
+pause -1
+EOF
+echo "Plot script created for PCA. Run with 'gnuplot plot_msd.gnu'"
+
+../../../validation/unipd/bin/python3 ../../calc_diffusion.py msd.xvg > diffusion.xvg
+

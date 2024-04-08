@@ -22,7 +22,6 @@ cd results
 [ ! -d $input ] && mkdir $input
 cd $input
 
-
 # Minimisation
 scp rodper@aurora:~/$input/em_potential.xvg .
 ../../../validation/unipd/bin/python3 ../../make_plot.py em_potential.xvg 
@@ -102,35 +101,3 @@ mol addrep top
 display projection Orthographic
 EOF
 echo "Visualisation script created. Run with 'vmd -e load_visualization.vmd'"
-
-
-#gmx trjconv -s md.tpr -f md.xtc -o md_center.xtc -center -pbc mol <<< $'Protein\nProtein\n'
-#gmx mindist -s md.tpr -f md_center.xtc -pi -od mindist.xvg -xvg none -nobackup <<< "Protein"
-#gmx rms -s rst_0.tpr -f md_center.xtc -o rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-#gmx rms -s em.tpr -f md_center.xtc -o rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-#gmx gyrate -f md_center.xtc -s md.tpr -o gyrate.xvg -xvg none -nobackup <<< "Protein"
-#gmx sasa -f md_center.xtc -s md.tpr -o sasa.xvg -xvg none -nobackup <<< "Protein"
-
-#gmx dssp -f md_center.xtc -s md.tpr -o dssp.dat -xvg none -nobackup 
-#awk '{s_count = gsub(/S/, "&"); p_count = gsub(/H/, "&"); printf "%d %0.2f %0.2f\n", NR, s_count / length * 100, p_count / length * 100}' dssp.dat > dssp.xvg
-
-#gmx covar -f md_center.xtc -s md.tpr -o eigenval.xvg -v eigenvect.trr -last 2 -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-#gmx anaeig -f md_center.xtc -s md.tpr -v eigenvect.trr -first 1 -last 2 -2d proj.xvg -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-#cat > plot.gnu << EOF
-#set palette defined ( 0 "red", 1 "orange", 2 "yellow", 3 "green", 4 "blue", 5 "violet")
-#plot "proj.xvg" using 1:2:(\$0/1000.0) with lines lc palette
-#pause -1
-#EOF
-#echo "Plot script created. Run with 'gnuplot plot.gnu'"
-
-#gmx energy -f md.edr -o md.xvg -xvg none -nobackup <<< $'Pressure\nKinetic\nPotential\n0\n'
-
-
-#Some controls in production MD
-#scp rodper@aurora:~/$input/md.xvg .
-#awk '{print $1, $3}' md.xvg > md_pressure.xvg
-#../../../validation/unipd/bin/python3 ../../make_plot.py md_pressure.xvg moving_average
-#rm md_pressure.xvg
-#awk '{print $1, $2}' md.xvg > md_kinetic.xvg
-#../../../validation/unipd/bin/python3 ../../make_plot.py md_kinetic.xvg moving_average
-#rm md_kinetic.xvg
