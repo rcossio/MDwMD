@@ -1,15 +1,3 @@
-; Run parameters
-integrator              = md 
-dt                      = 0.002     
-nsteps                  = 500000
-
-; Output control
-nstxout-compressed      = 5000   ; coordinates
-nstvout                 = 5000   ; velocities
-nstenergy               = 5000   ; energy saving
-nstlog                  = 5000   ; log file
-nstcalcenergy 		    = 100    ; energie calculation
-
 ; Non-bonded parameters
 cutoff-scheme           = Verlet 
 nstlist                 = 20  
@@ -33,10 +21,25 @@ ref-t                   = 293 293
 ; Bond constraints
 constraints             = h-bonds
 constraint-algorithm    = LINCS 
-continuation            = yes
 
-; Center of mass
+; Run parameters
+integrator              = md 
+dt                      = 0.002     
+nsteps                  = 500000
+
+; Output control
+nstxout-compressed      = 5000   ; coordinates
+nstvout                 = 5000   ; velocities
+nstenergy               = 5000   ; energy saving
+nstlog                  = 5000   ; log file
+nstcalcenergy 		    = 100    ; energie calculation
+
+; Position restraints
+define                  = -DPOSRES
 comm-mode               = None
+; MD continuation
+continuation            = no  ; Bond constraints
+gen-vel                 = yes ; Velocity generation
+gen-temp                = 293 ; Velocity generation
+gen-seed                = -1  ; Velocity generation
 
-; Velocity generation
-gen-vel                 = no

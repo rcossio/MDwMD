@@ -2,7 +2,6 @@ import numpy as np
 
 def load_data(filepath):
     """ Load the COM data from an xvg file. """
-    # Skip comments that start with '@' or '#' if any
     return np.loadtxt(filepath, comments=["@", "#"])
 
 def calculate_squared_distances(data):

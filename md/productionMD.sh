@@ -13,20 +13,18 @@ checkDependency() {
     command -v $1 >/dev/null 2>&1 || { echo >&2 "I require $1 but it's not installed.  Aborting."; exit 1; }
 }
 
+checkFile() {
+    [ -f $1 ] || { echo >&2 "Error: File $1 is not found.  Aborting."; exit 1; }
+}
+
+checkFiles() {
+    for file in "$@"; do
+        checkFile $file
+    done
+}
+
 createMDP () {
 cat > $1 << EOF
-; Run parameters
-integrator              = md 
-dt                      = 0.002
-nsteps                  = 25000000
-
-; Output control
-nstxout-compressed      = 25000   ; coordinates
-nstvout                 = 25000   ; velocities
-nstenergy               = 25000   ; energy saving
-nstlog                  = 25000   ; log file
-nstcalcenergy 		    = 100    ; energie calculation
-
 ; Non-bonded parameters
 cutoff-scheme           = Verlet 
 nstlist                 = 20  
@@ -51,8 +49,28 @@ ref-t                   = 293 293
 constraints             = h-bonds
 constraint-algorithm    = LINCS 
 
-; Center of mass
-comm-mode               = Linear
+EOF
+}
+
+setMDlength () {
+    cat >> $1 << EOF
+; Run parameters
+integrator              = md 
+dt                      = 0.002     
+nsteps                  = $2
+
+EOF
+}
+
+setOutputFreq () {
+    cat >> $1 << EOF
+; Output control
+nstxout-compressed      = $2   ; coordinates
+nstvout                 = $2   ; velocities
+nstenergy               = $2   ; energy saving
+nstlog                  = $2   ; log file
+nstcalcenergy 		    = 100    ; energie calculation
+
 EOF
 }
 
@@ -60,6 +78,7 @@ addPositionRestraints () {
     cat >> $1 << EOF
 ; Position restraints
 define                  = -DPOSRES
+comm-mode               = None
 EOF
 }
 
@@ -75,51 +94,47 @@ refcoord-scaling        = com
 EOF
 }
 
-setupSimulationMode () {
+setContinuationMode () {
     if [ $2 == "start" ]; then
         cat >> $1 << EOF
-; Bond constraints
-continuation            = no
+; MD continuation
+continuation            = no  ; Bond constraints
+gen-vel                 = yes ; Velocity generation
+gen-temp                = 293 ; Velocity generation
+gen-seed                = -1  ; Velocity generation
 
-; Velocity generation
-gen-vel                 = yes
-gen-temp                = 293
-gen-seed                = -1
 EOF
     elif [ $2 == "continue" ]; then
         cat >> $1 << EOF
-; Bond constraints
-continuation            = yes
-; Velocity generation
-gen-vel                 = no
+; MD continuation
+continuation            = yes ; Bond constraints
+gen-vel                 = no  ; Velocity generation
+
 EOF
     fi
 }
 
-freeMD() {
+productionMD() {
     createMDP prod.mdp
+    setMDlength prod.mdp 25000000
+    setOutputFreq prod.mdp 25000
     setupSimulationMode prod.mdp continue
-    [ -f prod.mdp ] || exit 1
+    checkFile prod.mdp
 
-    gmx grompp -f prod.mdp -c md.gro -t md.cpt -p topol.top -o prod.tpr  -maxwarn 1 #Warning with center of mass removal
-    [ -f prod.tpr ] || exit 1
+    gmx grompp -f prod.mdp -c nvt_f.gro -t nvt_f.cpt -p topol.top -o prod.tpr
+    checkFile prod.tpr
 
     gmx mdrun -deffnm prod -nb gpu
-    [ -f prod.log ] || exit 1
-    [ -f prod.edr ] || exit 1
-    [ -f prod.trr ] || exit 1
-    [ -f prod.xtc ] || exit 1
-    [ -f prod.gro ] || exit 1
-    [ -f prod.cpt ] || exit 1
+    checkFiles prod.log prod.edr prod.trr prod.xtc prod.gro prod.cpt
 
     gmx energy -f prod.edr -o prod.xvg -xvg none -nobackup <<< $'Pressure\nKinetic\nPotential\n0\n'
 
-    gmx trjconv -s prod.tpr -f prod.xtc -o prod_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
-    gmx mindist -s prod.tpr -f prod_center.xtc -pi -od mindist.xvg -xvg none -nobackup <<< "Protein"
-    gmx rms     -s md.tpr   -f prod_center.xtc -o rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-    gmx rms     -s em.tpr   -f prod_center.xtc -o rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-    gmx gyrate  -s prod.tpr -f prod_center.xtc -o gyrate.xvg -xvg none -nobackup <<< "Protein"
-    gmx sasa    -s prod.tpr -f prod_center.xtc -o sasa.xvg -xvg none -nobackup <<< "Protein"
+    gmx trjconv -s prod.tpr  -f prod.xtc -o prod_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
+    gmx mindist -s prod.tpr  -f prod_center.xtc -pi -od mindist.xvg -xvg none -nobackup <<< "Protein"
+    gmx rms     -s nvt_r.tpr -f prod_center.xtc -o rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx rms     -s em.tpr    -f prod_center.xtc -o rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx gyrate  -s prod.tpr  -f prod_center.xtc -o gyrate.xvg -xvg none -nobackup <<< "Protein"
+    gmx sasa    -s em.tpr  -f prod_center.xtc -o sasa.xvg -xvg none -nobackup <<< "Protein"
 
     gmx dssp    -s prod.tpr -f prod_center.xtc  -o dssp.dat -xvg none -nobackup 
     awk '{s_count = gsub(/S/, "&"); p_count = gsub(/H/, "&"); printf "%d %0.2f %0.2f\n", NR, s_count / length * 100, p_count / length * 100}' dssp.dat > dssp.xvg
@@ -127,7 +142,7 @@ freeMD() {
     gmx covar   -s prod.tpr -f prod_center.xtc -o eigenval.xvg -v eigenvect.trr -last 2 -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     gmx anaeig  -s prod.tpr -f prod_center.xtc -v eigenvect.trr -first 1 -last 2 -2d proj.xvg -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
 
-    for name in em nvt npt rst_200 rst_50 rst_10 rst_0 md
+    for name in em nvt_r npt_r1000 npt_r200 npt_r50 npt_r10 npt_r2 npt_f nvt_f
     do
         gmx anaeig  -s prod.tpr -f $name.gro -v eigenvect.trr -first 1 -last 2 -2d "${name}_proj.xvg" -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     done
@@ -140,7 +155,7 @@ freeMD() {
 }
 
 checkDependency gmx
-freeMD
+productionMD
 
 
 echo "Production MD finished"

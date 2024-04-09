@@ -5,13 +5,14 @@ from matplotlib.colors import ListedColormap
 # Load data
 data = np.loadtxt('proj.xvg')
 em_data = np.loadtxt('em_proj.xvg')
-nvt_data = np.loadtxt('nvt_proj.xvg')
-npt_data = np.loadtxt('npt_proj.xvg')
-rst200_data = np.loadtxt('rst_200_proj.xvg')
-rst50_data   = np.loadtxt('rst_50_proj.xvg')
-rst10_data   = np.loadtxt('rst_10_proj.xvg')
-rst0_data   = np.loadtxt('rst_0_proj.xvg')
-md_data  = np.loadtxt('md_proj.xvg')
+nvt_r_data = np.loadtxt('nvt_r_proj.xvg')
+npt_r1000_data = np.loadtxt('npt_r1000_proj.xvg')
+npt_r200_data = np.loadtxt('npt_r200_proj.xvg')
+npt_r50_data   = np.loadtxt('npt_r50_proj.xvg')
+npt_r10_data   = np.loadtxt('npt_r10_proj.xvg')
+npt_r2_data   = np.loadtxt('npt_r2_proj.xvg')
+npt_f_data   = np.loadtxt('npt_f_proj.xvg')
+nvt_f_data  = np.loadtxt('nvt_f_proj.xvg')
 
 
 # Data columns for the main data
@@ -21,14 +22,13 @@ y = data[:, 1]
 # Data columns for the additional data
 # Ensure it's treated as a two-dimensional array with a single point
 em_x, em_y = em_data  # Direct unpacking since it's just one pair
-nvt_x, nvt_y = nvt_data 
-npt_x, npt_y = npt_data
-rst200_x, rst200_y = rst200_data
-rst50_x, rst50_y = rst50_data
-rst10_x, rst10_y = rst10_data
-rst0_x, rst0_y = rst0_data
-md_x, md_y = md_data
-
+npt_r1000_x, npt_r1000_y = npt_r1000_data
+npt_r200_x,  npt_r200_y = npt_r200_data
+npt_r50_x,   npt_r50_y = npt_r50_data
+npt_r10_x,   npt_r10_y = npt_r10_data
+npt_r2_x,    npt_r2_y = npt_r2_data
+npt_f_x,     npt_f_y = npt_f_data
+nvt_f_x,     nvt_f_y = nvt_f_data
 
 # Create a subset of data points, taking every second point to plot
 sub_x = x[::1]  # Every other x value
@@ -66,11 +66,12 @@ plt.scatter(sub_x[-1], sub_y[-1], color=end_color, s=100, zorder=3, edgecolor='b
 
 # Add the special point from em_proj.xvg
 plt.text(em_x, em_y, 'M', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
-plt.text(npt_x, npt_y, 'P', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
-plt.text(rst200_x, rst200_y, '1', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
-plt.text(rst50_x, rst50_y, '2', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
-plt.text(rst10_x, rst10_y, '3', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
-plt.text(rst0_x, rst0_y, '4', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_r1000_x, npt_r1000_y, '1', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_r200_x, npt_r200_y, '2', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_r50_x, npt_r50_y, '3', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_r10_x, npt_r10_y, '4', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_r2_x, npt_r2_y, '5', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
+plt.text(npt_f_x, npt_f_y, '6', fontsize=10, ha='center', va='center', color='black', fontweight='bold', zorder=4)
 
 # Set plot limits
 plt.xlim(plot_range)
