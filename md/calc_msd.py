@@ -4,20 +4,28 @@ def load_data(filepath):
     """ Load the COM data from an xvg file. """
     return np.loadtxt(filepath, comments=["@", "#"])
 
-def calculate_squared_distances(data):
-    """ Calculate the Euclidean distance from the initial COM position for each point. """
-    initial_pos = data[0, 1:4]  # The initial x, y, z position is on the first row
-    squared_distances = np.sum((data[:, 1:4] - initial_pos) ** 2, axis=1)
-    return squared_distances
+def estimate_msd(data,target_time):
+    accum = 0
+    n_intervals = len(data) - target_time
+    for start_index in range(n_intervals):
+        x_f = data[start_index+target_time, 1:4]
+        x_i = data[start_index, 1:4]
+        accum += np.linalg.norm(x_f-x_i)**2
+    msd = accum / (n_intervals+1)
+    return msd
 
 def main():
-    filepath = 'com.xvg'  # Change this to the path of your xvg file
+    filepath = 'com.xvg'
     data = load_data(filepath)
-    sq_distances = calculate_squared_distances(data)
+    times = data[:, 0]
 
-    # Print or save the results
-    for time, sq_distance in zip(data[:, 0], sq_distances):
-        print(f"{time} {sq_distance:.6f}")
+    n_frames = len(data)
+    msds = []
+    for target_time in range(0, n_frames):
+        msds.append(estimate_msd(data, target_time))
+    
+    for (time, msd) in zip(times, msds):
+        print(f"{time} {msd}")
 
 if __name__ == "__main__":
     main()

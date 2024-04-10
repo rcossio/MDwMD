@@ -117,47 +117,47 @@ EOF
 }
 
 productionMD() {
-    createMDP prod.mdp
-    setMDlength prod.mdp 50000000
-    setOutputFreq prod.mdp 10000
-    setupSimulationMode prod.mdp continue
-    checkFile prod.mdp
+    createMDP prod${1}.mdp
+    setMDlength prod${1}.mdp 50000000
+    setOutputFreq prod${1}.mdp 25000
+    setupSimulationMode prod${1}.mdp continue
+    checkFile prod${1}.mdp
 
-    gmx grompp -f prod.mdp -c nvt_f.gro -t nvt_f.cpt -p topol.top -o prod.tpr
-    checkFile prod.tpr
+    gmx grompp -f prod${1}.mdp -c $2.gro -t $2.cpt -p topol.top -o prod${1}.tpr
+    checkFile prod${1}.tpr
 
-    gmx mdrun -deffnm prod -nb gpu
-    checkFiles prod.log prod.edr prod.trr prod.xtc prod.gro prod.cpt
+    gmx mdrun -deffnm prod${1} -nb gpu
+    checkFiles prod${1}.log prod${1}.edr prod${1}.trr prod${1}.xtc prod${1}.gro prod${1}.cpt
 
-    gmx energy -f prod.edr -o prod.xvg -xvg none -nobackup <<< $'Pressure\nKinetic\nPotential\n0\n'
+    gmx energy -f prod${1}.edr -o prod${1}.xvg -xvg none -nobackup <<< $'Pressure\nKinetic\nPotential\n0\n'
 
-    gmx trjconv -s prod.tpr  -f prod.xtc -o prod_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
-    gmx mindist -s prod.tpr  -f prod_center.xtc -pi -od mindist.xvg -xvg none -nobackup <<< "Protein"
-    gmx rms     -s nvt_f.tpr -f prod_center.xtc -o rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-    gmx rms     -s em.tpr    -f prod_center.xtc -o rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-    gmx gyrate  -s prod.tpr  -f prod_center.xtc -o gyrate.xvg -xvg none -nobackup <<< "Protein"
-    gmx sasa    -s em.tpr  -f prod_center.xtc -o sasa.xvg -xvg none -nobackup <<< "Protein"
+    gmx trjconv -s prod${1}tpr  -f prod${1}xtc -o prod${1}_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
+    gmx mindist -s prod${1}tpr  -f prod${1}_center.xtc -pi -od prod${1}_mindist.xvg -xvg none -nobackup <<< "Protein"
+    gmx rms     -s $2.tpr -f prod${1}_center.xtc -o prod${1}_rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx rms     -s em.tpr    -f prod${1}_center.xtc -o prod${1}_rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx gyrate  -s prod${1}tpr  -f prod${1}_center.xtc -o prod${1}_gyrate.xvg -xvg none -nobackup <<< "Protein"
+    gmx sasa    -s em.tpr  -f prod${1}_center.xtc -o prod${1}_sasa.xvg -xvg none -nobackup <<< "Protein"
 
-    gmx dssp    -s prod.tpr -f prod_center.xtc  -o dssp.dat -xvg none -nobackup 
-    awk '{s_count = gsub(/S/, "&"); p_count = gsub(/H/, "&"); printf "%d %0.2f %0.2f\n", NR, s_count / length * 100, p_count / length * 100}' dssp.dat > dssp.xvg
+    gmx dssp    -s prod${1}tpr -f prod${1}_center.xtc  -o prod${1}_dssp.dat -xvg none -nobackup 
+    awk '{s_count = gsub(/S/, "&"); p_count = gsub(/H/, "&"); printf "%d %0.2f %0.2f\n", NR, s_count / length * 100, p_count / length * 100}' dssp.dat > prod${1}_dssp.xvg
 
-    gmx covar   -s prod.tpr -f prod_center.xtc -o eigenval.xvg -v eigenvect.trr -last 2 -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
-    gmx anaeig  -s prod.tpr -f prod_center.xtc -v eigenvect.trr -first 1 -last 2 -2d proj.xvg -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx covar   -s prod${1}tpr -f prod${1}_center.xtc -o prod${1}_eigenval.xvg -v prod${1}_eigenvect.trr -last 2 -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx anaeig  -s prod${1}tpr -f prod${1}_center.xtc -v prod${1}_eigenvect.trr -first 1 -last 2 -2d prod${1}_proj.xvg -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
 
-    for name in em nvt_r npt_r1000 npt_r200 npt_r50 npt_r10 npt_r2 npt_f nvt_f
+    for name in em nvt_r npt_r1000 npt_r200 npt_r50 npt_r10 npt_r2 npt_r1 npt_f nvt_f
     do
-        gmx anaeig  -s prod.tpr -f $name.gro -v eigenvect.trr -first 1 -last 2 -2d "${name}_proj.xvg" -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+           gmx anaeig  -s prod${1}tpr -f $name.gro -v prod${1}_eigenvect.trr -first 1 -last 2 -2d "prod${1}_${name}_proj.xvg" -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     done
 
-    gmx trjconv -s em.tpr -f prod.xtc       -o prod_whole.xtc  -pbc whole -nobackup <<< "System"
-    gmx trjconv -s em.tpr -f prod_whole.xtc -o prod_nojump.xtc -pbc nojump -nobackup <<< "System"
-    gmx traj -f prod_nojump.xtc -s em.tpr -com -ox com.xvg -xvg none -nobackup <<< "Protein"
-    gmx msd -s em.tpr -f prod_whole.xtc -o msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
+    gmx trjconv -s em.tpr -f prod${1}xtc       -o prod${1}_whole.xtc  -pbc whole -nobackup <<< "System"
+    gmx trjconv -s em.tpr -f prod${1}_whole.xtc -o prod${1}_nojump.xtc -pbc nojump -nobackup <<< "System"
+    gmx traj -f prod${1}_nojump.xtc -s em.tpr -com -ox prod${1}_com.xvg -xvg none -nobackup <<< "Protein"
+    gmx msd -s em.tpr -f prod${1}_whole.xtc -o prod${1}_msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
 
 }
 
 checkDependency gmx
-productionMD
+productionMD 1 nvt_f
 
 
 echo "Production MD finished"

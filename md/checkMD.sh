@@ -23,9 +23,9 @@ cd results
 cd $input
 
 # Bring light files from the server
-for file in em_potential.xvg nvt_r_temperature.xvg npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg npt_f.xvg nvt_f_mindist.xvg
+for file in em_potential.xvg nvt_r_temperature.xvg npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg npt_r1.xvg npt_f.xvg nvt_f_mindist.xvg
 do
-    scp rodper@aurora:~/$input/$file .
+    scp rodper@aurora:/mnt/Italia1/MDwMD/$input/$file .
 done
 
 # Minimisation
@@ -36,7 +36,7 @@ python3 ../../make_plot.py -i nvt_r_temperature.xvg --moving_average
 
 # Restraint elimination in NPT
 
-cat npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg | grep -v -E "#|@" | awk '{print $4, $5}' > tmp1.dat
+cat npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg npt_r1.xvg | grep -v -E "#|@" | awk '{print $4, $5}' > tmp1.dat
 cat npt_f.xvg | grep -v -E "#|@" | awk '{print $2, $3}' > tmp2.dat
 
 cat tmp1.dat tmp2.dat | cat -n |  awk '{print 10*$1, $2}'> npt_r_pressure.xvg
@@ -60,9 +60,9 @@ python3 ../../make_plot.py -i nvt_f_minselfdist.xvg
 rm nvt_f_minselfdist.xvg
 
 # Bring Trajectories from the server
-for file in em.gro nvt_r.xtc npt_r1000.xtc npt_r200.xtc npt_r50.xtc npt_r10.xtc npt_r2.xtc npt_f.xtc nvt_f.xtc
+for file in em.gro nvt_r.xtc npt_r1000.xtc npt_r200.xtc npt_r50.xtc npt_r10.xtc npt_r2.xtc npt_r1.xtc npt_f.xtc nvt_f.xtc
 do
-    scp rodper@aurora:~/$input/$file .
+    scp rodper@aurora:/mnt/Italia1/MDwMD/$input/$file .
 done
 
 
@@ -78,6 +78,7 @@ mol addfile npt_r200.xtc type xtc first 0 last -1 step 1 waitfor all
 mol addfile npt_r50.xtc  type xtc first 0 last -1 step 1 waitfor all
 mol addfile npt_r10.xtc  type xtc first 0 last -1 step 1 waitfor all
 mol addfile npt_r2.xtc  type xtc first 0 last -1 step 1 waitfor all
+mol addfile npt_r1.xtc  type xtc first 0 last -1 step 1 waitfor all
 mol addfile npt_f.xtc  type xtc first 0 last -1 step 1 waitfor all
 mol addfile nvt_f.xtc  type xtc first 0 last -1 step 1 waitfor all
 

@@ -37,6 +37,7 @@ nstcalcenergy 		    = 100    ; energie calculation
 ; Position restraints
 define                  = -DPOSRES
 comm-mode               = None
+
 ; Pressure coupling
 pcoupl                  = C-rescale
 pcoupltype              = isotropic
@@ -44,6 +45,7 @@ tau-p                   = 2.0
 ref-p                   = 1.0
 compressibility         = 4.5e-5
 refcoord-scaling        = com
+
 ; MD continuation
 continuation            = yes ; Bond constraints
 gen-vel                 = no  ; Velocity generation

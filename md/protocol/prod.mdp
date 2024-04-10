@@ -32,5 +32,5 @@ nstxout-compressed      = 10000   ; coordinates
 nstvout                 = 10000   ; velocities
 nstenergy               = 10000   ; energy saving
 nstlog                  = 10000   ; log file
-nstcalcenergy 		    = 100    ; energie calculation
+nstcalcenergy 		    = 100     ; energie calculation
 

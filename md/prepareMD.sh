@@ -161,7 +161,7 @@ energyMinimization() {
 integrator      = steep     ; Steepest descent minimization
 emtol           = 100.0     ; Tolerance for energy minimization
 emstep          = 0.01      ; Minimization step size
-nsteps          = 10000     ; Max steps for energy minimization
+nsteps          = 100000    ; Max steps for energy minimization
 
 ; Non-bonded parameters
 cutoff-scheme   = Verlet    ; Use Verlet list for neighbor search
@@ -238,6 +238,7 @@ eliminateRestraintsInNPT() {
     runRestrainedNPT 50 npt_r200
     runRestrainedNPT 10 npt_r50
     runRestrainedNPT 2 npt_r10
+    runRestrainedNPT 1 npt_r2
 }
 
 
@@ -249,7 +250,7 @@ freeNPT() {
     setContinuationMode npt_f.mdp continue
     checkFile npt_f.mdp
 
-    gmx grompp -f npt_f.mdp -c npt_r2.gro -t npt_r2.cpt -p topol.top -o npt_f.tpr
+    gmx grompp -f npt_f.mdp -c npt_r1.gro -t npt_r1.cpt -p topol.top -o npt_f.tpr
     checkFile npt_f.tpr
 
     gmx mdrun -deffnm npt_f -nb gpu
