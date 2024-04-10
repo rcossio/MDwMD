@@ -87,6 +87,7 @@ addPositionRestraints () {
 ; Position restraints
 define                  = -DPOSRES
 comm-mode               = None
+
 EOF
 }
 
@@ -99,6 +100,7 @@ tau-p                   = 2.0
 ref-p                   = 1.0
 compressibility         = 4.5e-5
 refcoord-scaling        = com
+
 EOF
 }
 
@@ -217,7 +219,7 @@ runRestrainedNPT() {
     setContinuationMode npt_r$1.mdp continue
     checkFile npt_r$1.mdp
 
-    sed -e "s/1000/$1/g" posre.itp.bak > posre.itp
+    sed -e "s/1000  1000  1000/$1  $1  $1/g" posre.itp.bak > posre.itp
 
     gmx grompp -f npt_r$1.mdp -c $2.gro -t $2.cpt -r em.gro -p topol.top -o npt_r$1.tpr
     checkFile npt_r$1.tpr

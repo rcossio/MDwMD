@@ -79,6 +79,7 @@ addPositionRestraints () {
 ; Position restraints
 define                  = -DPOSRES
 comm-mode               = None
+
 EOF
 }
 
@@ -91,6 +92,7 @@ tau-p                   = 2.0
 ref-p                   = 1.0
 compressibility         = 4.5e-5
 refcoord-scaling        = com
+
 EOF
 }
 
