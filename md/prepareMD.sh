@@ -255,6 +255,7 @@ freeNPT() {
 
     gmx energy -f npt_f.edr -o npt_f.xvg -xvg none -nobackup <<< $'Pressure\nDensity\n0\n'
     checkFile npt_f.xvg
+
 }
 
 freeNVT() {
@@ -272,6 +273,11 @@ freeNVT() {
 
     gmx energy -f nvt_f.edr -o nvt_f.xvg -xvg none -nobackup <<< $'Pressure\n0\n'
     checkFile nvt_f.xvg
+
+    gmx trjconv -s nvt_f.tpr  -f nvt_f.xtc -o nvt_f_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
+    checkFile nvt_f_center.xtc
+    gmx mindist -s nvt_f.tpr  -f nvt_f_center.xtc -pi -od nvt_f_mindist.xvg -xvg none -nobackup <<< "Protein"
+    checkFile nvt_f_mindist.xvg
 }
 
 

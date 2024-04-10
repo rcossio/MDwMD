@@ -22,19 +22,20 @@ cd results
 [ ! -d $input ] && mkdir $input
 cd $input
 
-# Minimisation
-scp rodper@aurora:~/$input/em_potential.xvg .
-../../../validation/unipd/bin/python3 ../../make_plot.py em_potential.xvg 
-
-# Restrained NVT
-scp rodper@aurora:~/$input/nvt_r_temperature.xvg .
-../../../validation/unipd/bin/python3 ../../make_plot.py nvt_r_temperature.xvg moving_average
-
-# Restraint elimination in NPT
-for file in npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg npt_f.xvg
+# Bring light files from the server
+for file in em_potential.xvg nvt_r_temperature.xvg npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg npt_f.xvg nvt_f_mindist.xvg
 do
     scp rodper@aurora:~/$input/$file .
 done
+
+# Minimisation
+python3 ../../make_plot.py -i em_potential.xvg 
+
+# Restrained NVT
+python3 ../../make_plot.py -i nvt_r_temperature.xvg --moving_average
+
+# Restraint elimination in NPT
+
 cat npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg | grep -v -E "#|@" | awk '{print $4, $5}' > tmp1.dat
 cat npt_f.xvg | grep -v -E "#|@" | awk '{print $2, $3}' > tmp2.dat
 
@@ -42,21 +43,23 @@ cat tmp1.dat tmp2.dat | cat -n |  awk '{print 10*$1, $2}'> npt_r_pressure.xvg
 cat tmp1.dat tmp2.dat | cat -n |  awk '{print 10*$1, $3}'> npt_r_density.xvg
 rm tmp1.dat tmp2.dat
 
-../../../validation/unipd/bin/python3 ../../make_plot.py npt_r_pressure.xvg moving_average
-../../../validation/unipd/bin/python3 ../../make_plot.py npt_r_density.xvg moving_average
+python3 ../../make_plot.py -i npt_r_pressure.xvg --moving_average
+python3 ../../make_plot.py -i npt_r_density.xvg --moving_average
 
 cat npt_r1000.xvg npt_r200.xvg npt_r50.xvg npt_r10.xvg npt_r2.xvg | grep -v -E "#|@" | awk '{print $2, $3}' | cat -n |  awk '{print 10*$1, $2, $3, -$2/$3}'> restraint_full.xvg
 awk '{print $1, $2}' restraint_full.xvg > npt_r_restraint.xvg
-../../../validation/unipd/bin/python3 ../../make_plot.py npt_r_restraint.xvg moving_average
+python3 ../../make_plot.py -i npt_r_restraint.xvg --moving_average
 rm npt_r_restraint.xvg
 
 
 # Controls in free NVT
-scp rodper@aurora:~/$input/nvt_f.xvg .
-../../../validation/unipd/bin/python3 ../../make_plot.py nvt_f.xvg moving_average
+python3 ../../make_plot.py -i nvt_f.xvg --moving_average
 
+awk '{print $1, $2}' nvt_f_mindist.xvg > nvt_f_minselfdist.xvg
+python3 ../../make_plot.py -i nvt_f_minselfdist.xvg
+rm nvt_f_minselfdist.xvg
 
-# Trajectories
+# Bring Trajectories from the server
 for file in em.gro nvt_r.xtc npt_r1000.xtc npt_r200.xtc npt_r50.xtc npt_r10.xtc npt_r2.xtc npt_f.xtc nvt_f.xtc
 do
     scp rodper@aurora:~/$input/$file .

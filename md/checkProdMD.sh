@@ -31,34 +31,37 @@ scp rodper@aurora:~/$input/*proj.xvg .
 
 #Energy controls
 awk '{print $1, $2}' prod.xvg > prod_potential.xvg
-../../../validation/unipd/bin/python3 ../../make_plot.py prod_potential.xvg moving_average
+python3 ../../make_plot.py -i prod_potential.xvg --moving_average
 rm prod_potential.xvg
 awk '{print $1, $3}' prod.xvg > prod_kinetic.xvg
-../../../validation/unipd/bin/python3 ../../make_plot.py prod_kinetic.xvg moving_average
+python3 ../../make_plot.py -i prod_kinetic.xvg --moving_average
 rm prod_kinetic.xvg
 awk '{print $1, $4}' prod.xvg > prod_pressure.xvg
-../../../validation/unipd/bin/python3 ../../make_plot.py prod_pressure.xvg moving_average
+python3 ../../make_plot.py -i prod_pressure.xvg --moving_average
 rm prod_pressure.xvg
 
 #Distance control
 awk '{print $1, $2}' mindist.xvg > min_selfdist.xvg
-../../../validation/unipd/bin/python3 ../../make_plot.py min_selfdist.xvg
+python3 ../../make_plot.py -i min_selfdist.xvg
 rm min_selfdist.xvg
 
 #RMSD control
-../../../validation/unipd/bin/python3 ../../make_plot.py rmsd_first.xvg moving_average
-../../../validation/unipd/bin/python3 ../../make_plot.py rmsd_xray.xvg moving_average
+python3 ../../make_plot.py -i rmsd_first.xvg --moving_average
+python3 ../../make_plot.py -i rmsd_xray.xvg --moving_average
 
 #Gyrate control
 awk '{print $1, $2}' gyrate.xvg > radius_gyr.xvg
-../../../validation/unipd/bin/python3 ../../make_plot.py radius_gyr.xvg moving_average
+python3 ../../make_plot.py -i radius_gyr.xvg --moving_average
 rm radius_gyr.xvg
 
 #SASA control
-../../../validation/unipd/bin/python3 ../../make_plot.py sasa.xvg moving_average
+python3 ../../make_plot.py -i sasa.xvg --moving_average
+
+#DSSP control
+python3 ../../make_plot.py -i dssp.xvg --cols 3
 
 #Plot PCs
-../../../validation/unipd/bin/python3 ../../plot_pca.py 
+python3 ../../plot_pca.py 
 cat > plot_pca.gnu << EOF
 set palette defined ( 0 "red", 1 "orange", 2 "yellow", 3 "green", 4 "blue", 5 "violet")
 set size ratio -1
@@ -71,7 +74,7 @@ EOF
 echo "Plot script created for PCA. Run with 'gnuplot plot_pca.gnu'"
 
 #Diffusion
-../../../validation/unipd/bin/python3 ../../calc_msd.py com.xvg > msd.xvg
+python3 ../../calc_msd.py com.xvg > msd.xvg
 cat > plot_msd.gnu << EOF
 set grid
 plot "msd.xvg" using 1:2 w l t "MSD", "msd_gmx.xvg" using 1:2 w l t "GMX MSD"
@@ -79,5 +82,5 @@ pause -1
 EOF
 echo "Plot script created for PCA. Run with 'gnuplot plot_msd.gnu'"
 
-../../../validation/unipd/bin/python3 ../../calc_diffusion.py msd.xvg > diffusion.xvg
+python3 ../../calc_diffusion.py msd.xvg > diffusion.xvg
 

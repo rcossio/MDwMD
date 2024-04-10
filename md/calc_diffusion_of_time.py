@@ -21,7 +21,7 @@ def main():
     filepath = 'com.xvg'
     com_data = load_data(filepath)
     
-    num_chunks = 20  # Set the number of chunks here
+    num_chunks = 1  # Set the number of chunks here
     total_frames = len(com_data)
     frame_step = (total_frames - 1) // num_chunks
     frame_size = frame_step + 1

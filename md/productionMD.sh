@@ -116,8 +116,8 @@ EOF
 
 productionMD() {
     createMDP prod.mdp
-    setMDlength prod.mdp 25000000
-    setOutputFreq prod.mdp 25000
+    setMDlength prod.mdp 50000000
+    setOutputFreq prod.mdp 10000
     setupSimulationMode prod.mdp continue
     checkFile prod.mdp
 
@@ -131,7 +131,7 @@ productionMD() {
 
     gmx trjconv -s prod.tpr  -f prod.xtc -o prod_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
     gmx mindist -s prod.tpr  -f prod_center.xtc -pi -od mindist.xvg -xvg none -nobackup <<< "Protein"
-    gmx rms     -s nvt_r.tpr -f prod_center.xtc -o rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
+    gmx rms     -s nvt_f.tpr -f prod_center.xtc -o rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     gmx rms     -s em.tpr    -f prod_center.xtc -o rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     gmx gyrate  -s prod.tpr  -f prod_center.xtc -o gyrate.xvg -xvg none -nobackup <<< "Protein"
     gmx sasa    -s em.tpr  -f prod_center.xtc -o sasa.xvg -xvg none -nobackup <<< "Protein"
