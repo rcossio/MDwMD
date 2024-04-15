@@ -92,7 +92,7 @@ export function clickOnEnter(targetBtnId) {
 export function displayUserAlias(divId) {
     const alias = getUserAlias();
     if (alias === 'Anonymous') {
-        document.getElementById(divId).innerHTML = '<a class="btn btn-success" href="/auth/orcid/login">Sign In</a>';
+        document.getElementById(divId).innerHTML = '<a class="btn btn-success" href="/login">Sign In</a>';
     } else {
         document.getElementById(divId).innerHTML = `<i class="fa-solid fa-circle-user"></i> <strong>${alias}</strong>`;
     }

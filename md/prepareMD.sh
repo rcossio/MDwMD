@@ -167,7 +167,6 @@ nsteps          = 100000    ; Max steps for energy minimization
 cutoff-scheme   = Verlet    ; Use Verlet list for neighbor search
 nstlist         = 10        ; Update neighbor list every step
 rlist           = 1.2       ; Cut-off for making neighbor list (short range forces)
-ns-type         = grid      ; Grid search for neighbor list
 rvdw            = 1.2       ; Cut-off for Van der Waals interactions in nm
 
 ; Electrostatics
@@ -238,7 +237,7 @@ eliminateRestraintsInNPT() {
     runRestrainedNPT 50 npt_r200
     runRestrainedNPT 10 npt_r50
     runRestrainedNPT 2 npt_r10
-    runRestrainedNPT 1 npt_r2
+    runRestrainedNPT 0.5 npt_r2
 }
 
 
@@ -250,7 +249,7 @@ freeNPT() {
     setContinuationMode npt_f.mdp continue
     checkFile npt_f.mdp
 
-    gmx grompp -f npt_f.mdp -c npt_r1.gro -t npt_r1.cpt -p topol.top -o npt_f.tpr
+    gmx grompp -f npt_f.mdp -c npt_r0.5.gro -t npt_r0.5.cpt -p topol.top -o npt_f.tpr
     checkFile npt_f.tpr
 
     gmx mdrun -deffnm npt_f -nb gpu

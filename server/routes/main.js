@@ -12,9 +12,9 @@ router.get('/login', (req, res) => {
   res.sendFile(path.resolve('public', 'login.html'));
 });
 
-router.get('/register', (req, res) => {
-  res.sendFile(path.resolve('public', 'register.html'));
-});
+//router.get('/register', (req, res) => {
+//  res.sendFile(path.resolve('public', 'register.html'));
+//});
 
 //Protected routes
 router.get('/new_experiment',verifyToken, (req, res) => {

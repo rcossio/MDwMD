@@ -57,10 +57,7 @@ The project is organized into the following directories, each containing relevan
 - **Crysol**: Think of using spherical harmonic coefficients to calculate the diffusion coefficient, instead of bead/shell modelling
 
 ### Molecular dynamics
-- **NVT/NPT shift**: The current script makes protein make a shift from NVT to NPT (with restraints from the same structure and no COM correction). This is at least a visualization bug (maybe see https://manual.gromacs.org/current/user-guide/terminology.html).
-- **NPT control**: Do pressure in NPT variates too much? Check this: https://manual.gromacs.org/current/user-guide/terminology.html. We expect the fluctuation to be about 91=500\*sqrt(216/6460) to 109=600\*sqrt(216/6460), comparing to a 216 waters box
-- **Density**: Density is a little higher than expected we get 1027 and expect 1014, check https://pubs.acs.org/doi/pdf/10.1021/ct900549r
-- **Script inputs**: The MD scripts can be improve with this syntax `!printf "Potential\n0\n" | gmx energy -f em.edr -o potential.xvg -xvg none`
+- **MSD**: Gromacs gives an MSD slightly above the COM-calculated one, is it due to molecule rotations?
 
 
 ## Insights from Other DBs

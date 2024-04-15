@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+<div class="header">
+  <nav class="navbar">
+    <a class="navbar-item" href="/">Browse</a>
+    <a class="navbar-item" href="/new_experiment">New experiment</a>
+    <a class="navbar-item" href="/new_protein">New protein</a>
+  </nav>
+  <div id="signInDiv" class="ml-auto pr-2"></div>
+</div>
+
+<div class="container form-block">
+  <h2 class="mt-2">Log In</h2>
+  <form>
+    <!-- Input section -->
+    <div class="form-row form-block mb-2 mt-3">
+        <div class="col-6">
+            <label class="mb-1" >Username</label>
+            <input type="text" class="form-control" id="username" placeholder="Username">
+        </div>
+        <div class="col-6">
+          <label class="mb-1">Password</label>
+          <input type="password" class="form-control" id="password" placeholder="Password">
+      </div>
+    </div>
+
+    <!-- Submit button -->
+    <div class="form-group text-center mt-2">
+        <div>
+          <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Sign In</button>
+        </div>
+        <div class="mt-2">
+          <a class="btn btn-success" href="/auth/orcid/login">Login with ORCiD</a>
+        </div>
+    </div>
+  </form>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const { showToast, clearFormFields, displayUserAlias, getUserId, startSpinnerAnimation,stopSpinnerAnimation } = await import('./js/utils.js');
+
+    // Configurations
+    displayUserAlias('signInDiv');
+
+      // Events
+      function submitForm() {
+          startSpinnerAnimation(document.getElementById('submitBtn'));
+          const formData = {
+              username: document.getElementById('username').value,
+              password: document.getElementById('password').value
+          };
+
+          // Check if mandatory fields are filled
+          if (!formData.username || !formData.password) {
+            stopSpinnerAnimation(document.getElementById('submitBtn'),'Sign In');
+            showToast('Error', 'Missing field', 'red');
+            return;
+          }
+
+          // Send data to server
+          fetch('/auth/login', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(formData),
+          })
+          .then(response => {
+              stopSpinnerAnimation(document.getElementById('submitBtn'),'Sign In');
+              if (!response.ok) {
+                    if (response.status === 401) {
+                        showToast('Error', 'Invalid email or password', 'red')
+                    }
+                    throw new Error('Network response was not ok');
+              }
+              displayUserAlias('signInDiv');
+              userAlias = getUserAlias();
+              showToast('Welcome', `${userAlias}, you are now logged in!`, 'green');
+              clearFormFields();
+          })
+          .catch((error) => {
+              console.error('Error:', error);
+          });
+      }
+
+      $('#submitBtn').on('click', function(e) {
+          e.preventDefault();
+          submitForm();
+      });
+
+  });
+</script>
+  
+</body>
+</html>
