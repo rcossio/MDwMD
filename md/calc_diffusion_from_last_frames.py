@@ -61,7 +61,7 @@ def calculate_diffusion(com_data):
     return diffusion_data
 
 def main():
-    filepath = 'com.xvg'
+    filepath = 'prod_com.xvg'
     com_data = load_data(filepath)
     
     diffusion_data = calculate_diffusion(com_data)

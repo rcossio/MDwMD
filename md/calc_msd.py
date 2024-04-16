@@ -15,7 +15,7 @@ def estimate_msd(data,target_time):
     return msd
 
 def main():
-    filepath = 'com.xvg'
+    filepath = 'prod_com.xvg'
     data = load_data(filepath)
     times = data[:, 0]
 

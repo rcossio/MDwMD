@@ -3,16 +3,16 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
 # Load data
-data = np.loadtxt('proj.xvg')
-em_data = np.loadtxt('em_proj.xvg')
-nvt_r_data = np.loadtxt('nvt_r_proj.xvg')
-npt_r1000_data = np.loadtxt('npt_r1000_proj.xvg')
-npt_r200_data = np.loadtxt('npt_r200_proj.xvg')
-npt_r50_data   = np.loadtxt('npt_r50_proj.xvg')
-npt_r10_data   = np.loadtxt('npt_r10_proj.xvg')
-npt_r2_data   = np.loadtxt('npt_r2_proj.xvg')
-npt_f_data   = np.loadtxt('npt_f_proj.xvg')
-nvt_f_data  = np.loadtxt('nvt_f_proj.xvg')
+data = np.loadtxt('prod_proj.xvg')
+em_data = np.loadtxt('prod_em_proj.xvg')
+nvt_r_data = np.loadtxt('prod_nvt_r_proj.xvg')
+npt_r1000_data = np.loadtxt('prod_npt_r1000_proj.xvg')
+npt_r200_data = np.loadtxt('prod_npt_r200_proj.xvg')
+npt_r50_data   = np.loadtxt('prod_npt_r50_proj.xvg')
+npt_r10_data   = np.loadtxt('prod_npt_r10_proj.xvg')
+npt_r2_data   = np.loadtxt('prod_npt_r2_proj.xvg')
+npt_f_data   = np.loadtxt('prod_npt_f_proj.xvg')
+nvt_f_data  = np.loadtxt('prod_nvt_f_proj.xvg')
 
 
 # Data columns for the main data
@@ -95,4 +95,4 @@ cbar = plt.colorbar(sc, ax=plt.gca(), orientation='vertical')
 cbar.set_label('Normalized Color Index')
 
 # Save the plot
-plt.savefig('pca.png', dpi=300)
+plt.savefig('prod_pca.png', dpi=300)

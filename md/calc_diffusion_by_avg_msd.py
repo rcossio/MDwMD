@@ -35,7 +35,7 @@ def calculate_diffusion(time, msd):
     return diff_coeff, error
 
 def main():
-    filepath = 'com.xvg'
+    filepath = 'prod_com.xvg'
     com_data = load_data(filepath)
     
     num_chunks = 10  # Set the number of chunks here

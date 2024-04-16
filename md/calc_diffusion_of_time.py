@@ -18,7 +18,7 @@ def calculate_msd(data):
     return msd
 
 def main():
-    filepath = 'com.xvg'
+    filepath = 'prod_com.xvg'
     com_data = load_data(filepath)
     
     num_chunks = 1  # Set the number of chunks here

@@ -128,16 +128,15 @@ productionMD() {
 
     if [ $4 == "continue" ]; then
         gmx mdrun -deffnm prod${1} -nb gpu -cpi $2.cpt -noappend
-        mv prod${1}.part0002.log prod${1}.log
-        mv prod${1}.part0002.edr prod${1}.edr
-        mv prod${1}.part0002.trr prod${1}.trr
-        mv prod${1}.part0002.xtc prod${1}.xtc
-        mv prod${1}.part0002.gro prod${1}.gro
-        mv prod${1}.part0002.cpt prod${1}.cpt
+        mv prod${1}.part000${1}.log prod${1}.log
+        mv prod${1}.part000${1}.edr prod${1}.edr
+        mv prod${1}.part000${1}.trr prod${1}.trr
+        mv prod${1}.part000${1}.xtc prod${1}.xtc
+        mv prod${1}.part000${1}.gro prod${1}.gro
     else
         gmx mdrun -deffnm prod${1} -nb gpu
     fi
-    checkFiles prod${1}.log prod${1}.edr prod${1}.trr prod${1}.xtc prod${1}.gro prod${1}.cpt
+    checkFiles prod${1}.log prod${1}.edr prod${1}.xtc prod${1}.gro prod${1}.cpt
 }
 
 analyseProductionMD(){
@@ -151,10 +150,10 @@ analyseProductionMD(){
     done
 
     # SIMPLE ANALYSIS
-    gmx trjcat -f "$@" -o prod.xtc
+    gmx trjcat -f "$@" -o prod.xtc -nobackup
     checkFile prod.xtc
 
-    gmx trjconv -s prod1.tpr  -f prod.xtc -o prod_center.xtc -center -pbc mol -nobackup <<< $'Protein\nSystem\n'
+    gmx trjconv -s prod1.tpr  -f prod.xtc -o prod_center.xtc -center -pbc mol -dt 100 -nobackup <<< $'Protein\nSystem\n'
     gmx mindist -s prod1.tpr  -f prod_center.xtc -pi -od prod_mindist.xvg -xvg none -nobackup <<< "Protein"
     gmx rms     -s nvt_f.tpr -f prod_center.xtc -o prod_rmsd_first.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
     gmx rms     -s em.tpr    -f prod_center.xtc -o prod_rmsd_xray.xvg -tu ns -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
@@ -162,7 +161,7 @@ analyseProductionMD(){
     gmx sasa    -s em.tpr  -f prod_center.xtc -o prod_sasa.xvg -xvg none -nobackup <<< "Protein"
 
     gmx dssp    -s prod1.tpr -f prod_center.xtc  -o prod_dssp.dat -xvg none -nobackup 
-    awk '{s_count = gsub(/S/, "&"); p_count = gsub(/H/, "&"); printf "%d %0.2f %0.2f\n", NR, s_count / length * 100, p_count / length * 100}' dssp.dat > prod${1}_dssp.xvg
+    awk '{s_count = gsub(/S/, "&"); p_count = gsub(/H/, "&"); printf "%d %0.2f %0.2f\n", NR, s_count / length * 100, p_count / length * 100}' prod_dssp.dat > prod_dssp.xvg
 
     # PCA
     gmx covar   -s prod1.tpr -f prod_center.xtc -o prod_eigenval.xvg -v prod_eigenvect.trr -last 2 -xvg none -nobackup <<< $'C-alpha\nC-alpha\n'
@@ -176,8 +175,10 @@ analyseProductionMD(){
     # COM & MSD
     gmx trjconv -s em.tpr -f prod.xtc       -o prod_whole.xtc  -pbc whole -nobackup <<< "System"
     gmx trjconv -s em.tpr -f prod_whole.xtc -o prod_nojump.xtc -pbc nojump -nobackup <<< "System"
+    rm prod_whole.xtc
     gmx traj -f prod_nojump.xtc -s em.tpr -com -ox prod_com.xvg -xvg none -nobackup <<< "Protein"
-    gmx msd -s em.tpr -f prod_whole.xtc -o prod_msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
+    gmx msd -s em.tpr -f prod_nojump.xtc -o prod_msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
+    rm prod_nojump.xtc
 
 }
 
@@ -186,11 +187,13 @@ checkDependency gmx
 #analyseProductionMD prod1
 
 #productionMD 2 prod1 100000000 continue
-analyseProductionMD prod1 prod2
+#analyseProductionMD prod1 prod2
 
-#productionMD 3 prod2 150000000 continue
-#productionMD 4 prod3 200000000 continue
-#productionMD 5 prod4 250000000 continue
+productionMD 3 prod2 150000000 continue
+#analyseProductionMD prod1 prod2 prod3
+
+productionMD 4 prod3 200000000 continue
+productionMD 5 prod4 250000000 continue
 
 
 
@@ -199,25 +202,3 @@ analyseProductionMD prod1 prod2
 
 echo "Production MD finished"
 exit 0
-
-
-
-# 10. Analysis
-
-#For calculation of diffusion:
-# check: https://mattermodeling.stackexchange.com/questions/9195/how-to-calculate-diffusion-coefficient-from-msd-graph-using-gromacs
-# https://gromacs.bioexcel.eu/t/diffusion-constant-using-gmx-msd/2198
-
-# https://github.com/bio-phys/DiffusionGLS
-
-# https://gromacs.org-gmx-users.maillist.sys.kth.narkive.com/OxMyExmH/gmx-users-unwrap-trajectory-file-using-pbc-nojump
-
-# IMPORTANT about the COM: https://gromacs.bioexcel.eu/t/does-gmx-use-the-center-of-mass-com-to-calculate-the-msd/1968/3
-
-
-#Think about this warning
-# WARNING: Masses and atomic (Van der Waals) radii will be guessed
-
-# Resources to prepare: 10min 156M(bpti) (100 frames)
-# Resources to run: 1h20 1.6G(50ns bpti) trr:~1.17G xtc:~350M (5000 frames) I want to reduce it to 1000 frames
-# Assuming 20 proteins: 30h, 37G (too much space, with the change is about 7.7G)
