@@ -177,7 +177,7 @@ analyseProductionMD(){
     gmx trjconv -s em.tpr -f prod_whole.xtc -o prod_nojump.xtc -pbc nojump -nobackup <<< "System"
     rm prod_whole.xtc
     gmx traj -f prod_nojump.xtc -s em.tpr -com -ox prod_com.xvg -xvg none -nobackup <<< "Protein"
-    gmx msd -s em.tpr -f prod_nojump.xtc -o prod_msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
+    #gmx msd -s em.tpr -f prod_nojump.xtc -o prod_msd_gmx.xvg -beginfit 0 -endfit 50000 -nobackup <<< "Protein"
     rm prod_nojump.xtc
 
 }
@@ -194,9 +194,6 @@ productionMD 3 prod2 150000000 continue
 
 productionMD 4 prod3 200000000 continue
 productionMD 5 prod4 250000000 continue
-
-
-
 
 
 
