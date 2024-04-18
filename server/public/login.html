@@ -9,6 +9,7 @@
     <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
+<!-- Header -->
 <div class="header">
   <nav class="navbar">
     <a class="navbar-item" href="/">Browse</a>
@@ -19,6 +20,7 @@
 </div>
 
 <div class="container form-block">
+  <!-- Title -->
   <h2 class="mt-2">Log In</h2>
   <form>
     <!-- Input section -->
@@ -33,7 +35,7 @@
       </div>
     </div>
 
-    <!-- Submit button -->
+    <!-- Submit buttons -->
     <div class="form-group text-center mt-2">
         <div>
           <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Sign In</button>
@@ -51,56 +53,57 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
-    const { showToast, clearFormFields, displayUserAlias, getUserId, startSpinnerAnimation,stopSpinnerAnimation } = await import('./js/utils.js');
+    const { PageUtils, UserUtils } = await import('./js/utils.js');
 
-    // Configurations
-    displayUserAlias('signInDiv');
+    // Base behavior
+    UserUtils.displayUserAlias('signInDiv');
+    PageUtils.clickOnEnter('submitBtn');
 
-      // Events
-      function submitForm() {
-          startSpinnerAnimation(document.getElementById('submitBtn'));
-          const formData = {
-              username: document.getElementById('username').value,
-              password: document.getElementById('password').value
-          };
+    // Events
+    function submitForm() {
+        PageUtils.startSpinner(document.getElementById('submitBtn'));
+        const formData = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
 
-          // Check if mandatory fields are filled
-          if (!formData.username || !formData.password) {
-            stopSpinnerAnimation(document.getElementById('submitBtn'),'Sign In');
-            showToast('Error', 'Missing field', 'red');
+        // Check if mandatory fields are filled
+        if (!formData.username || !formData.password) {
+            PageUtils.stopSpinner(document.getElementById('submitBtn'),'Sign In');
+            PageUtils.showToast('Error', 'Missing field', 'red');
             return;
-          }
+        }
 
-          // Send data to server
-          fetch('/auth/login', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(formData),
-          })
-          .then(response => {
-              stopSpinnerAnimation(document.getElementById('submitBtn'),'Sign In');
-              if (!response.ok) {
-                    if (response.status === 401) {
-                        showToast('Error', 'Invalid email or password', 'red')
-                    }
-                    throw new Error('Network response was not ok');
-              }
-              displayUserAlias('signInDiv');
-              userAlias = getUserAlias();
-              showToast('Welcome', `${userAlias}, you are now logged in!`, 'green');
-              clearFormFields();
-          })
-          .catch((error) => {
-              console.error('Error:', error);
-          });
-      }
+        // Send data to server
+        fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => {
+            PageUtils.stopSpinner(document.getElementById('submitBtn'),'Sign In');
+            if (!response.ok) {
+                  if (response.status === 401) {
+                      PageUtils.showToast('Error', 'Invalid email or password', 'red')
+                  }
+                  throw new Error('Network response was not ok');
+            }
+            UserUtils.displayUserAlias('signInDiv');
+            userAlias = UserUtils.getUserAlias();
+            PageUtils.showToast('Welcome', `${userAlias}, you are now logged in!`, 'green');
+            PageUtils.clearFormFields();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
 
-      $('#submitBtn').on('click', function(e) {
-          e.preventDefault();
-          submitForm();
-      });
+    $('#submitBtn').on('click', function(e) {
+        e.preventDefault();
+        submitForm();
+    });
 
   });
 </script>

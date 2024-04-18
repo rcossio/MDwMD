@@ -9,6 +9,7 @@
 <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
+<!-- Header -->
 <div class="header">
   <nav class="navbar">
     <a class="navbar-item" href="/">Browse</a>
@@ -19,11 +20,12 @@
 </div>
 
 <div class="container form-block">
+  <!-- Title -->
   <h2 class="mt-2">Add New Experiment</h2>
   <p><span class="required-asterisk">*</span> required fields.</p>
-  <form>
+  <form id="mainForm">
 
-    <!-- PubMed ID, Reference Type -->
+    <!-- Reference section -->
     <div class="form-row align-items-center mb-2">
       <div class="col-5">
         <label for="referenceId" class="form-label">PubMed ID (alt. DOI)<span class="required-asterisk">*</span></label>
@@ -35,7 +37,7 @@
         </div>
       </div>
       <div class="col-2 d-flex flex-column align-items-start mt-5 pr-3 pl-1">
-        <input type="checkbox" id="doiCheckbox" aria-label="Checkbox for DOI">
+        <input type="checkbox" id="doiCheckbox">
         <label for="doiCheckbox">DOI</label>
       </div>      
       <div class="col-5">
@@ -49,7 +51,8 @@
       </div> 
     </div>
 
-    <!-- Protein Name, Species, Accession Number -->
+
+    <!-- Protein Section -->
     <div class="form-row align-items-center mb-2">
       <div class="col">
         <label for="proteinName" class="form-label">Protein Name<span class="required-asterisk">*</span></label>
@@ -75,7 +78,8 @@
       </div>
     </div>
 
-    <!-- Diffusion Coefficient, Error, Unit -->
+
+    <!-- Diffusivity -->
     <div class="form-row align-items-center mb-2">
       <div class="col">
         <label for="diffusionCoefficient" class="form-label">Diffusion Coefficient <span class="required-asterisk">*</span></label>
@@ -95,7 +99,33 @@
       </div>
     </div>
 
-    <!-- Manual Processing -->
+
+    <!-- Experiment -->
+    <div class="form-group mb-2">
+      <label for="method" class="form-label">Method<span class="required-asterisk">*</span></label>
+      <select class="form-control" id="method">
+      <option value="" selected>Choose...</option>
+      <option value="DLS">Dynamic Light Scattering (DLS) - Photon Correlation Spectroscopy (PCS)</option>
+      <option value="FCS">Fluorescence Correlation Spectroscopy (FCS)</option>
+      <option value="PFG-NMR">Pulse Field Gradient NMR (PFG-NMR)</option>
+      <option value="Unknown">Not informed</option>
+      <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="form-group mb-2 d-none" id="otherMethodContainer">
+        <label for="otherMethod" class="form-label">Specify Method</label>
+        <input type="text" class="form-control" id="otherMethod" placeholder="Please specify" value="">
+    </div>
+
+
+    <!-- Comments -->
+    <div class="form-group mb-2">
+      <label for="comment" class="form-label">Additional comments</label>
+      <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
+    </div>
+
+
+    <!-- Data Processing -->
     <div class="form-group mb-2">
         <div class="custom-control custom-checkbox">
           <input type="checkbox" class="custom-control-input" id="manualEstimationCheckbox">
@@ -112,31 +142,9 @@
         <label for="otherManualProcessing" class="form-label">Specify Manual Processing</label>
         <input type="text" class="form-control" id="otherManualProcessing" placeholder="Please specify" value="">
     </div>
-    
-    <!-- Method -->
-    <div class="form-group mb-2">
-        <label for="method" class="form-label">Method<span class="required-asterisk">*</span></label>
-        <select class="form-control" id="method">
-        <option value="" selected>Choose...</option>
-        <option value="DLS">Dynamic Light Scattering (DLS) - Photon Correlation Spectroscopy (PCS)</option>
-        <option value="FCS">Fluorescence Correlation Spectroscopy (FCS)</option>
-        <option value="PFG-NMR">Pulse Field Gradient NMR (PFG-NMR)</option>
-        <option value="Unknown">Not informed</option>
-        <option value="Other">Other</option>
-        </select>
-    </div>
-    <div class="form-group mb-2 d-none" id="otherMethodContainer">
-        <label for="otherMethod" class="form-label">Specify Method</label>
-        <input type="text" class="form-control" id="otherMethod" placeholder="Please specify" value="">
-    </div>
 
-    <!-- Extra data -->
-    <div class="form-group mb-2">
-      <label for="comment" class="form-label">Additional comments</label>
-      <input type="text" class="form-control" id="comment" placeholder="Please specify..." value="">
-    </div>
 
-    <!-- Replaces another entry --> 
+    <!-- Entry replacement --> 
     <div class="form-group mb-2">
       <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="replaceEntryCheckbox">
@@ -145,15 +153,15 @@
       <input type="text" class="form-control d-none" id="replacedEntry" placeholder="Entry ID..." value="">
     </div>
 
+
     <!-- Submit button -->
     <div class="form-group text-center">
         <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Submit</button>
     </div>
     
-
   </form>
 
-  <!-- Links banner -->
+  <!-- Links -->
   <div class="useful-links mt-4 mb-2 text-center">
     <h3>Useful Links</h3>
     <div class="d-flex justify-content-center">
@@ -169,55 +177,43 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', async() => {
-      const { showToast, clearFormFields, displayUserAlias, getUserId } = await import('./js/utils.js');
+    const { PageUtils, UserUtils } = await import('./js/utils.js');
 
       // Configurations
-      displayUserAlias('signInDiv');
+      UserUtils.displayUserAlias('signInDiv');
 
       setDynamicLink('#accessionNumber', '#accessionLink', 'https://www.uniprot.org/uniprotkb/');
       setDynamicLink('#species', '#speciesLink', 'https://www.uniprot.org/taxonomy/');
       setDynamicLink('#referenceId', '#pubmedLink', 'https://pubmed.ncbi.nlm.nih.gov/');
 
-      addOtherInputField('#method', '#otherMethodContainer');
-      addOtherInputField('#manualProcessing', '#otherManualProcessingContainer');
-
-      toggleVisibility('#replaceEntryCheckbox','#replacedEntry');
-      toggleVisibility('#manualEstimationCheckbox', '#manualProcessing');
+      PageUtils.toggleVisibility('#method', '#otherMethodContainer', ($trig,$tget) => $trig.value === 'Other');
+      PageUtils.toggleVisibility('#manualProcessing', '#otherManualProcessingContainer', ($trig,$tget) => $trig.value === 'Other');
+      PageUtils.toggleVisibility('#replaceEntryCheckbox','#replacedEntry', ($trig,$tget) => $trig.checked);
+      PageUtils.toggleVisibility('#manualEstimationCheckbox', '#manualProcessing', ($trig,$tget) => $trig.checked);
 
   
       // Events
       function submitForm() {
+          const exclusionList = ['manualEstimationCheckbox', 'replaceEntryCheckbox', 'replacedEntry', 'doiCheckbox']
+          const inputs = document.querySelectorAll(`${formSelector} input, ${formSelector} select`);
+          const formData = {};
+          inputs.forEach(input => {
+              if (exclusionList.includes(input.id)) { // Skip these fields
+                  return;
+              }
+              formData[input.id] = input.value;
+          });
+          formData.userId = UserUtils.getUserId();
+          formData.referenceIdType = document.getElementById('doiCheckbox').checked ? 'doi' : 'pmid';
 
-          const isDoi = document.getElementById('doiCheckbox').checked;
-
-          const formData = {
-            diffusionCoefficient: document.getElementById('diffusionCoefficient').value || null,
-            diffusionError: document.getElementById('diffusionError').value || null,
-            diffusionUnit: document.getElementById('diffusionUnit').value || null,
-            manualProcessing: document.getElementById('manualProcessing').value || null,
-            otherManualProcessing: document.getElementById('otherManualProcessing').value || null,
-            method: document.getElementById('method').value || null,
-            otherMethod: document.getElementById('otherMethod').value || null,
-            proteinName: document.getElementById('proteinName').value || null,
-            species: document.getElementById('species').value || null,
-            accessionNumber: document.getElementById('accessionNumber').value || null,
-            referenceId: document.getElementById('referenceId').value || null,
-            referenceIdType: isDoi ? 'doi' : 'pmid',
-            referenceType: document.getElementById('referenceType').value || null,
-            comment: document.getElementById('comment').value || null,
-            userId: getUserId()
-          };
-
-          // Entry that is replaced by this one, in POST is a separate field
-          const replacedEntry = document.getElementById('replacedEntry').value || null
-
+          const replacedEntry = document.getElementById('replacedEntry').value || null // Entry that is replaced by this one, in POST is a separate field
 
           // Check if mandatory fields are filled
           const mandatoryFields = ['diffusionCoefficient', 'diffusionUnit', 'method', 'proteinName', 'species', 'accessionNumber', 'referenceId', 'userId'];
 
           for (let field of mandatoryFields) {
               if (!formData[field]) {
-                showToast('Error', `Missing field: ${field}`, 'red');
+                PageUtils.showToast('Error', `Missing field: ${field}`, 'red');
                 return;
               }
           }
@@ -235,11 +231,11 @@
           })
           .then(response => {
               if (!response.ok) {
-                    showToast('Error', 'Network response was not ok', 'red');
+                    PageUtils.showToast('Error', 'Network response was not ok', 'red');
                     throw new Error('Network response was not ok');
               }
-              showToast('Success', `Submitted ${formData.proteinName}`, 'green');
-              clearFormFields();
+              PageUtils.showToast('Success', `Submitted ${formData.proteinName}`, 'green');
+              PageUtils.clearFormFields();
           })
           .catch((error) => {
               console.error('Error:', error);
@@ -250,29 +246,8 @@
           e.preventDefault();
           submitForm();
       });
-  
 
       // Helper functions
-      function toggleVisibility(checkboxSelector,targetSelector) {
-        $(checkboxSelector).change(function() {
-            if ($(this).is(':checked')) {
-                $(targetSelector).removeClass('d-none');
-            } else {
-                $(targetSelector).addClass('d-none');
-            }
-        });
-      }
-
-      function addOtherInputField(triggerInput, targetInput) {
-          $(triggerInput).change(function() {
-              if ($(this).val() === 'Other') {
-                  $(targetInput).removeClass('d-none');
-              } else {
-                  $(targetInput).addClass('d-none');
-              }
-          });
-      }
-
       function setDynamicLink(inputSelector, buttonSelector, url) {
           $(inputSelector).on('input', function() {
               const val = $(this).val();

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+<!-- Header -->
 <div class="header">
     <nav class="navbar">
         <a class="navbar-item navbar-selected" href="/">Browse</a>
@@ -19,6 +20,7 @@
 </div>
 
 <div class="container">
+    <!-- Title -->
     <h2 class="mt-2">Browse Database</h2>
 
     <!-- Search fields -->
@@ -97,31 +99,24 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
-    const { getUserAlias, clickOnEnter, displayUserAlias,startSpinnerAnimation,stopSpinnerAnimation } = await import('./js/utils.js');
-    displayUserAlias('signInDiv');
-    clickOnEnter('searchBtn');
+    const { PageUtils, UserUtils } = await import('./js/utils.js');
+    
+    // Base behavior
+    UserUtils.displayUserAlias('signInDiv');
+    PageUtils.clickOnEnter('searchBtn');
+    PageUtils.toggleVisibility('#advancedSearchBtn', '#advancedSearchDiv', ($trig,$tget)=> $tget.hasClass('d-none'))
 
-    document.getElementById('advancedSearchBtn').addEventListener('click', function() {
-        document.getElementById('advancedSearchDiv').classList.toggle('d-none');
-        document.getElementById('referenceTypeInput').value = '';
-    });
-
+    // Search button event
     document.getElementById('searchBtn').addEventListener('click', async function() {
-        startSpinnerAnimation(this);
-
-        const query = document.getElementById('searchInput').value;
-        const species = document.getElementById('speciesInput').value;
-        const referenceType = document.getElementById('referenceTypeInput').value;
+        PageUtils.startSpinner(this);
 
         fetch('/api/search', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', 
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                query: query,
-                species: species,
-                referenceType: referenceType,
+                query: $('#searchInput').val(),
+                species: $('#speciesInput').val(),
+                referenceType: $('#referenceTypeInput').val()
             })
         })
         .then(response => response.json())
@@ -145,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Once all rows have been processed, show the download form
             Promise.all(rowPromises).then(() => {
-                stopSpinnerAnimation(document.getElementById('searchBtn'), 'Search');
+                PageUtils.stopSpinner(document.getElementById('searchBtn'), 'Search');
 
                 // Generate filters buttons
                 const speciesListDiv = document.getElementById('speciesList');
@@ -161,18 +156,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .catch(error => {
             console.error('Error:', error)
-            stopSpinnerAnimation(document.getElementById('searchBtn'), 'Search');
+            PageUtils.stopSpinner(document.getElementById('searchBtn'), 'Search');
         });
     });
 
+    // Download button event
     document.getElementById('downloadBtn').addEventListener('click', function() {
-        const columnSelect = document.getElementById('columnSelect');
-        const selectedColumnIndex = columnSelect.value;
+        const colIndex = $('#columnSelect').val();
         const rows = document.querySelectorAll('#query-table tbody tr');
         let columnData = new Set(); // Using a Set to automatically handle unique values
 
         rows.forEach(row => {
-            const cell = row.cells[selectedColumnIndex];
+            const cell = row.cells[colIndex];
             if(cell) {
                 const cellTexts = cell.textContent.split(',').map(text => text.trim()); // Split and trim
                 cellTexts.forEach(text => {
@@ -182,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
-        downloadTxtFile(txtContent);
+        PageUtils.downloadTxtFile(txtContent);
     });
 
 });
@@ -268,17 +263,6 @@ function copyToClipboard(text, iconElement) {
     }).catch(function(err) {
         console.error('Could not copy text:', err);
     });
-}
-
-
-function downloadTxtFile(text) {
-    const element = document.createElement('a');
-    const file = new Blob([text], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "download_" + new Date().toISOString().replace(/[\W_]+/g, "_") + ".txt";
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-    document.body.removeChild(element);
 }
 
 

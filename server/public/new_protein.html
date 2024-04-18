@@ -9,6 +9,8 @@
     <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
+
+<!-- Header -->
 <div class="header">
     <nav class="navbar">
         <a class="navbar-item" href="/">Browse</a>
@@ -19,6 +21,7 @@
 </div>
 
 <div class="container form-block">
+    <!-- Title -->
     <h2 class="mt-2">Create a New Protein</h2>
     <form>
         <!-- Name -->
@@ -88,9 +91,10 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async() => {
-      const { showToast, getUserId, displayUserAlias } = await import('./js/utils.js');
+        const { PageUtils, UserUtils } = await import('./js/utils.js');
 
-        displayUserAlias('signInDiv');
+        // Base behavior
+        UserUtils.displayUserAlias('signInDiv');
 
         let validPdbCount = 1;
         let discardedPdbCount = 1;
@@ -152,7 +156,7 @@
 
             const wrongFormat = pdbCodes.some(pdbCode => pdbCode.length !== 4)
             if (wrongFormat) {
-                showToast("Wrong PDB format", "PDB codes should be 4 characters long.")
+                PageUtils.showToast("Wrong PDB format", "PDB codes should be 4 characters long.")
                 return;
             }
 
@@ -192,7 +196,7 @@
             })
 
             if (wrongFormat) {
-                showToast("Wrong format", "It should be 1ABC:note, 2DEF:note");
+                PageUtils.showToast("Wrong format", "It should be 1ABC:note, 2DEF:note");
                 return;
             }
 
@@ -239,7 +243,7 @@
             const formData = {
                 name: document.getElementById('proteinName').value || null,
                 description: document.getElementById('description').value || null,
-                userId: getUserId(),
+                userId: UserUtils.getUserId(),
                 pdbStructures: pdbCodes || null,
                 experiments: experiments || null,
                 discardedPdb: discardedPdbObj || null
@@ -250,8 +254,8 @@
 
             for (let field of mandatoryFields) {
                 if (!formData[field] || formData[field].length === 0) {
-                showToast('Missing field', `Please fill in ${field}.`, 'red');
-                return;
+                    PageUtils.showToast('Missing field', `Please fill in ${field}.`, 'red');
+                    return;
                 }
             }
 
@@ -259,14 +263,14 @@
             const discardedPdbCodes = discardedPdbObj.map(obj => obj.pdbCode);
             const intersection = pdbCodes.filter(pdbCode => discardedPdbCodes.includes(pdbCode));
             if (intersection.length > 0) {
-                showToast("Invalid and discarded PDB?", `Codes: ${intersection.join(', ')}`, 'red');
+                PageUtils.showToast("Invalid and discarded PDB?", `Codes: ${intersection.join(', ')}`, 'red');
                 return;
             }
 
             //if any of the discardedPdb or the pdbStructures are not 4 characters long, show a toast message
             const wrongLength = discardedPdbCodes.concat(pdbCodes).some(pdbCode => pdbCode.replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4);
             if (wrongLength) {
-                showToast("Wrong PDB format", "PDB codes should be 4 characters long.");
+                PageUtils.showToast("Wrong PDB format", "PDB codes should be 4 characters long.");
                 return;
             }
 
@@ -280,10 +284,10 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    showToast('Error', 'Network response was not ok', 'red');
+                    PageUtils.showToast('Error', 'Network response was not ok', 'red');
                     throw new Error('Network response was not ok');
                 }
-                showToast('Success', `Submitted ${formData.name}`, 'green');
+                PageUtils.showToast('Success', `Submitted ${formData.name}`, 'green');
                 resetForm();
             })
             .catch((error) => {

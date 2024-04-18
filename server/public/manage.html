@@ -9,6 +9,7 @@
   <link href="/css/styles.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
       <nav class="navbar">
         <a class="navbar-item" href="/">Browse</a>
@@ -169,7 +170,7 @@
   <script> 
     // THERE IS SOMETHING WRONG WITH THE TOGGLING OF THE CHECKBOXES
     document.addEventListener('DOMContentLoaded', async() => {
-      const { showToast, clearFormFields, getUserId, displayUserAlias } = await import('./js/utils.js');
+      const { PageUtils, UserUtils } = await import('./js/utils.js');
 
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
@@ -180,7 +181,7 @@
       }
 
       // Configurations
-      displayUserAlias('signInDiv');
+      UserUtils.displayUserAlias('signInDiv');
 
       setDynamicLink('#accessionNumber', '#accessionLink', 'https://www.uniprot.org/uniprotkb/');
       setDynamicLink('#species', '#speciesLink', 'https://www.uniprot.org/taxonomy/');
@@ -213,7 +214,7 @@
             referenceIdType: isDoi ? 'doi' : 'pmid',
             referenceType: document.getElementById('referenceType').value || null,
             comment: document.getElementById('comment').value || null,
-            userId: getUserId()
+            userId: UserUtils.getUserId()
           };
 
           // Entry that is replaced by this one, in POST is a separate field
@@ -228,7 +229,7 @@
 
           for (let field of mandatoryFields) {
               if (!formData[field]) {
-                showToast('Error', `Missing field: ${field}`, 'red');
+                PageUtils.showToast('Error', `Missing field: ${field}`, 'red');
                 return;
               }
           }
@@ -247,11 +248,11 @@
           })
           .then(response => {
               if (!response.ok) {
-                    showToast('Error', 'There was a problem', 'red')
+                    PageUtils.showToast('Error', 'There was a problem', 'red')
                     throw new Error('Network response was not ok');
               }
-              showToast('Success', `Updated ${formData.proteinName}`, 'green');
-              clearFormFields();
+              PageUtils.showToast('Success', `Updated ${formData.proteinName}`, 'green');
+              PageUtils.clearFormFields();
           })
           .catch((error) => {
               console.error('Error:', error);
