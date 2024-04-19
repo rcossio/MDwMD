@@ -114,17 +114,8 @@ router.post('/experiment',verifyToken, async (req, res) => {
   
       const publicData = await Promise.all(publicDataTasks);
   
-      const uniqueSpecies = [...new Set(publicData.map(item => item.species))].map(Number).sort((a, b) => a - b);
-      const uniqueReferenceTypes = [...new Set(publicData.map(item => item.referenceType))].sort((a, b) => a.localeCompare(b));
-  
-      res.json({
-        status: 'success',
-        payload: {
-          results: publicData, 
-          species: uniqueSpecies,
-          referenceTypes: uniqueReferenceTypes
-        }
-      });
+      res.json({ status: 'success', payload: publicData});
+      
     } catch (error) {
       console.error('Error during search:', error);
       res.status(500).send('Error during search');

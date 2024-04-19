@@ -28,7 +28,7 @@ def main():
     analysed_delta_t, estimated_D, estimated_var_D = [], [], []
 
 
-    for i in range(1,10+1):
+    for i in range(1,100+1):
         sub_delta_t = i*delta_t
         x = com[::i]  #every frame
         dx = x[1:] - x[:-1]  #displacement data frame

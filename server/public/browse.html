@@ -54,21 +54,21 @@
 
 
     <!-- Results Table -->
-    <table id="query-table" class="table mt-3 d-none">
+    <table id="results-table" class="table mt-3 d-none">
       <thead>
         <tr>
           <th>ID</th>   
           <th>Protein Name</th>
-          <th class="small-cell">Species</th>
-          <th class="small-cell">Accession Number</th>
-          <th class="small-cell">Diffusion Coefficient (um2/s)</th>
-          <th class="small-cell">Diffusion Error (um2/s)</th>
-          <th class="medium-cell">Method</th>
-          <th class="medium-cell">PMID/ DOI</th>
-          <th class="small-cell">Mass (kDa)</th>
-          <th class="large-cell">Comment</th>
-          <th class="pdb-code-cell">PDBs</th>
-          <th class="pdb-code-cell">Unk. PDBs</th>
+          <th class="s-cell">Species</th>
+          <th class="s-cell">Accession Number</th>
+          <th class="s-cell">Diffusion Coefficient (um2/s)</th>
+          <th class="s-cell">Diffusion Error (um2/s)</th>
+          <th class="m-cell">Method</th>
+          <th class="m-cell">PMID/ DOI</th>
+          <th class="s-cell">Mass (kDa)</th>
+          <th class="l-cell">Comment</th>
+          <th class="pdb-cell">PDBs</th>
+          <th class="pdb-cell">Unk. PDBs</th>
           <th></th>
         </tr>
       </thead>
@@ -98,6 +98,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
+// Active filters global object
+const activeFilters = {
+    species: [],
+    referenceType: []
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const { PageUtils, UserUtils } = await import('./js/utils.js');
     
@@ -121,134 +127,112 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
         .then(response => response.json())
         .then(async data => {
-            const { results, species, referenceTypes } = data.payload;
+            const results = data.payload;
 
             // Display results
             const resultsBody = document.getElementById('searchResults');
             resultsBody.innerHTML = ''; // Clear previous results
             results.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
-            document.getElementById('query-table').classList.remove('d-none');
+            $('#results-table').removeClass('d-none');
 
             // Collect all promises from transformDataRow
-            const rowPromises = results.map(row => 
-                displayDataRow(row).then(displayRow => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = generateRowHTML(displayRow);
+            const rowPromises = results.map(row => formatDisplayData(row));
+
+            // Wait for all format operations to complete
+            Promise.all(rowPromises).then(formattedRows => {
+                formattedRows.forEach(rowData => {
+                    const tr = generateTr(rowData);
                     resultsBody.appendChild(tr);
-                })
-            );
+                });
 
-            // Once all rows have been processed, show the download form
-            Promise.all(rowPromises).then(() => {
-                PageUtils.stopSpinner(document.getElementById('searchBtn'), 'Search');
+                PageUtils.stopSpinner(this, 'Search');
 
-                // Generate filters buttons
+                // Setting up filters
+                const species = [...new Set(results.map(item => item.species))].map(Number).sort((a, b) => a - b);
+                const referenceTypes = [...new Set(results.map(item => item.referenceType))].sort((a, b) => a.localeCompare(b));
                 const speciesListDiv = document.getElementById('speciesList');
                 const referenceTypeListDiv = document.getElementById('referenceTypeList');
 
-                document.getElementById('filter-banner').classList.remove('d-none');
-                generateFilter(results, species, speciesListDiv, filterResultsBySpecies);
-                generateFilter(results, referenceTypes, referenceTypeListDiv, filterResultsByReferenceType);
+                $('#filter-banner').removeClass('d-none');
+                createFilterButtons(results, species, speciesListDiv, 'species');
+                createFilterButtons(results, referenceTypes, referenceTypeListDiv, 'referenceType');
 
-                // Show download button
-                document.getElementById('download-form-div').classList.remove('d-none');
+                $('#download-form-div').removeClass('d-none');
             });
         })
         .catch(error => {
             console.error('Error:', error)
-            PageUtils.stopSpinner(document.getElementById('searchBtn'), 'Search');
+            PageUtils.stopSpinner(this, 'Search');
         });
     });
 
     // Download button event
     document.getElementById('downloadBtn').addEventListener('click', function() {
         const colIndex = $('#columnSelect').val();
-        const rows = document.querySelectorAll('#query-table tbody tr');
+        const rows = document.querySelectorAll('#results-table tbody tr');
         let columnData = new Set(); // Using a Set to automatically handle unique values
 
         rows.forEach(row => {
+            if (row.style.display === 'none' || row.classList.contains('d-none')) return; // Skip hidden rows
+
             const cell = row.cells[colIndex];
             if(cell) {
-                const cellTexts = cell.textContent.split(',').map(text => text.trim()); // Split and trim
+                const cellTexts = cell.textContent.split(',').map(text => text.trim());
                 cellTexts.forEach(text => {
-                    if(text) columnData.add(text); // Add each text to the Set
+                    if(text) columnData.add(text); 
                 });
             }
         });
 
-        const txtContent = Array.from(columnData).join('\n'); // Convert Set to Array and then to string
+        const txtContent = Array.from(columnData).join('\n'); 
         PageUtils.downloadTxtFile(txtContent);
     });
 
 });
 
 
-function generateFilter(results, items, div,  filterFunction) {
-    div.innerHTML = ''; 
-    items.forEach(item => {
-        const button = document.createElement('button');
-        button.textContent = item;
-        button.className = 'btn btn-sm btn-outline-secondary mr-2 mb-2';
-        button.onclick = () => filterFunction(item, results);
-        div.appendChild(button);
-    });
-}
 
-
-function generateRowHTML(displayRow) {
-    return `<td>${displayRow.copyIcon}</td>
-            <td class="small-cell">${displayRow.proteinName}</td>
-            <td class="small-cell">${displayRow.speciesLink}</td>
-            <td class="small-cell">${displayRow.accessionNumberLink}</td>
-            <td class="small-cell">${displayRow.diffusionCoefficient}</td>
-            <td class="small-cell">${displayRow.diffusionError}</td>
-            <td class="medium-cell">${displayRow.methodDisplay}</td>
-            <td class="medium-cell">${displayRow.reference}</td>
-            <td>${displayRow.mass}</td>
-            <td class="large-cell">${displayRow.comment}</td>
-            <td class="pdb-code-cell">${displayRow.pdbCodes}</td>
-            <td class="pdb-code-cell">${displayRow.unknownPdbCodes}</td>
-            <td>${displayRow.manageIcon}</td>`;
-}
-
-
-function filterResultsBySpecies(speciesName, results) {
-    const filteredResults = results.filter(result => parseInt(result.species) === speciesName);
-        
-    // Sort filtered results by accessionNumber
-    filteredResults.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
-
-    const resultsBody = document.getElementById('searchResults');
-    resultsBody.innerHTML = ''; // Clear current results
-    
-    // Display filtered results
-    for (const row of filteredResults) {
-        displayDataRow(row).then(displayRow => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = generateRowHTML(displayRow);
-            resultsBody.appendChild(tr);
-        });
-    }   
-}
-
-
-function filterResultsByReferenceType(referenceType, results) {
-    const filteredResults = results.filter(result => result.referenceType === referenceType);
-        
-    // Sort filtered results by accessionNumber
-    filteredResults.sort((a, b) => a.accessionNumber.localeCompare(b.accessionNumber));
-
-    const resultsBody = document.getElementById('searchResults');
-    resultsBody.innerHTML = ''; // Clear current results
-    
-    // Display filtered results
-    for (const row of filteredResults) {
-        displayDataRow(row).then(displayRow => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = generateRowHTML(displayRow);
-            resultsBody.appendChild(tr);
-        });
-    }   
+function generateTr(row) {
+    const pdbCodesToHTML = codes => codes.map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ');
+    const tr = document.createElement('tr');
+    tr.id = `row-${row._id}`;
+    tr.innerHTML = `
+        <td> 
+            <i class="fas fa-copy" onclick="copyToClipboard('${row._id}', this)"></i> 
+        </td>
+        <td class="s-cell">
+            ${row.proteinName || ""}
+        </td>
+        <td class="s-cell">
+            <a href="https://www.uniprot.org/taxonomy/${row.species}">${row.species || ""}</a>
+        </td>
+        <td class="s-cell">
+            <a href="https://www.uniprot.org/uniprotkb/${row.accessionNumber}/entry">${row.accessionNumber || ""}</a>
+        </td>
+        <td class="s-cell">${row.diffusionCoefficient}</td>
+        <td class="s-cell">${row.diffusionError}</td>
+        <td class="m-cell">
+            ${row.methodValue} ${row.manualProcessingValue}
+        </td>
+        <td class="m-cell">
+            ${row.referenceTypeIcon} 
+            <a href="${row.referenceURL}">${row.referenceId || ""}</a> 
+            (${row.year})
+        </td>
+        <td>${row.mass}</td>
+        <td class="l-cell">
+            ${row.comment || ""}
+        </td>
+        <td class="pdb-cell">
+            ${pdbCodesToHTML(row.pdbCodes)}
+        </td>
+        <td class="pdb-cell">
+            ${pdbCodesToHTML(row.unknownPdbCodes)}
+        </td>
+        <td>
+            <a href="/manage/${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>
+        </td>`
+    return tr;
 }
 
 function copyToClipboard(text, iconElement) {
@@ -265,16 +249,74 @@ function copyToClipboard(text, iconElement) {
     });
 }
 
+function createFilterButtons(results, items, div, prop) {
+    div.innerHTML = ''; 
+    items.forEach(item => {
+        const button = document.createElement('button');
+        button.id= `btn-${prop}-${item}`; 
+        button.textContent = item;
+        button.className = 'btn btn-sm btn-outline-secondary mr-2 mb-2';
+        button.addEventListener('click', () => {
+            button.classList.toggle('pressed');
+            button.classList.toggle('btn-outline-secondary');
+            button.classList.toggle('btn-secondary');
+            filterByProperty(item, results, prop, button);
+            button.blur();
+        });
+        div.appendChild(button);
+    });
+}
 
-async function displayDataRow(row) {
+function filterByProperty(itemName, results, prop, button) {
+    // Update active filters based on the button's state
+    const isActive = button.classList.contains('pressed');
+    const index = activeFilters[prop].indexOf(itemName);
+    if (isActive && index === -1) {
+        activeFilters[prop].push(itemName);
+    } else if (!isActive && index !== -1) {
+        activeFilters[prop].splice(index, 1);
+    }
+
+    // Filter the rows based on active filters
+    const rows = document.querySelectorAll('#results-table tbody tr');
+    rows.forEach(row => {
+        const rowId = row.id.split('-')[1];
+        const shouldDisplay = Object.keys(activeFilters)
+            .every(property => {    //AND logic between filters
+                if (activeFilters[property].length === 0) return true;
+                return activeFilters[property]
+                    .some(filterItem =>     //OR logic within a filter
+                        results.some(result => result._id === rowId && result[property].toString() === filterItem.toString())
+                    );
+            });
+
+        if (shouldDisplay) {
+            row.classList.remove('d-none');
+        } else {
+            row.classList.add('d-none');
+        }
+    });
+}
+
+
+async function formatDisplayData(row) {
     // Method processing 
     const methodValue = row.method === 'Other' ? row.otherMethod : row.method;
     const manualProcessingValue = row.manualProcessing === 'Other' ? row.otherManualProcessing :
-                                   row.manualProcessing === 'visual' ? '(📈)' :
-                                   row.manualProcessing === 'calculations' ? '(🧮)' : '';
+                                   row.manualProcessing === 'visual' ? '📈' :
+                                   row.manualProcessing === 'calculations' ? '🧮' : '';
 
     // Fetch additional info asynchronously
-    const { uniprotPdbCodes, mass } = await fetchUniprotInfo(row.accessionNumber);
+    let uniprotPdbCodes = [];
+    let massValues = [];
+    try {
+        const fetchedData = await fetchUniprotInfo(row.accessionNumber);
+        uniprotPdbCodes = fetchedData.uniprotPdbCodes;
+        massValues = fetchedData.mass;
+    } catch (error) {
+        console.error('Error fetching Uniprot data:', error);
+    }
+    const mass = massValues.map(m => m ? (m / 1000).toFixed(2) : "N/A").join(', ') || "N/A";
 
     // Construct the reference string
     const referenceTypeIcon = row.referenceType === 'primary' ? '🔸' : 
@@ -285,44 +327,42 @@ async function displayDataRow(row) {
 
     // Diffusion coefficient and error formatting
     const multiplier = row.diffusionUnit === "1e-7 cm2/s" ? 10 : 1;
-    const diffusionCoefficientFormatted = (row.diffusionCoefficient * multiplier).toFixed(1);
-    const diffusionErrorFormatted = row.diffusionError ? 
+    const diffusionCoefficient = (row.diffusionCoefficient * multiplier).toFixed(1);
+    const diffusionError = row.diffusionError ? 
         (row.diffusionError * multiplier).toFixed(1) : "";
 
-    // PDB codes HTML generation
-    const pdbCodesToHTML = codes => codes.map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ');
-    const pdbCodes = pdbCodesToHTML(row.pdbStructures);
-    const unknownPdbCodes = pdbCodesToHTML(uniprotPdbCodes.filter(code => 
-        !row.pdbStructures.includes(code) && !row.discardedPdb.map(s => s.pdbId).includes(code)));
+    // Unknown PDB codes 
+    const unknownPdbCodes = uniprotPdbCodes.filter(code => 
+        !row.pdbStructures.includes(code) && !row.discardedPdb.map(s => s.pdbId).includes(code));
 
     return {
-        copyIcon: `<i class="fas fa-copy" onclick="copyToClipboard('${row._id}', this)"></i>`,
-        proteinName: row.proteinName || "",
-        speciesLink: `<a href="https://www.uniprot.org/taxonomy/${row.species}">${row.species || ""}</a>`,
-        accessionNumberLink: `<a href="https://www.uniprot.org/uniprotkb/${row.accessionNumber}/entry">${row.accessionNumber || ""}</a>`,
-        diffusionCoefficient: diffusionCoefficientFormatted,
-        diffusionError: diffusionErrorFormatted,
-        methodDisplay: `${methodValue} ${manualProcessingValue}`,
-        reference: `${referenceTypeIcon} <a href="${referenceURL}">${row.referenceId || ""}</a> (${row.year})`,
+        _id: row._id,
+        proteinName: row.proteinName,
+        species: row.species,
+        accessionNumber: row.accessionNumber,
+        referenceId: row.referenceId,
+        year: row.year,
+        comment: row.comment,
+        pdbCodes: row.pdbStructures,
+        diffusionCoefficient,
+        diffusionError,
+        methodValue,
+        manualProcessingValue,
+        referenceTypeIcon,
+        referenceURL,
         mass,
-        comment: row.comment || "",
-        pdbCodes,
         unknownPdbCodes,
-        manageIcon: `<a href="/manage/${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>`
     };
 }
 
 
 async function fetchUniprotInfo(accessionNumbers) {
-    // Split the accessionNumbers string by comma and trim each part
     const accessionNumberList = accessionNumbers.split(',').map(an => an.trim());
 
-    // Initialize arrays to hold the results for each accession number
-    let combinedPdbCodes = [];
-    let massValues = [];
-    let lengthValues = [];
+    let uniprotPdbCodes = new Set();
+    let mass = [];
+    let length = [];
 
-    // Process each accession number
     for (const accessionNumber of accessionNumberList) {
         const url = `https://rest.uniprot.org/uniprotkb/${accessionNumber}.json?fields=xref_pdb,length,mass`;
 
@@ -333,33 +373,24 @@ async function fetchUniprotInfo(accessionNumbers) {
             }
             const data = await response.json();
 
-            // Extract PDB codes and avoid duplicates
-            const pdbCodes = data.uniProtKBCrossReferences
-                .filter(xref => xref.database === "PDB")
-                .map(xref => xref.id);
-            combinedPdbCodes = [...new Set([...combinedPdbCodes, ...pdbCodes])];
+            if (data.uniProtKBCrossReferences) {
+                data.uniProtKBCrossReferences
+                    .filter(xref => xref.database === "PDB")
+                    .forEach(xref => uniprotPdbCodes.add(xref.id));
+            }
 
-            // Add mass and length to their respective arrays
-            const mass = data.sequence ?  (data.sequence.molWeight / 1000).toFixed(2) : "N/A";
-            const length = data.sequence ? data.sequence.length : "N/A";
-            massValues.push(mass);
-            lengthValues.push(length);
+            mass.push(data.sequence ? data.sequence.molWeight : null);
+            length.push(data.sequence ? data.sequence.length : null);
             
         } catch (error) {
             console.error('Error fetching data for accession number:', accessionNumber, error);
-            // Ensure that mass and length values are added as "N/A" in case of an error
-            massValues.push("N/A");
-            lengthValues.push("N/A");
         }
     }
 
-    // Return the results with mass and length as comma-separated strings
-    return {
-        uniprotPdbCodes: combinedPdbCodes,
-        mass: massValues.join(', '),
-        length: lengthValues.join(', '),
-    };
+    uniprotPdbCodes = Array.from(uniprotPdbCodes);
+    return { uniprotPdbCodes, mass, length };
 }
+
 
 </script>
 </body>

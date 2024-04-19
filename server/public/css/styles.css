@@ -41,19 +41,19 @@
     font-size: 0.6rem; 
 }
 
-.small-cell {
+.s-cell {
     max-width: 60px;
 }
 
-.medium-cell {
+.m-cell {
     max-width: 100px;
 }
 
-.large-cell {
+.l-cell {
     max-width: 130px;
 }
 
-.pdb-code-cell {
+.pdb-cell {
     overflow: auto; 
     white-space: nowrap;
     max-width: 100px;
@@ -121,4 +121,10 @@ input[type="number"] {
 }
 #discardedPdbCommentsContainer {
     padding-left: 2px;
+}
+
+/* Browser page */
+.btn:focus {
+    outline: none; /* Removes the outline */
+    box-shadow: none; /* Removes focus shadow if any */
 }
