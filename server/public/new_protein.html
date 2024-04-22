@@ -86,250 +86,225 @@
     </form>
     
 </div>
+<footer class="footer bg-light py-3 mt-4 border-top">
+    <div class="container text-center">
+        <p class="mb-1">© 2024 Protein Diffusion Database. All rights reserved.</p>
+        <div class="mb-1">
+            <a href="/privacy" class="mr-3">Privacy Policy</a>
+            <a href="/contact" class="mr-3">Contact Us</a>
+        </div>
+<!--    
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" class="mr-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+-->
+    </div>
+</footer> 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', async() => {
-        const { PageUtils, UserUtils } = await import('./js/utils.js');
+// Global counters for input fields
+const pageCounters = {
+    validPdb: 1,
+    discardedPdb: 1,
+    discardedPdbComments: 1,
+    experiments: 1
+};
 
-        // Base behavior
-        UserUtils.displayUserAlias('signInDiv');
+document.addEventListener('DOMContentLoaded', async() => {
+    const { PageUtils, UserUtils } = await import('./js/utils.js');
 
-        let validPdbCount = 1;
-        let discardedPdbCount = 1;
-        let discardedPdbCommentsCount = 1;
-        let experimentsCount=1;
+    // Base behavior
+    UserUtils.displayUserAlias('signInDiv');
+   
+    // Button actions
+    $('#addValidPdb').click(() => addInput('validPdbContainer', 'valid-pdb', pageCounters.validPdb++));
 
-        // Function to add new PDB input
-        function addInput(containerId, baseId, counter) {
-            const container = document.getElementById(containerId);
-            const newInput = document.createElement('input');
-            newInput.type = 'text';
-            newInput.className = 'form-control mt-1';
-            newInput.id = baseId + '-' + counter;
-            container.appendChild(newInput);
-        }
-
-        //function to add new experiment input
-        function addExperimentInput() {
-            const container = document.getElementById('experimentsContainer');
-            const newInput = document.createElement('input');
-            newInput.type = 'text';
-            newInput.className = 'form-control mt-1';
-            newInput.id = 'experiment-' + (experimentsCount++);
-            container.appendChild(newInput);
-
-            document.getElementById(newInput.id).addEventListener('focusout', function() {
-                const expInputs = document.querySelectorAll('[id^="experiment-"]');
-                if ((newInput.value.trim() !== '') && ( newInput.id === expInputs[expInputs.length - 1].id)) {
-                    addExperimentInput()
-                }
-            });
-        }
-
-        document.getElementById('experiment-0').addEventListener('focusout', function() {
-                const input = document.getElementById('experiment-0')
-                const expInputs = document.querySelectorAll('[id^="experiment-"]');
-                if ((input.value.trim() !== '') && ( input.id === expInputs[expInputs.length - 1].id)) {
-                    addExperimentInput()
-                }
-        });
-
-        document.getElementById('addValidPdb').addEventListener('click', function() {
-            addInput('validPdbContainer', 'valid-pdb', validPdbCount++);
-        });
-
-        document.getElementById('addDiscardedPdb').addEventListener('click', function() {
-            addInput('discardedPdbContainer', 'invalid-pdb-code', discardedPdbCount++);
-            addInput('discardedPdbCommentsContainer', 'invalid-pdb-note', discardedPdbCommentsCount++);
-        });
-
-        document.getElementById('addExperiment').addEventListener('click', function() {
-            addExperimentInput();
-        });
-
-        document.getElementById('pasteValid').addEventListener('click', async function(){
-            const text = await navigator.clipboard.readText();
-
-            const pdbCodes = text.split(',').map(item => item.trim().toUpperCase())
-
-            const wrongFormat = pdbCodes.some(pdbCode => pdbCode.length !== 4)
-            if (wrongFormat) {
-                PageUtils.showToast("Wrong PDB format", "PDB codes should be 4 characters long.")
-                return;
-            }
-
-            pdbCodes.forEach((pdbCode, index) => {
-                const input = document.getElementById(`valid-pdb-${index}`);
-                if (input) {
-                    input.value = pdbCode;
-                } else {
-                    addInput('validPdbContainer', 'valid-pdb', validPdbCount++);
-                    document.getElementById(`valid-pdb-${index}`).value = pdbCode;
-                }
-            })
-        })
-
-        document.getElementById("pasteInvalid").addEventListener("click", async function(){
-            const text = await navigator.clipboard.readText();
-
-            let wrongFormat;
-
-            const copiedObjects = text.split(',').map((item) => {
-                parts = item.split(':')
-                if (parts.length !== 2) {
-                    wrongFormat = true;
-                    return;
-                } else if (parts[0].trim().replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4) { //1ABC:A[m] is valid format, 1ABC[3] as well
-                    wrongFormat = true;
-                    return;
-                } else if (parts[1].trim().length === 0) {
-                    wrongFormat = true;
-                    return;
-                }
-
-                return {
-                    pdbCode: parts[0].trim().toUpperCase(),
-                    note: parts[1].trim()
-                }
-            })
-
-            if (wrongFormat) {
-                PageUtils.showToast("Wrong format", "It should be 1ABC:note, 2DEF:note");
-                return;
-            }
-
-            copiedObjects.forEach((copiedObject, index) => {
-                const pdbInput = document.getElementById(`invalid-pdb-code-${index}`);
-                const noteInput = document.getElementById(`invalid-pdb-note-${index}`);
-
-                if (pdbInput && noteInput) {
-                    pdbInput.value = copiedObject.pdbCode;
-                    noteInput.value = copiedObject.note;
-                } else {
-                    addInput('discardedPdbContainer', 'invalid-pdb-code', discardedPdbCount++);
-                    addInput('discardedPdbCommentsContainer', 'invalid-pdb-note', discardedPdbCommentsCount++);
-                    document.getElementById(`invalid-pdb-code-${index}`).value = copiedObject.pdbCode;
-                    document.getElementById(`invalid-pdb-note-${index}`).value = copiedObject.note;
-                }
-            })
-
-        })
-
-        document.getElementById('submitBtn').addEventListener('click', function() {
-
-            const pdbCodes = Array.from(
-                                new Set(
-                                    Array.from(document.querySelectorAll('[id^=valid-pdb-]')).map(input => input.value.toUpperCase()).filter(i => i.trim())
-                                )
-                            );
-
-            const experiments = Array.from(
-                                    new Set(
-                                        Array.from(document.querySelectorAll('[id^=experiment-]'))
-                                        .map(input => input.value)
-                                        .filter(i => i.trim())
-                                    )
-                                );
-
-            const discardedPdbObj = Array.from(document.querySelectorAll('[id^=invalid-pdb-code-]')).filter(i => i.value.trim()).map((input, index) => {
-                return {
-                    pdbCode: input.value.toUpperCase(),
-                    note: document.getElementById(`invalid-pdb-note-${index}`).value
-                }
-            });
-
-            const formData = {
-                name: document.getElementById('proteinName').value || null,
-                description: document.getElementById('description').value || null,
-                userId: UserUtils.getUserId(),
-                pdbStructures: pdbCodes || null,
-                experiments: experiments || null,
-                discardedPdb: discardedPdbObj || null
-            };
-
-            // Check if mandatory fields are filled
-            const mandatoryFields = ['name', 'pdbStructures', 'experiments','userId'];
-
-            for (let field of mandatoryFields) {
-                if (!formData[field] || formData[field].length === 0) {
-                    PageUtils.showToast('Missing field', `Please fill in ${field}.`, 'red');
-                    return;
-                }
-            }
-
-            //if any of the discardedPdb keys are in the pdbStructures, show a toast message
-            const discardedPdbCodes = discardedPdbObj.map(obj => obj.pdbCode);
-            const intersection = pdbCodes.filter(pdbCode => discardedPdbCodes.includes(pdbCode));
-            if (intersection.length > 0) {
-                PageUtils.showToast("Invalid and discarded PDB?", `Codes: ${intersection.join(', ')}`, 'red');
-                return;
-            }
-
-            //if any of the discardedPdb or the pdbStructures are not 4 characters long, show a toast message
-            const wrongLength = discardedPdbCodes.concat(pdbCodes).some(pdbCode => pdbCode.replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4);
-            if (wrongLength) {
-                PageUtils.showToast("Wrong PDB format", "PDB codes should be 4 characters long.");
-                return;
-            }
-
-            // Send data to server
-            fetch('/api/protein', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({data:formData}),
-            })
-            .then(response => {
-                if (!response.ok) {
-                    PageUtils.showToast('Error', 'Network response was not ok', 'red');
-                    throw new Error('Network response was not ok');
-                }
-                PageUtils.showToast('Success', `Submitted ${formData.name}`, 'green');
-                resetForm();
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        });
-
-        function resetForm() {
-            $('#proteinName').val('');
-            $('#description').val('');
-            $('[id^=valid-pdb-]').val('');
-            $('[id^=experiment-]').val('');
-            $('[id^=invalid-pdb-code-]').val('');
-            $('[id^=invalid-pdb-note-]').val('');
-            
-            // Remove extra inputs
-            const validPdbInputs = document.querySelectorAll('[id^=valid-pdb-]');
-            for (let i = validPdbInputs.length - 1; i > 0; i--) {
-                validPdbInputs[i].remove();
-            }
-            validPdbCount = 1;
-
-            const experimentInputs = document.querySelectorAll('[id^=experiment-]');
-            for (let i = experimentInputs.length - 1; i > 0; i--) {
-                experimentInputs[i].remove();
-            }
-            experimentsCount = 1;
-
-            const discardedPdbInputs = document.querySelectorAll('[id^=invalid-pdb-code-]');
-            for (let i = discardedPdbInputs.length - 1; i > 0; i--) {
-                discardedPdbInputs[i].remove();
-            }
-            discardedPdbCount = 1;
-
-            const discardedPdbNoteInputs = document.querySelectorAll('[id^=invalid-pdb-note-]');
-            for (let i = discardedPdbNoteInputs.length - 1; i > 0; i--) {
-                discardedPdbNoteInputs[i].remove();
-            }
-            discardedPdbCommentsCount = 1;
-            
-        }
+    $('#addDiscardedPdb').click(() => {
+        addInput('discardedPdbContainer', 'invalid-pdb-code', pageCounters.discardedPdb++);
+        addInput('discardedPdbCommentsContainer', 'invalid-pdb-note', pageCounters.discardedPdbComments++);
     });
+
+    $('#addExperiment').click(()=> addInput('experimentsContainer', 'experiment', pageCounters.experiments++));
+
+
+    // Paste PDB button
+    document.getElementById('pasteValid').addEventListener('click', function() {
+        handlePaste('validPdbContainer', 'valid-pdb', { value: pageCounters.validPdb }, 
+            //Format checker
+            pdbCode => pdbCode.trim().replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length === 4, //1ABC:A[m] is valid format, 1ABC[3] as well
+            //Effect handler
+            (pdbCode, index, containerId, baseId, counter) => {
+                const input = document.getElementById(`${baseId}-${index}`);
+                if (input) {
+                    input.value = pdbCode.toUpperCase();
+                } else {
+                    addInput(containerId, baseId, counter.value++);
+                    document.getElementById(`${baseId}-${index}`).value = pdbCode.toUpperCase();
+                }
+            },
+            //Error handling
+            () => PageUtils.showToast("Wrong PDB format", "PDB codes should be 4 characters long.")
+        );
+    });
+
+    // Paste Discarded PDB button
+    document.getElementById("pasteInvalid").addEventListener("click", function() {
+        handlePaste('discardedPdbContainer', 'invalid-pdb', { code: pageCounters.discardedPdb, note: pageCounters.discardedPdbComments }, 
+            //Format checker
+            item => {
+                const parts = item.split(':');
+                return parts.length === 2 && parts[0].trim().replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length === 4 && parts[1].trim().length > 0;  //1ABC:A[m] is valid format, 1ABC[3] as well
+            }, 
+            //Effect handler
+            (item, index, containerId, baseId, counter) => {
+                const parts = item.split(':');
+                const pdbCode = parts[0].trim().toUpperCase();
+                const note = parts[1].trim();
+
+                const pdbInput = document.getElementById(`${baseId}-code-${index}`);
+                const noteInput = document.getElementById(`${baseId}-note-${index}`);
+                if (pdbInput && noteInput) {
+                    pdbInput.value = pdbCode;
+                    noteInput.value = note;
+                } else {
+                    addInput('discardedPdbContainer', `${baseId}-code`, counter.code++);
+                    addInput('discardedPdbCommentsContainer', `${baseId}-note`, counter.note++);
+                    document.getElementById(`${baseId}-code-${index}`).value = pdbCode;
+                    document.getElementById(`${baseId}-note-${index}`).value = note;
+                }
+            },
+            //Error handling
+            () => PageUtils.showToast("Wrong format", "It should be 1ABC:note, 2DEF:note")
+        );
+    });
+
+
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        // Gather form data
+        let pdbCodes = Array.from(document.querySelectorAll('[id^=valid-pdb-]'))
+                        .map(input => input.value.toUpperCase())
+                        .filter(i => i.trim())
+        pdbCodes = Array.from(new Set(pdbCodes));
+
+        let experiments = Array.from(document.querySelectorAll('[id^=experiment-]'))
+                            .map(input => input.value)
+                            .filter(i => i.trim())
+        experiments = Array.from(new Set(experiments));
+
+        let discardedPdbObj = Array.from(document.querySelectorAll('[id^=invalid-pdb-code-]'))
+                                    .filter(i => i.value.trim())
+                                    .map((input, index) => {
+                                    return {
+                                        pdbCode: input.value.toUpperCase(),
+                                        note: document.getElementById(`invalid-pdb-note-${index}`).value
+                                    }});
+        const formData = {
+            name: document.getElementById('proteinName').value || null,
+            description: document.getElementById('description').value || null,
+            userId: UserUtils.getUserId(),
+            pdbStructures: pdbCodes || null,
+            experiments: experiments || null,
+            discardedPdb: discardedPdbObj || null
+        };
+
+        // Check mandatory fields
+        if (!formData.userId) {
+            PageUtils.showToast('Session expired', 'Please sign in to submit data.', 'red');
+            return;
+        }
+        const mandatoryFields = ['name', 'pdbStructures', 'experiments'];
+
+        for (let field of mandatoryFields) {
+            if (!formData[field] || formData[field].length === 0) {
+                PageUtils.showToast('Missing field', `Please fill in ${field}.`, 'red');
+                return;
+            }
+        }
+
+        // Check no-overlap between valid and discarded PDBs
+        const discardedPdbCodes = discardedPdbObj.map(obj => obj.pdbCode);
+        const intersection = pdbCodes.filter(pdbCode => discardedPdbCodes.includes(pdbCode));
+        if (intersection.length > 0) {
+            PageUtils.showToast("Invalid and discarded PDB?", `Codes: ${intersection.join(', ')}`, 'red');
+            return;
+        }
+
+        // Check PDB codes length
+        const wrongLength = discardedPdbCodes.concat(pdbCodes).some(pdbCode => pdbCode.replace(/(:\w+(\[\w+\])?)|\[\d+\]/g, '').length !== 4);
+        if (wrongLength) {
+            PageUtils.showToast("Wrong PDB format", "PDB codes should be 4 characters long.");
+            return;
+        }
+
+        // Send data to server
+        fetch('/api/protein', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({data:formData}),
+        })
+        .then(response => {
+            if (!response.ok) {
+                PageUtils.showToast('Error', 'Network response was not ok', 'red');
+                throw new Error('Network response was not ok');
+            }
+            PageUtils.showToast('Success', `Submitted ${formData.name}`, 'green');
+            resetForm();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+
+});
+
+
+async function handlePaste(containerId, baseId, counter, formatChecker, effectHandler, errorHandling) {
+    const text = await navigator.clipboard.readText();
+    const entries = text.split(',').map(item => item.trim());
+
+    const wrongFormat = entries.some(entry => !formatChecker(entry));
+    if (wrongFormat) {
+        errorHandling()
+        return;
+    }
+
+    entries.forEach((entry, index) => {
+        effectHandler(entry, index, containerId, baseId, counter);
+    });
+}
+
+
+function resetForm() {
+    $('#proteinName, #description').val('');
+    $('[id^=valid-pdb-], [id^=experiment-], [id^=invalid-pdb-code-], [id^=invalid-pdb-note-]').val('');
+    
+    // Helper function to remove extra inputs and reset counters
+    function resetInputsAndCounters(baseId, counterName) {
+        $(`[id^=${baseId}-]`).each(function(index) {
+            if (index > 0) $(this).remove();
+        });
+        pageCounters[counterName] = 1;
+    }
+
+    resetInputsAndCounters('valid-pdb', 'validPdb');
+    resetInputsAndCounters('experiment', 'experiments');
+    resetInputsAndCounters('invalid-pdb-code', 'discardedPdb');
+    resetInputsAndCounters('invalid-pdb-note', 'discardedPdbComments');
+}
+
+
+function addInput(containerId, baseId, counter) {
+    const newInput = $('<input>', {
+        type: 'text',
+        class: 'form-control mt-1',
+        id: baseId + '-' + counter
+    });
+    $('#' + containerId).append(newInput);
+}
 </script>
 </body>
 </html>

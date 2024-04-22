@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+<!-- Header -->
+<div class="header">
+    <nav class="navbar">
+        <a class="navbar-item" href="/">Browse</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/new_protein">New protein</a>
+    </nav>
+    <div id="signInDiv" class="ml-auto pr-2"></div>
+</div>
+
+<div class="container form-block">
+    <!-- Title -->
+    <h2 class="mt-2">Contact Us</h2>
+
+
+    <!-- Presentation Card -->
+    <div class="card">
+        <div class="row no-gutters">
+            <div class="col-md-4 d-flex align-items-center px-2">
+                <img src="https://protein.bio.unipd.it/assets/favicon/android-chrome-512x512.png" class="card-img" alt="BioComputing UP" style="max-width:100%; height:auto;">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">BioComputing UP</h5>
+                    <p class="card-text">
+                        Department of Biomedical Sciences<br>
+                        University of Padova<br>
+                        via Ugo Bassi 58/B<br>
+                        35131 Padova, Italy
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-phone"></i> +39 049 827 6269<br>
+                        <i class="fas fa-phone"></i> +39-049-827 6260<br>
+                        <i class="fas fa-envelope"></i> <a href="mailto:biocomp@bio.unipd.it">biocomp@bio.unipd.it</a><br>
+                        <i class="fas fa-globe"></i> <a href="https://protein.bio.unipd.it/" target="_blank">Visit our website</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<footer class="footer bg-light py-3 mt-4 border-top">
+    <div class="container text-center">
+        <p class="mb-1">© 2024 Protein Diffusion Database. All rights reserved.</p>
+        <div class="mb-1">
+            <a href="/privacy" class="mr-3">Privacy Policy</a>
+            <a href="/contact" class="mr-3">Contact Us</a>
+        </div>
+<!--    
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" class="mr-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+-->
+    </div>
+</footer> 
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { UserUtils } = await import('./js/utils.js');
+        UserUtils.displayUserAlias('signInDiv');
+    });
+</script>
+</body>
+</html>

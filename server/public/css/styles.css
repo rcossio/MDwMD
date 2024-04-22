@@ -76,6 +76,9 @@
     max-width: 600px;
     margin: auto;
 }
+.form-block > p {
+    padding-left: 10px; 
+}
 
 .input-group-text {  /* Bootstrap */
     height: calc(1.5em + .75rem + 2px); /* Adjusts height to match inputs */

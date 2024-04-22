@@ -13,7 +13,7 @@
 <div class="header">
     <nav class="navbar">
         <a class="navbar-item" href="/">Browse</a>
-        <a class="navbar-item navbar-selected" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
         <a class="navbar-item" href="/new_protein">New protein</a>
     </nav>
     <div id="signInDiv" class="ml-auto pr-2"></div>
@@ -21,7 +21,7 @@
 
 <div class="container form-block">
     <!-- Title -->
-    <h2 class="mt-2">Add New Experiment</h2>
+    <h2 class="mt-2">Update Existing Experiment</h2>
     <p><span class="required-asterisk">*</span> required fields.</p>
     <form id="mainForm">
 
@@ -156,7 +156,7 @@
 
         <!-- Submit button -->
         <div class="form-group text-center">
-            <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Submit</button>
+            <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Update entry</button>
         </div>
         
     </form>
@@ -192,8 +192,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
+let experimentId;
 document.addEventListener('DOMContentLoaded', async() => {
     const { PageUtils, UserUtils } = await import('./js/utils.js');
+
+    // Check entry id
+    const urlParams = new URLSearchParams(window.location.search);
+    experimentId = urlParams.get('id');
+    if (!experimentId) {
+        alert('No entry ID provided.');
+        return;
+    }    
 
     // Configurations
     UserUtils.displayUserAlias('signInDiv');
@@ -233,11 +242,12 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // Send data to server
         fetch('/api/experiment', {
-            method: 'POST',
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 data:formData,
-                replacedEntry
+                replacedEntry,
+                id: experimentId
             }),
         })
         .then(response => {
@@ -253,6 +263,9 @@ document.addEventListener('DOMContentLoaded', async() => {
         });
     });
 
+    // Fetch data from server
+    fetchDataFromServer(experimentId);
+
     // Helper functions
     function setDynamicLink(inputSelector, buttonSelector, url) {
         $(inputSelector).on('input', function() {
@@ -266,6 +279,59 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 
 });
+
+function fetchDataFromServer(id){
+    fetch(`/api/find-by-id/${id}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+        const entry = data.payload;
+        // Populate the form fields with the retrieved data
+        $('#diffusionCoefficient').val(entry.diffusionCoefficient);
+        $('#diffusionError').val(entry.diffusionError);
+        $('#diffusionUnit').val(entry.diffusionUnit);
+        $('#manualProcessing').val(entry.manualProcessing);
+        $('#otherManualProcessing').val(entry.otherManualProcessing);
+        $('#method').val(entry.method);
+        $('#otherMethod').val(entry.otherMethod);
+        $('#proteinName').val(entry.proteinName);
+        $('#species').val(entry.species);
+        $('#accessionNumber').val(entry.accessionNumber);
+        $('#referenceId').val(entry.referenceId);
+        $('#referenceIdType').val(entry.referenceIdType);
+        $('#referenceType').val(entry.referenceType);
+        $('#comment').val(entry.comment);
+        $('#userName').val(entry.userName);
+
+        // Handle checkbox states
+        $('#manualEstimationCheckbox').prop('checked', !!entry.manualProcessing);
+        $('#doiCheckbox').prop('checked', (entry.referenceIdType === 'doi'));
+
+        // Show/hide fields based on checkbox states
+        if ($('#manualEstimationCheckbox').is(':checked')) {
+            $('#manualProcessing').removeClass('d-none');
+        }
+        if ($('#replaceEntryCheckbox').is(':checked')) {
+            $('#replacedEntry').removeClass('d-none');
+        }
+        if ($('#manualProcessing').val() === 'Other') {
+            $('#otherManualProcessingContainer').removeClass('d-none');
+        }
+        if ($('#method').val() === 'Other') {
+            $('#otherMethodContainer').removeClass('d-none');
+        }        
+
+        // Add more form field assignments as needed
+        } else {
+        alert('Error fetching data from the server.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while fetching data from the server.');
+    });
+}
+
 </script>
   
 </body>

@@ -55,24 +55,24 @@
 
     <!-- Results Table -->
     <table id="results-table" class="table mt-3 d-none">
-      <thead>
-        <tr>
-          <th>ID</th>   
-          <th>Protein Name</th>
-          <th class="s-cell">Species</th>
-          <th class="s-cell">Accession Number</th>
-          <th class="s-cell">Diffusion Coefficient (um2/s)</th>
-          <th class="s-cell">Diffusion Error (um2/s)</th>
-          <th class="m-cell">Method</th>
-          <th class="m-cell">PMID/ DOI</th>
-          <th class="s-cell">Mass (kDa)</th>
-          <th class="l-cell">Comment</th>
-          <th class="pdb-cell">PDBs</th>
-          <th class="pdb-cell">Unk. PDBs</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="searchResults"></tbody>
+        <thead>
+            <tr>
+                <th>ID</th>   
+                <th>Protein Name</th>
+                <th class="s-cell">Species</th>
+                <th class="s-cell">Accession Number</th>
+                <th class="s-cell">Diffusion Coefficient (um2/s)</th>
+                <th class="s-cell">Diffusion Error (um2/s)</th>
+                <th class="m-cell">Method</th>
+                <th class="m-cell">PMID/ DOI</th>
+                <th class="s-cell">Mass (kDa)</th>
+                <th class="l-cell">Comment</th>
+                <th class="pdb-cell">PDBs</th>
+                <th class="pdb-cell">Unk. PDBs</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="searchResults"></tbody>
     </table>
 
     <!-- Download section -->
@@ -91,8 +91,24 @@
             </div>
             <button type="button" id="downloadBtn" class="btn btn-success">Download List</button>
         </form>
-    </div>
+    </div>   
 </div>
+<footer class="footer bg-light py-3 mt-4 border-top">
+    <div class="container text-center">
+        <p class="mb-1">© 2024 Protein Diffusion Database. All rights reserved.</p>
+        <div class="mb-1">
+            <a href="/privacy" class="mr-3">Privacy Policy</a>
+            <a href="/contact" class="mr-3">Contact Us</a>
+        </div>
+<!--    
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" class="mr-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+-->
+    </div>
+</footer> 
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -105,12 +121,12 @@ const activeFilters = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const { PageUtils, UserUtils } = await import('./js/utils.js');
+    const { PageUtils, UserUtils, HTTPUtils } = await import('./js/utils.js');
     
     // Base behavior
     UserUtils.displayUserAlias('signInDiv');
     PageUtils.clickOnEnter('searchBtn');
-    PageUtils.toggleVisibility('#advancedSearchBtn', '#advancedSearchDiv', ($trig,$tget)=> $tget.hasClass('d-none'))
+    PageUtils.toggleVisibility('#advancedSearchBtn', '#advancedSearchDiv', (e,r)=> r.classList.contains('d-none'))
 
     // Search button event
     document.getElementById('searchBtn').addEventListener('click', async function() {
@@ -150,6 +166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Setting up filters
                 const species = [...new Set(results.map(item => item.species))].map(Number).sort((a, b) => a - b);
                 const referenceTypes = [...new Set(results.map(item => item.referenceType))].sort((a, b) => a.localeCompare(b));
+                
                 const speciesListDiv = document.getElementById('speciesList');
                 const referenceTypeListDiv = document.getElementById('referenceTypeList');
 
@@ -190,8 +207,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 });
 
-
-
 function generateTr(row) {
     const pdbCodesToHTML = codes => codes.map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ');
     const tr = document.createElement('tr');
@@ -230,7 +245,7 @@ function generateTr(row) {
             ${pdbCodesToHTML(row.unknownPdbCodes)}
         </td>
         <td>
-            <a href="/manage/${row._id}" style="color:black"><i class="fas fa-cogs"></i></a>
+            <a href="/update/${row._id}" target="_blank" style="color:black"><i class="fas fa-cogs"></i></a>
         </td>`
     return tr;
 }
@@ -310,7 +325,7 @@ async function formatDisplayData(row) {
     let uniprotPdbCodes = [];
     let massValues = [];
     try {
-        const fetchedData = await fetchUniprotInfo(row.accessionNumber);
+        const fetchedData = await HTTPUtils.fetchUniprotInfo(row.accessionNumber);
         uniprotPdbCodes = fetchedData.uniprotPdbCodes;
         massValues = fetchedData.mass;
     } catch (error) {
@@ -356,40 +371,6 @@ async function formatDisplayData(row) {
 }
 
 
-async function fetchUniprotInfo(accessionNumbers) {
-    const accessionNumberList = accessionNumbers.split(',').map(an => an.trim());
-
-    let uniprotPdbCodes = new Set();
-    let mass = [];
-    let length = [];
-
-    for (const accessionNumber of accessionNumberList) {
-        const url = `https://rest.uniprot.org/uniprotkb/${accessionNumber}.json?fields=xref_pdb,length,mass`;
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-
-            if (data.uniProtKBCrossReferences) {
-                data.uniProtKBCrossReferences
-                    .filter(xref => xref.database === "PDB")
-                    .forEach(xref => uniprotPdbCodes.add(xref.id));
-            }
-
-            mass.push(data.sequence ? data.sequence.molWeight : null);
-            length.push(data.sequence ? data.sequence.length : null);
-            
-        } catch (error) {
-            console.error('Error fetching data for accession number:', accessionNumber, error);
-        }
-    }
-
-    uniprotPdbCodes = Array.from(uniprotPdbCodes);
-    return { uniprotPdbCodes, mass, length };
-}
 
 
 </script>

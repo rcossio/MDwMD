@@ -12,9 +12,17 @@ router.get('/login', (req, res) => {
   res.sendFile(path.resolve('public', 'login.html'));
 });
 
-//router.get('/register', (req, res) => {
-//  res.sendFile(path.resolve('public', 'register.html'));
-//});
+router.get('/unauthorized', (req, res) => {
+  res.sendFile(path.resolve('public', 'unauthorized.html'));
+});
+
+router.get('/privacy', (req, res) => {
+  res.sendFile(path.resolve('public', 'privacy.html'));
+});
+
+router.get('/contact', (req, res) => {
+  res.sendFile(path.resolve('public', 'contact.html'));
+});
 
 //Protected routes
 router.get('/new_experiment',verifyToken, (req, res) => {
@@ -25,8 +33,8 @@ router.get('/new_protein',verifyToken, (req, res) => {
   res.sendFile(path.resolve('public', 'new_protein.html'));
 });
 
-router.get('/manage/:id',verifyToken, (req, res) => {
-  res.redirect('/manage.html?id='+req.params.id);
+router.get('/update/:id',verifyToken, (req, res) => {
+  res.redirect('/update_experiment.html?id='+req.params.id);
 });
 
 module.exports = router;

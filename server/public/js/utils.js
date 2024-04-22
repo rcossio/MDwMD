@@ -23,14 +23,18 @@ export class PageUtils {
         button.removeAttribute('disabled');
     }
 
-    static toggleVisibility(triggerSelector, targetSelector, condition) {
-        $(triggerSelector).click(function() {
-            const shouldShow = condition(this, $(targetSelector));
-            $(targetSelector).toggleClass('d-none', !shouldShow);
-            $(targetSelector).val('');
-            $(targetSelector).find('input, select').val('');
-        })
-    }
+    static toggleVisibility(emitterSelector, receiverSelector, condition) {
+        $(emitterSelector).click(function() {
+            const emitter = this; //DOM object
+            const receiver = $(receiverSelector).get(0); //DOM object
+    
+            const shouldShow = condition(emitter, receiver);
+    
+            $(receiver).toggleClass('d-none', !shouldShow);
+            $(receiver).val('');
+            $(receiver).find('input, select').val('');
+        });
+    }  
 
     static showToast(header, message, color = 'yellow') {
         // Check if the toast container exists
@@ -127,4 +131,41 @@ export class UserUtils {
         }
     }
 };
+
+export class HTTPUtils {
+    static async fetchUniprotInfo(accessionNumbers) {
+        const accessionNumberList = accessionNumbers.split(',').map(an => an.trim());
+    
+        let uniprotPdbCodes = new Set();
+        let mass = [];
+        let length = [];
+    
+        for (const accessionNumber of accessionNumberList) {
+            const url = `https://rest.uniprot.org/uniprotkb/${accessionNumber}.json?fields=xref_pdb,length,mass`;
+    
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+    
+                if (data.uniProtKBCrossReferences) {
+                    data.uniProtKBCrossReferences
+                        .filter(xref => xref.database === "PDB")
+                        .forEach(xref => uniprotPdbCodes.add(xref.id));
+                }
+    
+                mass.push(data.sequence ? data.sequence.molWeight : null);
+                length.push(data.sequence ? data.sequence.length : null);
+                
+            } catch (error) {
+                console.error('Error fetching data for accession number:', accessionNumber, error);
+            }
+        }
+    
+        uniprotPdbCodes = Array.from(uniprotPdbCodes);
+        return { uniprotPdbCodes, mass, length };
+    }
+}
 

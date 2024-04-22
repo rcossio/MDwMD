@@ -12,7 +12,7 @@ router.post('/login', passport.authenticate('local', { session: false }), functi
   if (!user) {
     return res.status(401).json({ error: info.message });
   }
-  tokenExpirationSeconds = 10 *60 // 10 minutes
+  tokenExpirationSeconds = 60 *60 // 10 minutes
 
   const token = jwt.sign({ _id: user._id }, config.jwtSecret, { expiresIn: tokenExpirationSeconds });
   res.cookie('jwt', token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: tokenExpirationSeconds * 1000}); 
@@ -33,7 +33,7 @@ router.get('/orcid/callback',
   function(req, res) {
     console.log('ORCID callback', req.user);
     const user = req.user;
-    tokenExpirationSeconds = 10 *60 // 10 minutes
+    tokenExpirationSeconds = 60 *60 // 10 minutes
 
     const token = jwt.sign({ _id: user._id }, config.jwtSecret, { expiresIn: tokenExpirationSeconds });
     res.cookie('jwt', token, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: tokenExpirationSeconds * 1000}); 

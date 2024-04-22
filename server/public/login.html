@@ -11,12 +11,12 @@
 <body>
 <!-- Header -->
 <div class="header">
-  <nav class="navbar">
-    <a class="navbar-item" href="/">Browse</a>
-    <a class="navbar-item" href="/new_experiment">New experiment</a>
-    <a class="navbar-item" href="/new_protein">New protein</a>
-  </nav>
-  <div id="signInDiv" class="ml-auto pr-2"></div>
+    <nav class="navbar">
+        <a class="navbar-item" href="/">Browse</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/new_protein">New protein</a>
+    </nav>
+    <div id="signInDiv" class="ml-auto pr-2"></div>
 </div>
 
 <div class="container form-block">
@@ -30,29 +30,46 @@
             <input type="text" class="form-control" id="username" placeholder="Username">
         </div>
         <div class="col-6">
-          <label class="mb-1">Password</label>
-          <input type="password" class="form-control" id="password" placeholder="Password">
+            <label class="mb-1">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password">
       </div>
     </div>
 
     <!-- Submit buttons -->
     <div class="form-group text-center mt-2">
         <div>
-          <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Sign In</button>
+            <button type="button" id="submitBtn" class="btn btn-primary btn-lg">Sign In</button>
         </div>
         <div class="mt-2">
-          <a class="btn btn-success" href="/auth/orcid/login">Login with ORCiD</a>
+            <a class="btn btn-success" href="/auth/orcid/login">Login with ORCiD</a>
         </div>
     </div>
   </form>
 
 </div>
 
+<footer class="footer bg-light py-3 mt-4 border-top">
+    <div class="container text-center">
+        <p class="mb-1">© 2024 Protein Diffusion Database. All rights reserved.</p>
+        <div class="mb-1">
+            <a href="/privacy" class="mr-3">Privacy Policy</a>
+            <a href="/contact" class="mr-3">Contact Us</a>
+        </div>
+<!--    
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" class="mr-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+-->
+    </div>
+</footer> 
+
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const { PageUtils, UserUtils } = await import('./js/utils.js');
 
     // Base behavior
@@ -60,11 +77,12 @@
     PageUtils.clickOnEnter('submitBtn');
 
     // Events
-    function submitForm() {
+    document.getElementById('submitBtn').addEventListener('click', async function() {
         PageUtils.startSpinner(document.getElementById('submitBtn'));
+
         const formData = {
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value
+            username: $('#username').val(),
+            password: $('#password').val()
         };
 
         // Check if mandatory fields are filled
@@ -98,14 +116,8 @@
         .catch((error) => {
             console.error('Error:', error);
         });
-    }
-
-    $('#submitBtn').on('click', function(e) {
-        e.preventDefault();
-        submitForm();
     });
-
-  });
+});
 </script>
   
 </body>

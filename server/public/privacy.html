@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+<!-- Header -->
+<div class="header">
+    <nav class="navbar">
+        <a class="navbar-item" href="/">Browse</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/new_protein">New protein</a>
+    </nav>
+    <div id="signInDiv" class="ml-auto pr-2"></div>
+</div>
+
+<div class="container form-block">
+    <!-- Title -->
+    <h2 class="mt-2">Privacy Policy</h2>
+
+    <h3>Introduction</h3>
+    <p align="justify">Welcome to our website, managed by the BioComputing UP lab at the University of Padova. We are committed to protecting your privacy and keeping your personal data secure. This Privacy Policy outlines our practices regarding the collection, use, protection of your data, and your rights related to this data.</p>
+
+    <h3>Information Collection and Use</h3>
+    <p align="justify"><strong>Personal Data:</strong> We collect your first name, last name, ORCID (a unique digital identifier that distinguishes you from every other researcher, optional), username (optional), and password. Your names are used for personalization upon login and for identification in communications. The ORCID and username are unique identifiers for your account. We only require either ORCID or username; if ORCID is used, password entry is unnecessary as authentication is managed through their system.</p>
+    <p align="justify"><strong>Role-Based Data:</strong> We assign roles such as "visitor" and "curator" to users to manage access to different utilities of our web app. This information helps us to tailor user access and functionalities, ensuring users can only access features relevant to their assigned roles. For example, curators may have the ability to add new information to the database.</p>
+
+    <h3>Data Storage and Security</h3>
+    <p align="justify"><strong>Third-Party Storage:</strong> Your data is securely stored on MongoDB Atlas, a secure online database service. This provider is responsible only for the physical storage of data and does not access or interpret your data.</p>
+    <p align="justify"><strong>Security Measures:</strong> Our database is protected with strong access controls and encryption technologies to ensure your personal information is safely stored.</p>
+
+    <h3>Data Access</h3>
+    <p align="justify"><strong>Access Control:</strong> Data access is restricted to authorized personnel within the BioComputing UP lab who require this information to perform their duties.</p>
+
+    <h3>User Rights</h3>
+    <p align="justify"><strong>Your Data Rights:</strong> You may access, modify, or delete your data at any time by emailing <a href="mailto:biocomp@bio.unipd.it">biocomp@bio.unipd.it</a>. To obtain a copy of your data, please contact this email as well.</p>
+
+    <h3>Data Retention</h3>
+    <p align="justify"><strong>Retention Period:</strong> We retain your data indefinitely to facilitate continuous access to our site without the need for re-registration.</p>
+
+    <h3>Cookies and Tracking Technologies</h3>
+    <p align="justify"><strong>Session Management:</strong> Cookies are utilized to maintain your session and authentication status, essential for seamless access to our services.</p>
+
+    <h3>Legal Basis for Processing</h3>
+    <p align="justify">We process your data based on consent obtained at registration and the necessity for the performance of the contract to which you are party by using our site. This processing also complies with legal obligations and protects your or others' vital interests as required by law.</p>
+
+    <h3>Impact of Not Providing Data</h3>
+    <p align="justify"><strong>Account Creation:</strong> Not providing required data (name, last name, and either ORCID or username and password) will prevent the creation of a user account, restricting access to our services.</p>
+
+    <h3>Changes to This Privacy Policy</h3>
+    <p align="justify"><strong>Notification of Changes:</strong> Any updates to our privacy policy will be communicated via a website banner upon your next login, ensuring you are always informed of how your data is handled.</p>
+
+    <h3>Contact Information</h3>
+    <p align="justify">For any privacy-related questions or concerns, please reach out to us at <a href="mailto:biocomp@bio.unipd.it">biocomp@bio.unipd.it</a>.</p>
+
+    <h3>Effective Date</h3>
+    <p align="justify"><strong>Implementation Date:</strong> This policy takes effect on January 1, 2024.</p>
+
+    <h3>Additional Contact Information</h3>
+    <p align="justify">BioComputing UP, Department of Biomedical Sciences, University of Padova, via Ugo Bassi 58/B, 35131 Padova, Italy</p>
+    <p align="justify">Phone: +39 049 827 6269, +39-049-827 6260</p>
+
+
+
+
+</div>
+<footer class="footer bg-light py-3 mt-4 border-top">
+    <div class="container text-center">
+        <p class="mb-1">© 2024 Protein Diffusion Database. All rights reserved.</p>
+        <div class="mb-1">
+            <a href="/privacy" class="mr-3">Privacy Policy</a>
+            <a href="/contact" class="mr-3">Contact Us</a>
+        </div>
+<!--    
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" class="mr-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+-->
+    </div>
+</footer> 
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { UserUtils } = await import('./js/utils.js');
+        UserUtils.displayUserAlias('signInDiv');
+    });
+</script>
+</body>
+</html>
