@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Database</title>
+    <title>Browse Experiments</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
@@ -12,7 +12,8 @@
 <!-- Header -->
 <div class="header">
     <nav class="navbar">
-        <a class="navbar-item navbar-selected" href="/">Browse</a>
+        <a class="navbar-item navbar-selected " href="/">Browse Experiments</a>
+        <a class="navbar-item" href="/browse-proteins">Browse Proteins</a>
         <a class="navbar-item" href="/new_experiment">New experiment</a>
         <a class="navbar-item" href="/new_protein">New protein</a>
     </nav>
@@ -21,7 +22,7 @@
 
 <div class="container">
     <!-- Title -->
-    <h2 class="mt-2">Browse Database</h2>
+    <h2 class="mt-2">Browse Experiments</h2>
 
     <!-- Search fields -->
     <div class="form-inline">
@@ -173,7 +174,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 $('#filter-banner').removeClass('d-none');
                 createFilterButtons(results, species, speciesListDiv, 'species');
                 createFilterButtons(results, referenceTypes, referenceTypeListDiv, 'referenceType');
-
+                
+                // Show download form
                 $('#download-form-div').removeClass('d-none');
             });
         })

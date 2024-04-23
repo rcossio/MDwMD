@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Database</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<!-- Header -->
+<div class="header">
+    <nav class="navbar">
+        <a class="navbar-item" href="/">Browse Experiments</a>
+        <a class="navbar-item navbar-selected" href="/browse-proteins">Browse Proteins</a>
+        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/new_protein">New protein</a>
+    </nav>
+    <div id="signInDiv" class="ml-auto pr-2"></div>
+</div>
+
+<div class="container">
+    <!-- Title -->
+    <h2 class="mt-2">Browse Proteins</h2>
+
+    <!-- Search fields -->
+    <div class="form-inline">
+        <input type="text" id="searchInput" class="form-control mb-3 mr-2 w-50" placeholder="Search by Protein Name or Keywords...">
+        <button type="button" id="searchBtn" class="btn btn-primary mb-3 mr-2" style="width: 100px">Search</button>
+    </div>
+  
+    <!-- Results Table -->
+    <table id="results-table" class="table mt-3 d-none">
+        <thead>
+            <tr>
+                <th>ID</th>   
+                <th>Protein Name</th>
+                <th class="l-cell">Description</th>
+                <th class="m-cell">Experimental values (um2/s)</th>
+                <th class="pdb-cell">PDBs</th>
+                <th class="pdb-cell">Invalid PDBs</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="searchResults"></tbody>
+    </table>
+
+</div>
+<footer class="footer bg-light py-3 mt-4 border-top">
+    <div class="container text-center">
+        <p class="mb-1">© 2024 Protein Diffusion Database. All rights reserved.</p>
+        <div class="mb-1">
+            <a href="/privacy" class="mr-3">Privacy Policy</a>
+            <a href="/contact" class="mr-3">Contact Us</a>
+        </div>
+<!--    
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com" target="_blank" class="mr-2"><i class="fab fa-twitter"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+-->
+    </div>
+</footer> 
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const { PageUtils, UserUtils, HTTPUtils } = await import('./js/utils.js');
+    
+    // Base behavior
+    UserUtils.displayUserAlias('signInDiv');
+    PageUtils.clickOnEnter('searchBtn');
+
+    // Search button event
+    document.getElementById('searchBtn').addEventListener('click', async function() {
+        PageUtils.startSpinner(this);
+
+        fetch('/api/search-proteins', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: $('#searchInput').val()
+            })
+        })
+        .then(response => response.json())
+        .then(async data => {
+            const results = data.payload;
+            console.log(results);
+
+            // Display results
+            const resultsBody = document.getElementById('searchResults');
+            resultsBody.innerHTML = ''; // Clear previous results
+            results.sort((a, b) => a.name.localeCompare(b.name));
+            $('#results-table').removeClass('d-none');
+
+            // Format data and display
+            const formattedRows = results.map(row => formatDisplayData(row));
+
+            formattedRows.forEach(rowData => {
+                const tr = generateTr(rowData);
+                resultsBody.appendChild(tr);
+            });
+
+            PageUtils.stopSpinner(this, 'Search');
+        })
+        .catch(error => {
+            console.error('Error:', error)
+            PageUtils.stopSpinner(this, 'Search');
+        });
+    });
+
+});
+
+function generateTr(row) {
+    const pdbCodesToHTML = codes => codes.map(code => `<a href="https://www.rcsb.org/structure/${code}/">${code}</a>`).join(', ');
+    const tr = document.createElement('tr');
+    tr.id = `row-${row._id}`;
+    tr.innerHTML = `
+        <td> 
+            <i class="fas fa-copy" onclick="copyToClipboard('${row._id}', this)"></i> 
+        </td>
+        <td class="m-cell"> ${row.name}</td>
+        <td class="l-cell"> ${row.description || ''}</td>
+        <td class="m-cell">${row.experiments.join(', ')}</td>
+        <td class="pdb-cell">
+            ${pdbCodesToHTML(row.pdbStructures)}
+        </td>
+        <td class="pdb-cell">
+            ${pdbCodesToHTML(row.discardedPdb)}
+        </td>
+        <td>
+            <a href="/update/protein/${row._id}" target="_blank" style="color:black"><i class="fas fa-cogs"></i></a>
+        </td>`
+    return tr;
+}
+
+function copyToClipboard(text, iconElement) {
+    navigator.clipboard.writeText(text).then(function() {
+        iconElement.className = 'fas fa-check';
+        iconElement.style.color = 'green';
+
+        setTimeout(function() {
+            iconElement.className = 'fas fa-copy';
+            iconElement.style.color = ''; 
+        }, 2000); 
+    }).catch(function(err) {
+        console.error('Could not copy text:', err);
+    });
+}
+
+
+
+function formatDisplayData(row) {
+    // Diffusion coefficient unit conversion
+    experiments = row.experiments.map( item => {
+        const multiplier = item.diffusionUnit === "1e-7 cm2/s" ? 10 : 1;
+        const diffusionCoefficient = (item.diffusionCoefficient * multiplier).toFixed(1);
+        return diffusionCoefficient
+    })
+
+    discardedPdb = row.discardedPdb.map( item => item.pdbCode);
+
+    return { ...row, experiments, discardedPdb };
+};
+
+
+
+
+</script>
+</body>
+</html>

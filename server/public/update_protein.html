@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create a New Protein</title>
+    <title>Update Existing Protein</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
@@ -16,14 +16,14 @@
         <a class="navbar-item" href="/">Browse Experiments</a>
         <a class="navbar-item" href="/browse-proteins">Browse Proteins</a>
         <a class="navbar-item" href="/new_experiment">New experiment</a>
-        <a class="navbar-item navbar-selected " href="/new_protein">New protein</a>
+        <a class="navbar-item" href="/new_protein">New protein</a>
     </nav>
     <div id="signInDiv" class="ml-auto pr-2"></div>
 </div>
 
 <div class="container form-block">
     <!-- Title -->
-    <h2 class="mt-2">Create a New Protein</h2>
+    <h2 class="mt-2">Update Existing Protein</h2>
     <form>
         <!-- Name -->
         <div class="form-row mb-2">
@@ -114,9 +114,18 @@ const pageCounters = {
     discardedPdbComments: 1,
     experiments: 1
 };
+let proteinId;
 
 document.addEventListener('DOMContentLoaded', async() => {
     const { PageUtils, UserUtils } = await import('./js/utils.js');
+
+    // Check entry id
+    const urlParams = new URLSearchParams(window.location.search);
+    proteinId = urlParams.get('id');
+    if (!proteinId) {
+        alert('No protein ID was provided.');
+        return;
+    }    
 
     // Base behavior
     UserUtils.displayUserAlias('signInDiv');
@@ -243,9 +252,12 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // Send data to server
         fetch('/api/protein', {
-            method: 'POST',
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({data:formData}),
+            body: JSON.stringify({
+                data:formData,
+                id: proteinId
+            }),
         })
         .then(response => {
             if (!response.ok) {
@@ -260,8 +272,51 @@ document.addEventListener('DOMContentLoaded', async() => {
         });
     });
 
+    // Fetch data from server
+    fetchDataFromServer(proteinId);
+
 });
 
+function fetchDataFromServer(id){
+    fetch(`/api/find-by-id/protein/${id}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+        const entry = data.payload;
+
+        // Populate the form fields with the retrieved data
+        $('#proteinName').val(entry.name);
+        $('#description').val(entry.description);
+        
+        entry.pdbStructures.forEach((pdbCode, index) => {
+            if (index > 0) addInput('validPdbContainer', 'valid-pdb', pageCounters.validPdb++);
+            document.getElementById(`valid-pdb-${index}`).value = pdbCode;
+        });
+
+        entry.experiments.forEach((experiment, index) => {
+            if (index > 0) addInput('experimentsContainer', 'experiment', pageCounters.experiments++);
+            document.getElementById(`experiment-${index}`).value = experiment;
+        });
+
+        entry.discardedPdb.forEach((pdbObj, index) => {
+            if (index > 0) {
+                addInput('discardedPdbContainer', 'invalid-pdb-code', pageCounters.discardedPdb++);
+                addInput('discardedPdbCommentsContainer', 'invalid-pdb-note', pageCounters.discardedPdbComments++);
+            }
+            document.getElementById(`invalid-pdb-code-${index}`).value = pdbObj.pdbCode;
+            document.getElementById(`invalid-pdb-note-${index}`).value = pdbObj.note;
+        });
+
+        // Add more form field assignments as needed
+        } else {
+        alert('Error fetching data from the server.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while fetching data from the server.');
+    });
+}
 
 async function handlePaste(containerId, baseId, counter, formatChecker, effectHandler, errorHandling) {
     const text = await navigator.clipboard.readText();

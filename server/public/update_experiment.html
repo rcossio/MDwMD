@@ -12,8 +12,9 @@
 <!-- Header -->
 <div class="header">
     <nav class="navbar">
-        <a class="navbar-item" href="/">Browse</a>
-        <a class="navbar-item" href="/new_experiment">New experiment</a>
+        <a class="navbar-item" href="/">Browse Experiments</a>
+        <a class="navbar-item" href="/browse-proteins">Browse Proteins</a>
+        <a class="navbar-item navbar-selected " href="/new_experiment">New experiment</a>
         <a class="navbar-item" href="/new_protein">New protein</a>
     </nav>
     <div id="signInDiv" class="ml-auto pr-2"></div>
@@ -200,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     const urlParams = new URLSearchParams(window.location.search);
     experimentId = urlParams.get('id');
     if (!experimentId) {
-        alert('No entry ID provided.');
+        alert('No experiment ID was provided.');
         return;
     }    
 
@@ -281,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 });
 
 function fetchDataFromServer(id){
-    fetch(`/api/find-by-id/${id}`)
+    fetch(`/api/find-by-id/experiment/${id}`)
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
