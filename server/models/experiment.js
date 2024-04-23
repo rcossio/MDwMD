@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // MongoDB Schema and Model setup
-const diffusionSchema = new mongoose.Schema({
+const experimentSchema = new mongoose.Schema({
     diffusionCoefficient: Number,
     diffusionError: Number,
     diffusionUnit: String,
@@ -23,7 +23,7 @@ const diffusionSchema = new mongoose.Schema({
 });
   
 // Create Mongoose Model
-const DiffusionData = mongoose.model('experiments', diffusionSchema);
+const ExperimentData = mongoose.model('experiments', experimentSchema);
 
-module.exports = DiffusionData;
+module.exports = ExperimentData;
   

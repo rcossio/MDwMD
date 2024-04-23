@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Bottleneck = require('bottleneck');
 const xml2js = require('xml2js').parseStringPromise; 
-const Diffusion = require('../models/diffusion'); 
+const Experiment = require('../models/experiment'); 
 const Reference = require('../models/reference'); 
 const Protein = require('../models/protein');
 const verifyToken = require('../middleware/verifyToken');
@@ -18,9 +18,9 @@ router.post('/experiment',verifyToken, async (req, res) => {
   const { data, replacedEntry } = req.body;
 
   try {
-    const newEntryId = await Diffusion.create({ ...data, active: true, timestamp: new Date().toISOString() });
+    const newEntryId = await Experiment.create({ ...data, active: true, timestamp: new Date().toISOString() });
     if (replacedEntry) {
-      await Diffusion.updateOne({ _id: replacedEntry }, { $set: { supersededBy: newEntryId, active: false } });
+      await Experiment.updateOne({ _id: replacedEntry }, { $set: { supersededBy: newEntryId, active: false } });
     }
     res.send({ status: 'success', payload: 'Data saved to MongoDB' });
   } catch (err) {
@@ -32,7 +32,7 @@ router.post('/experiment',verifyToken, async (req, res) => {
 // Handle PUT Request
 router.put('/experiment',verifyToken, async (req, res) => {
   const { id, data } = req.body;
-  Diffusion.updateOne({ _id: id }, { $set: data })
+  Experiment.updateOne({ _id: id }, { $set: data })
     .then(() => res.send({ status: 'success', payload: 'Data updated in MongoDB' }))
     .catch(err => {
       console.error('Error updating data:', err);
@@ -64,7 +64,7 @@ router.post('/search', async (req, res) => {
   }
 
   try {
-    const data = await Diffusion.find({ $and: queryConditions }).sort({ accessionNumber: 1 });
+    const data = await Experiment.find({ $and: queryConditions }).sort({ accessionNumber: 1 });
 
     const publicDataTasks = data.map(async (item) => {
       let year;
@@ -185,7 +185,7 @@ async function fetchPublicationYear(refId, refIdType) {
 router.get('/find-by-id/experiment/:id', (req, res) => {
   const { id } = req.params;
 
-  Diffusion.findById(id)
+  Experiment.findById(id)
     .then(data => res.json({
       status: 'success',
       payload: data

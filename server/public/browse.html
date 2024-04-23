@@ -122,7 +122,7 @@ const activeFilters = {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const { PageUtils, UserUtils, HTTPUtils } = await import('./js/utils.js');
+    const { PageUtils, UserUtils } = await import('./js/utils.js');
     
     // Base behavior
     UserUtils.displayUserAlias('signInDiv');
@@ -247,7 +247,7 @@ function generateTr(row) {
             ${pdbCodesToHTML(row.unknownPdbCodes)}
         </td>
         <td>
-            <a href="/update/${row._id}" target="_blank" style="color:black"><i class="fas fa-cogs"></i></a>
+            <a href="/update/experiment/${row._id}" target="_blank" style="color:black"><i class="fas fa-cogs"></i></a>
         </td>`
     return tr;
 }
@@ -317,6 +317,8 @@ function filterByProperty(itemName, results, prop, button) {
 
 
 async function formatDisplayData(row) {
+    const { HTTPUtils } = await import('./js/utils.js');
+
     // Method processing 
     const methodValue = row.method === 'Other' ? row.otherMethod : row.method;
     const manualProcessingValue = row.manualProcessing === 'Other' ? row.otherManualProcessing :
