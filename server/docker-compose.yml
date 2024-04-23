@@ -2,35 +2,28 @@ version: '3.8'
 services:
   app:
     build: .
-    image: pddt-backend-img
+    image: pddb-app
+    container_name: pddb-app
     restart: unless-stopped
     depends_on:
-      - mongo
-    networks:
-      - pddt-network-0
+      - db
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
     env_file:
       - .env.development
-    cpus: 1
-    mem_limit: 512m
 
-  mongo:
+  db:
     image: mongo
+    container_name: pddb-mongo
     restart: unless-stopped
-    container_name: mongo-container-0
-    networks:
-      - pddt-network-0
     ports:
       - "27017:27017"
     env_file:
       - .env.mongo
-    cpus: 1
-    mem_limit: 512m
+    volumes:
+      - mongo:/data/db
 
-networks:
-  pddt-network-0:
-    name: pddt-network-0
-    driver: bridge
+volumes:
+    mongo:
