@@ -183,18 +183,11 @@ analyseProductionMD(){
 }
 
 checkDependency gmx
-#productionMD 1 nvt_f 50000000
-#analyseProductionMD prod1
+productionMD 1 nvt_f 250000000
+analyseProductionMD prod1
 
-#productionMD 2 prod1 100000000 continue
+#productionMD 2 prod1 300000000 continue
 #analyseProductionMD prod1 prod2
-
-productionMD 3 prod2 150000000 continue
-#analyseProductionMD prod1 prod2 prod3
-
-productionMD 4 prod3 200000000 continue
-productionMD 5 prod4 250000000 continue
-
 
 
 echo "Production MD finished"

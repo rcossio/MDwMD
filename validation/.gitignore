@@ -2,3 +2,4 @@
 *.json
 unipd/
 .env
+.csv

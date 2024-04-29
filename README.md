@@ -17,14 +17,14 @@ The database contains the following collections:
 
 ## Project Organization
 
-The project is organized into the following directories, each containing relevant files and scripts:
+The project is organized into the following directories, each containing relevant files and scripts. Between brackets who can understand the files within or the main language of the folder:
 
-- **db**: Constains scripts to mantain, check and operate in the DB
-- **server**: Contains the web application for database access.
-- **data**: Reserved for initial data and processing scripts, currently unused.
-- **validation**: Scripts to evaluate the performance of the modelling strategies
-- **hydropro**: Houses scripts for running HYDROPRO calculations.
-- **md**: Contains scripts for conducting molecular dynamics simulations.
+- **server**: Backend of the web application (Damiano C, Ivan)
+- **db**: Constains scripts to mantain and check the DB (python)
+- **hydropro**: Has scripts for running HYDROPRO calculations (bash)
+- **md**: Contains scripts for conducting molecular dynamics simulations (md: Gonzalo and Giorgia, diffusivity:Franco)
+- **validation**: Scripts to evaluate the error of the modelling strategies (python)
+
 
 ## Next Steps 
 
@@ -32,7 +32,6 @@ The project is organized into the following directories, each containing relevan
 - **Load Data**: Follow HydroPro text to load enough diffusion data and linked PDBs so that you can make a good model.
 - **MIADE and Disprot**: Read about MIADE and (10.1101/2022.07.12.495092v1) and best practices (https://arxiv.org/pdf/2310.16716.pdf)
 - **Alphafold models**: Enable alphafold models as an array attribute in Protein collection
-- **Protein browsing**: There is no current way of browsing proteins, just experiments
 
 ### Back-end
 - **Good practices**: The project started with a MVP, but we need to apply good programming practices in the backend to have a modular and scalable back-end.
@@ -40,7 +39,6 @@ The project is organized into the following directories, each containing relevan
 
 ### Front-end
 - **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
-- **Result Sorting**: Fix the sorting of results by accession number, ensuring they appear in order despite varying fetch times.
 - **Data loading**: When loading a new data, trim the information, otherwise a wierd character may be copied
 - **Alphafold**: display alphafold models with the Uniprot API when browsing
 
@@ -57,16 +55,16 @@ The project is organized into the following directories, each containing relevan
 - **Crysol**: Think of using spherical harmonic coefficients to calculate the diffusion coefficient, instead of bead/shell modelling
 
 ### Molecular dynamics
-- **MSD**: Gromacs gives an MSD slightly above the COM-calculated one, is it due to molecule rotations?
+- **Diffusivity consistency**: Investigate if the diffusivity valeus achieved are the same for two MDs of the same PDB, and two PDBs of the same protein.
 
 
 ## Insights from Other DBs
 
-- **Data scattering**: "Data is scattered and in that way is useless", a phase I liked.
+- **Data scattering**: "Data is scattered and in that way is useless", a santence I liked.
 - **Context**: Provides contextual information about experiments, including pH levels, concentration and temperature.
 - **Updates** We should displaying the latest update status prominently on the main page to inform users of the current data accuracy.
 - **Experimental diversity**: Covers a variety of experimental conditions, such as different pH levels and protein families, we can focus on protein families, species, molecular weights and distribution of diffusion coefficients. I dont feel confident to include methods, since i dont understand them.
-- **Promoting diffusion**: The paper identifies diffusion as the least reported feature, its and opportunity to explain why our DB is relevant.
+- **Promoting diffusion**: The paper of BioThermDB identifies diffusion as the least reported feature, its and opportunity to explain why our DB is relevant.
 - **CSV**: we should add the option to download data in CSV format.
 - **Data echoing**: We can include their data to make a whole DB (i.e. the data is included as secondary references, or curated to first). Is this scriptable? We can also add the data from Bionumbers with the indexed terms "diffusion", and "diffusion coefficient".
 - **Data collection and curation**: Explain how data was treated to show it is trustable. Explain the main keywords used in google scholar searchs. MPTherm explains this well
@@ -78,3 +76,4 @@ The project is organized into the following directories, each containing relevan
 ## Conclusion
 
 This project represents a foundational step towards simplifying the acquisition and estimation of self-diffusion coefficients for proteins, offering significant potential for scientific research and analysis. Through ongoing development and community collaboration, we aim to enhance its utility and impact within the scientific community.
+For any questions please open an issue or write to rodrigoperez93@gmail.com.

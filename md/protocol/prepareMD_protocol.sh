@@ -60,9 +60,13 @@ gmx grompp -f npt_r2.mdp -c npt_r10.gro -t npt_r10.cpt -r em.gro -p topol.top -o
 gmx mdrun -deffnm npt_r2 -nb gpu
 gmx energy -f npt_r2.edr -o npt_r2.xvg -xvg none -nobackup <<< $'Pressure\nDensity\nPosition-Rest\nPotential\n0\n'
 
+sed -e "s/1000/0.5/g" posre.itp.bak > posre.itp
+gmx grompp -f npt_r0.5.mdp -c npt_r2.gro -t npt_r2.cpt -r em.gro -p topol.top -o npt_r0.5.tpr
+gmx mdrun -deffnm npt_r0.5 -nb gpu
+gmx energy -f npt_r0.5.edr -o npt_r0.5.xvg -xvg none -nobackup <<< $'Pressure\nDensity\nPosition-Rest\nPotential\n0\n'
 
 # Free NPT MD
-gmx grompp -f npt_f.mdp -c npt_r2.gro -t npt_r2.cpt -p topol.top -o npt_f.tpr
+gmx grompp -f npt_f.mdp -c npt_r0.5.gro -t npt_r0.5.cpt -p topol.top -o npt_f.tpr
 gmx mdrun -deffnm npt_f -nb gpu
 gmx energy -f npt_f.edr -o npt_f.xvg -xvg none -nobackup <<< $'Pressure\nDensity\n0\n'
 

@@ -3,7 +3,6 @@
 # - 2 CPUs
 # - 10MB max size of log files && 3 max number of log files
 # - port 27017 is exposed
-
 docker run -d -p 27017:27017  --memory 2g --cpus=2  --log-opt max-size=10m --log-opt max-file=3  --name mongo-container-0 mongo:latest
 
 # Line to run the backend
