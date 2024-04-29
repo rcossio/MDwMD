@@ -2,4 +2,4 @@
 *.json
 unipd/
 .env
-.csv
+*.csv
