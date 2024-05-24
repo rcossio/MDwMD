@@ -36,6 +36,7 @@ The project is organized into the following directories, each containing relevan
 ### Back-end
 - **Good practices**: The project started with a MVP, but we need to apply good programming practices in the backend to have a modular and scalable back-end.
 - **Conect References colection**: When posting a new experiment we should fetch the reference data
+- **Filtering negative PDBs**: When displaying Unkown PDBs, we should filter out those that were filtered and discarded
 
 ### Front-end
 - **Mobile access**: Implementing mobile access would increase productivity (data could be uploaded from the mobile phone, which is easier to use in the tram)
